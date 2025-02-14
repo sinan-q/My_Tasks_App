@@ -74,7 +74,7 @@ fun AddEditTaskScreen(
             FloatingActionButton(
                 onClick = {
                     if (isEditing) {
-                        if (title.text.isNotEmpty() && description.text.isNotEmpty()) {
+                        if (title.text.isNotEmpty() || description.text.isNotEmpty()) {
                             taskViewModel.insertTask(
                                 Task(
                                     id = if (taskId == -1L) null else taskId,

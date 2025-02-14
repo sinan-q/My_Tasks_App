@@ -69,7 +69,7 @@ fun AddEditNoteScreen(
             FloatingActionButton(
                 onClick = {
                     if (isEditing) {
-                        if (title.text.isNotEmpty() && content.text.isNotEmpty()) {
+                        if (title.text.isNotEmpty() || content.text.isNotEmpty()) {
                             noteViewModel.addNote(
                                 Note(
                                     id = if (noteId == -1L) null else noteId,
