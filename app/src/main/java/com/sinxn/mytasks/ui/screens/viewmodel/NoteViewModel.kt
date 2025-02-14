@@ -40,11 +40,6 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun updateNote(note: Note) {
-        viewModelScope.launch {
-            noteRepository.updateNote(note)
-        }
-    }
     fun fetchNoteById(noteId: Long) {
         viewModelScope.launch {
             val fetchedNote = noteRepository.getNoteById(noteId)

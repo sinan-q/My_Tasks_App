@@ -34,7 +34,7 @@ fun NoteListScreen(
         LazyColumn(
             contentPadding = paddingValues,
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
         ) {
             items(notes) { note ->
                 NoteItem(

@@ -43,8 +43,7 @@ fun NavGraph(
             val noteId = backStackEntry.arguments?.getLong("noteId") ?: -1L
             AddEditNoteScreen(
                 noteId = noteId,
-                onSaveNote = { navController.popBackStack() },
-                onCancel = { navController.popBackStack() },
+                onFinish = { navController.popBackStack() },
                 noteViewModel = noteViewModel,
                 modifier = Modifier
             )
@@ -68,8 +67,7 @@ fun NavGraph(
             AddEditTaskScreen(
                 taskId = taskId,
                 taskViewModel = taskViewModel,
-                onSaveTask = { navController.popBackStack() },
-                onCancel = { navController.popBackStack() }
+                onFinish = { navController.popBackStack() },
             )
         }
     }
