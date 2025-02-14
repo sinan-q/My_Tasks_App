@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.DatePicker
@@ -19,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -78,7 +80,7 @@ fun AddEditTaskScreen(
                                 description = description.text,
                                 due = dueDate,
                                 isCompleted = isCompleted,
-                                timestamp = timestamp?: Date()
+                                timestamp = timestamp ?: Date()
                             )
                         )
                         onFinish()
@@ -89,8 +91,19 @@ fun AddEditTaskScreen(
             ) {
                 Icon(Icons.Default.Check, contentDescription = null)
             }
-        }
-    ) {
+        },
+        topBar = {
+            TopAppBar(
+                title = { Text(if (taskId == -1L) "Add Task" else "Edit Task") },
+                navigationIcon = {
+                    IconButton(onClick = onFinish) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                })
+        }) {
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -111,13 +124,16 @@ fun AddEditTaskScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = dueDate?.let { formatDate(it) } ?: "No Due" ,
+                value = dueDate?.let { formatDate(it) } ?: "No Due",
                 onValueChange = {},
                 label = { Text("Due Date") },
                 readOnly = true,
                 trailingIcon = {
                     IconButton(onClick = { showDatePicker = true }) {
-                        Icon(imageVector = Icons.Default.DateRange, contentDescription = "Select Due Date")
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Select Due Date"
+                        )
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -125,7 +141,7 @@ fun AddEditTaskScreen(
 
             if (showDatePicker) {
                 val datePickerState = rememberDatePickerState(
-                    initialSelectedDateMillis = dueDate?.time?: Date().time
+                    initialSelectedDateMillis = dueDate?.time ?: Date().time
                 )
 
                 DatePickerDialog(

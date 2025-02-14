@@ -7,14 +7,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,6 +34,7 @@ import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
 import java.util.Date
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditNoteScreen(
     modifier: Modifier = Modifier,
@@ -77,7 +83,20 @@ fun AddEditNoteScreen(
         ) {
             Icon(Icons.Default.Check, contentDescription = null)
         }
-    }){
+    },
+        topBar = {
+            TopAppBar(
+                title = { Text(if (noteId == -1L) "Add Note" else "Edit Note") },
+                navigationIcon = {
+                    IconButton(onClick = onFinish) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                })
+        }
+    ){
         Column(
             modifier = modifier
                 .fillMaxSize()
