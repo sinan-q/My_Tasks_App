@@ -47,7 +47,7 @@ fun AddEditTaskScreen(
     val taskState by taskViewModel.task.collectAsState()
     var title by remember { mutableStateOf(TextFieldValue("")) }
     var description by remember { mutableStateOf(TextFieldValue("")) }
-    var dueDate by remember { mutableStateOf(Date()) }
+    var dueDate by remember { mutableStateOf<Date?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(taskId) {
@@ -83,7 +83,7 @@ fun AddEditTaskScreen(
         )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
-            value = formatDate(dueDate) ,
+            value = dueDate?.let { formatDate(it) } ?: "No Due" ,
             onValueChange = {},
             label = { Text("Due Date") },
             readOnly = true,
@@ -104,7 +104,8 @@ fun AddEditTaskScreen(
                         Task(
                             id = if (taskId == -1L) null else taskId,
                             title = title.text,
-                            description = description.text
+                            description = description.text,
+                            due = dueDate
                         )
                     )
                     onSaveTask()
@@ -116,7 +117,7 @@ fun AddEditTaskScreen(
 
         if (showDatePicker) {
             val datePickerState = rememberDatePickerState(
-                initialSelectedDateMillis = dueDate.time
+                initialSelectedDateMillis = dueDate?.time?: Date().time
             )
 
             DatePickerDialog(

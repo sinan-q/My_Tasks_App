@@ -1,11 +1,7 @@
 package com.sinxn.mytasks.ui.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -15,6 +11,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.utils.formatDate
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun TaskItem(
@@ -48,12 +46,14 @@ fun TaskItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = formatDate(task.due),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
+            task.due?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = formatDate(it),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
         }
     }
 }

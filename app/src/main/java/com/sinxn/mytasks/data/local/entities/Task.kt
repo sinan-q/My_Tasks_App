@@ -12,5 +12,5 @@ data class Task(
     val description: String,
     val isCompleted: Boolean = false,
     val timestamp: Date = Date(),
-    val due: Date = Date()
+    val due: Date? = null
 )

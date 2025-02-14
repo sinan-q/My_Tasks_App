@@ -6,11 +6,13 @@ import java.util.Date
 class Converters {
     @TypeConverter
     fun fromTimestamp(value: Long?): Date? {
-        return value?.let { Date(it) }
+        return value?.let {
+            if(it==0L) null else Date(it)
+        }
     }
 
     @TypeConverter
-    fun dateToTimestamp(date: Date?): Long? {
-        return date?.time
+    fun dateToTimestamp(date: Date?): Long {
+        return date?.time ?: 0
     }
 }
