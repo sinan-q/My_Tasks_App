@@ -43,4 +43,11 @@ class TaskViewModel @Inject constructor(private val repository: TaskRepository) 
     fun updateTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
         repository.updateTask(task)
     }
+
+    fun updateStatusTask(taskId: Long, status: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+           repository.updateStatusTask(taskId, status)
+
+        }
+    }
 }

@@ -27,4 +27,8 @@ class TaskRepository @Inject constructor(
     suspend fun getTaskById(taskId: Long): Task? {
         return taskDao.getTaskById(taskId)
     }
+
+    suspend fun updateStatusTask(taskId: Long, status: Boolean) {
+        taskDao.updateStatusTask(taskId, status)
+    }
 }

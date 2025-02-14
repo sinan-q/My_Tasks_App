@@ -56,7 +56,8 @@ fun NavGraph(
                 onAddTaskClick = { navController.navigate("add_edit_task/-1L") },
                 onTaskClick = { taskId ->
                     navController.navigate("add_edit_task/$taskId")
-                }
+                },
+                taskViewModel = taskViewModel
             )
         }
         composable(

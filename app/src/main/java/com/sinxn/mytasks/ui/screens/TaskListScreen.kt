@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.components.TaskItem
+import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
 
 @Composable
 fun TaskListScreen(
     tasks: List<Task>,
+    taskViewModel: TaskViewModel,
     onAddTaskClick: () -> Unit,
     onTaskClick: (Long?) -> Unit,
     modifier: Modifier = Modifier
@@ -37,7 +39,10 @@ fun TaskListScreen(
             modifier = Modifier.padding(16.dp)
         ) {
             items(tasks) { task ->
-                TaskItem(task = task, onClick = { onTaskClick(task.id) })
+                TaskItem(
+                    task = task,
+                    onClick = { onTaskClick(task.id) },
+                    onUpdate = { task.id?.let { it1 -> taskViewModel.updateStatusTask(it1,it) } })
             }
         }
     }
