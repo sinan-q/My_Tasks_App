@@ -14,9 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Note
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.sinxn.mytasks.utils.formatDate
 
 @Composable
 fun NoteItem(
@@ -52,9 +50,4 @@ fun NoteItem(
             )
         }
     }
-}
-
-private fun formatDate(date: Date): String {
-    val formatter = SimpleDateFormat("MMM dd, yyyy - HH:mm", Locale.getDefault())
-    return formatter.format(date)
 }
