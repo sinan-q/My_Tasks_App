@@ -34,7 +34,7 @@ fun TaskListScreen(
     ) { paddingValues ->
         LazyColumn(
             contentPadding = paddingValues,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(1.dp),
             modifier = Modifier
         ) {
             items(tasks) { task ->

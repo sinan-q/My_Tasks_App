@@ -30,8 +30,8 @@ fun TaskItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp)
-            .clickable { onClick() }
+            .padding(4.dp)
+            .clickable { onClick() },
     ) {
         Row (modifier = Modifier.fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically
@@ -40,20 +40,22 @@ fun TaskItem(
                 checked = task.isCompleted,
                 onCheckedChange = { onUpdate(it) }
             )
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = task.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+            Column(modifier = Modifier.padding(8.dp)) {
+                 if(task.title.isNotEmpty())
+                    Text(
+                        text = task.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = task.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                if (task.description.isNotEmpty())
+                    Text(
+                        text = task.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = formatDate(task.timestamp),
