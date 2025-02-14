@@ -13,13 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
-/app/release/app-release.apk
-/app/release/baselineProfiles/0/app-release.dm
-/app/release/baselineProfiles/1/app-release.dm
-/.kotlin/errors/errors-1739526915317.log
-/.kotlin/errors/errors-1739527478350.log
-/.kotlin/errors/errors-1739527573021.log
-/.kotlin/errors/errors-1739527879611.log
-/.kotlin/sessions/kotlin-compiler-15134716708530928627.salive
-/app/release/output-metadata.json
+/app/release
+/.kotlin
 /.idea/inspectionProfiles/Project_Default.xml
