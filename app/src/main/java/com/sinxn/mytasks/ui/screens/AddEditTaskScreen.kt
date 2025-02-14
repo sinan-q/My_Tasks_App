@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -110,6 +111,18 @@ fun AddEditTaskScreen(
                             contentDescription = "Back"
                         )
                     }
+                },
+                actions = {
+                    if (taskId != -1L) IconButton(onClick = {
+                        taskState?.let { taskViewModel.deleteTask(it) }
+                        onFinish()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete"
+                        )
+                    }
+
                 })
         },
         modifier = Modifier.imePadding()

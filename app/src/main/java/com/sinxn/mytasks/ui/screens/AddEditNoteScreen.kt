@@ -105,6 +105,18 @@ fun AddEditNoteScreen(
                             contentDescription = "Back"
                         )
                     }
+                },
+                actions = {
+                    if (noteId != -1L) IconButton(onClick = {
+                        noteState?.let { noteViewModel.deleteNote(it) }
+                        onFinish()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete"
+                        )
+                    }
+
                 })
         },
         modifier = Modifier.imePadding()
@@ -127,7 +139,7 @@ fun AddEditNoteScreen(
                 onValueChange = { content = it },
                 label = { Text("Description") },
                 readOnly = !isEditing,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxSize()
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = {
