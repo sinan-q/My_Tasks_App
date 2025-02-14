@@ -141,15 +141,6 @@ fun AddEditNoteScreen(
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxSize()
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = {
-                if (noteState != null) {
-                    noteViewModel.deleteNote(noteState!!)
-                    onFinish()
-                }
-            }) {
-                Icon(Icons.Default.Delete, contentDescription = null)
-            }
         }
     }
 
