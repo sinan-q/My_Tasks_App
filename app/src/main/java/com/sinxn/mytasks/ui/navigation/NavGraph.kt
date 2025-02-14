@@ -10,17 +10,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.sinxn.mytasks.ui.screens.AddEditNoteScreen
 import com.sinxn.mytasks.ui.screens.NoteListScreen
+import com.sinxn.mytasks.ui.screens.TaskListScreen
 import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
+import com.yourpackage.ui.screens.AddEditTaskScreen
+import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
     noteViewModel: NoteViewModel,
+    taskViewModel: TaskViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
-        startDestination = "note_list",
+        startDestination = "tasks",
         modifier = modifier
     ) {
         composable("note_list") {
@@ -43,6 +47,28 @@ fun NavGraph(
                 onCancel = { navController.popBackStack() },
                 noteViewModel = noteViewModel,
                 modifier = Modifier
+            )
+        }
+
+        composable("tasks") {
+            TaskListScreen(
+                tasks = taskViewModel.tasks.collectAsState().value,
+                onAddTaskClick = { navController.navigate("add_edit_task/-1L") },
+                onTaskClick = { taskId ->
+                    navController.navigate("add_edit_task/$taskId")
+                }
+            )
+        }
+        composable(
+            route = "add_edit_task/{taskId}",
+            arguments = listOf(navArgument("taskId") { type = NavType.LongType; defaultValue = -1L })
+        ) { backStackEntry ->
+            val taskId = backStackEntry.arguments?.getLong("taskId") ?: -1L
+            AddEditTaskScreen(
+                taskId = taskId,
+                taskViewModel = taskViewModel,
+                onSaveTask = { navController.popBackStack() },
+                onCancel = { navController.popBackStack() }
             )
         }
     }
