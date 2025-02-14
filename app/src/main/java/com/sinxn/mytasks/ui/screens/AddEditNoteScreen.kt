@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
@@ -47,6 +48,7 @@ fun AddEditNoteScreen(
     var title by remember { mutableStateOf(TextFieldValue("")) }
     var content by remember { mutableStateOf(TextFieldValue("")) }
     var timestamp by remember { mutableStateOf<Date?>(null) }
+    var isEditing by remember { mutableStateOf(noteId == -1L) }
 
     // Load existing note if noteId is valid
     LaunchedEffect(noteId) {
@@ -64,26 +66,35 @@ fun AddEditNoteScreen(
     }
     Scaffold(
         floatingActionButton = {
-        FloatingActionButton(
-            onClick = {
-                if (title.text.isNotEmpty() && content.text.isNotEmpty()) {
-                    noteViewModel.addNote(
-                        Note(
-                            id = if (noteId == -1L) null else noteId,
-                            title = title.text,
-                            content = content.text,
-                            timestamp = timestamp?: Date()
-                        )
-                    )
-                    onFinish()
-                } else {
-                    // Handle empty fields, e.g., show a Toast or Snackbar
+            FloatingActionButton(
+                onClick = {
+                    if (isEditing) {
+                        if (title.text.isNotEmpty() && content.text.isNotEmpty()) {
+                            noteViewModel.addNote(
+                                Note(
+                                    id = if (noteId == -1L) null else noteId,
+                                    title = title.text,
+                                    content = content.text,
+                                    timestamp = timestamp ?: Date()
+                                )
+                            )
+                            onFinish()
+                        } else {
+                            // Handle empty fields, e.g., show a Toast or Snackbar
+                        }
+                    } else {
+                        isEditing = true
+                    }
+
+
                 }
+            ) {
+                Icon(
+                    if (!isEditing) Icons.Default.Edit else Icons.Default.Check,
+                    contentDescription = null
+                )
             }
-        ) {
-            Icon(Icons.Default.Check, contentDescription = null)
-        }
-    },
+        },
         topBar = {
             TopAppBar(
                 title = { Text(if (noteId == -1L) "Add Note" else "Edit Note") },
@@ -96,7 +107,7 @@ fun AddEditNoteScreen(
                     }
                 })
         }
-    ){
+    ) {
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -106,6 +117,7 @@ fun AddEditNoteScreen(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("Title") },
+                readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -113,6 +125,7 @@ fun AddEditNoteScreen(
                 value = content,
                 onValueChange = { content = it },
                 label = { Text("Description") },
+                readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))

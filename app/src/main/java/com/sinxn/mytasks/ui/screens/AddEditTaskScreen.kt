@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,6 +54,7 @@ fun AddEditTaskScreen(
     var isCompleted by remember { mutableStateOf(false) }
 
     var showDatePicker by remember { mutableStateOf(false) }
+    var isEditing by remember { mutableStateOf(taskId == -1L) }
 
     LaunchedEffect(taskId) {
         if (taskId != -1L) {
@@ -72,24 +74,31 @@ fun AddEditTaskScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    if (title.text.isNotEmpty() && description.text.isNotEmpty()) {
-                        taskViewModel.insertTask(
-                            Task(
-                                id = if (taskId == -1L) null else taskId,
-                                title = title.text,
-                                description = description.text,
-                                due = dueDate,
-                                isCompleted = isCompleted,
-                                timestamp = timestamp ?: Date()
+                    if (isEditing) {
+                        if (title.text.isNotEmpty() && description.text.isNotEmpty()) {
+                            taskViewModel.insertTask(
+                                Task(
+                                    id = if (taskId == -1L) null else taskId,
+                                    title = title.text,
+                                    description = description.text,
+                                    due = dueDate,
+                                    isCompleted = isCompleted,
+                                    timestamp = timestamp ?: Date()
+                                )
                             )
-                        )
-                        onFinish()
+                            onFinish()
+                        } else {
+                            // Handle empty fields, e.g., show a Toast or Snackbar
+                        }
                     } else {
-                        // Handle empty fields, e.g., show a Toast or Snackbar
+                        isEditing = true
                     }
                 }
             ) {
-                Icon(Icons.Default.Check, contentDescription = null)
+                Icon(
+                    if (!isEditing) Icons.Default.Edit else Icons.Default.Check,
+                    contentDescription = null
+                )
             }
         },
         topBar = {
@@ -113,6 +122,7 @@ fun AddEditTaskScreen(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("Title") },
+                readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -120,6 +130,7 @@ fun AddEditTaskScreen(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
+                readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -129,7 +140,7 @@ fun AddEditTaskScreen(
                 label = { Text("Due Date") },
                 readOnly = true,
                 trailingIcon = {
-                    IconButton(onClick = { showDatePicker = true }) {
+                    IconButton(onClick = { showDatePicker = isEditing }) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
                             contentDescription = "Select Due Date"
