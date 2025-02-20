@@ -13,5 +13,12 @@ class FolderRepository @Inject constructor(
     suspend fun getSubFolders(parentId: Long?): Flow<List<Folder>> {
         return folderDao.getSubFolders(parentId)
     }
+    suspend fun insertFolder(folder: Folder) {
+        folderDao.insertFolder(folder)
+    }
+    suspend fun deleteFolder(folder: Folder) {
+        folderDao.deleteFolder(folder)
+
+    }
 
 }

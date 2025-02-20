@@ -35,6 +35,7 @@ class HomeViewModel @Inject constructor(
     val folder: StateFlow<Folder?> = _folder
 
     init {
+        _folder.value = Folder(name = "Root", folderId = 0L)
         viewModelScope.launch {
             taskRepository.getTasksByFolderId(0L).collect { taskList ->
                 _tasks.value = taskList
@@ -52,11 +53,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-//    fun addFolder(folder: Folder) {
-//        viewModelScope.launch {
-//            folderRepository.insertFolder(folder)
-//        }
-//    }
+    fun addFolder(folder: Folder) {
+        viewModelScope.launch {
+            folderRepository.insertFolder(folder)
+        }
+    }
 //
 //    fun deleteFolder(folder: Folder) {
 //        viewModelScope.launch {

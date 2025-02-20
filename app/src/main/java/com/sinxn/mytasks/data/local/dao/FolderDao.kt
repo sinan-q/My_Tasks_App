@@ -1,6 +1,7 @@
 package com.sinxn.mytasks.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.sinxn.mytasks.data.local.entities.Folder
@@ -10,6 +11,9 @@ import kotlinx.coroutines.flow.Flow
 interface FolderDao {
     @Insert
     suspend fun insertFolder(folder: Folder): Long
+
+    @Delete
+    suspend fun deleteFolder(folder: Folder)
 
     @Query("SELECT * FROM folders WHERE parentFolderId IS NULL")
     fun getRootFolders(): Flow<List<Folder>>
