@@ -2,8 +2,10 @@ package com.sinxn.mytasks.di
 
 import android.content.Context
 import androidx.room.Room
+import com.sinxn.mytasks.data.local.dao.FolderDao
 import com.sinxn.mytasks.data.local.dao.TaskDao
 import com.sinxn.mytasks.data.local.database.AppDatabase
+import com.sinxn.mytasks.data.repository.FolderRepository
 import com.sinxn.mytasks.data.repository.NoteRepository
 import com.sinxn.mytasks.data.repository.TaskRepository
 import dagger.Module
@@ -50,4 +52,18 @@ object AppModule {
     fun provideTaskRepository(appDatabase: AppDatabase): TaskRepository {
         return TaskRepository(appDatabase.taskDao())
     }
+
+    @Provides
+    @Singleton
+    fun provideFolderDao(database: AppDatabase): FolderDao {
+        return database.folderDao()
+
+    }
+
+    @Provides
+    @Singleton
+    fun provideFolderRepository(appDatabase: AppDatabase): FolderRepository {
+        return FolderRepository(appDatabase.folderDao())
+    }
+
 }

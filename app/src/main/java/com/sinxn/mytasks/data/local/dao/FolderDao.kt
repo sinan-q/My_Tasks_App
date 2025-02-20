@@ -1,0 +1,21 @@
+package com.sinxn.mytasks.data.local.dao
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import com.sinxn.mytasks.data.local.entities.Folder
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface FolderDao {
+    @Insert
+    suspend fun insertFolder(folder: Folder): Long
+
+    @Query("SELECT * FROM folders WHERE parentFolderId IS NULL")
+    fun getRootFolders(): Flow<List<Folder>>
+
+    @Query("SELECT * FROM folders WHERE parentFolderId = :parentId")
+    fun getSubFolders(parentId: Long?): Flow<List<Folder>>
+
+    // Additional methods as needed
+}

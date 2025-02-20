@@ -4,12 +4,14 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
-
+    alias(libs.plugins.room)
 }
 hilt {
     enableAggregatingTask = false
 }
-
+room {
+    schemaDirectory("$projectDir/schemas")
+}
 android {
     namespace = "com.sinxn.mytasks"
     compileSdk = 35

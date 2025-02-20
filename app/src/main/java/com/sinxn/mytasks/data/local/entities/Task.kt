@@ -8,6 +8,7 @@ import java.util.Date
 data class Task(
     @PrimaryKey(autoGenerate = true)
     val id: Long? = 0,
+    val folderId: Long = 0L,
     val title: String,
     val description: String,
     val isCompleted: Boolean = false,

@@ -31,4 +31,8 @@ class TaskRepository @Inject constructor(
     suspend fun updateStatusTask(taskId: Long, status: Boolean) {
         taskDao.updateStatusTask(taskId, status)
     }
+
+    fun getTasksByFolderId(folderId: Long?): Flow<List<Task>> {
+        return taskDao.getTasksByFolderId(folderId)
+    }
 }

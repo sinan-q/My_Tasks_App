@@ -10,8 +10,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.sinxn.mytasks.ui.screens.AddEditNoteScreen
+import com.sinxn.mytasks.ui.screens.HomeScreen
 import com.sinxn.mytasks.ui.screens.NoteListScreen
 import com.sinxn.mytasks.ui.screens.TaskListScreen
+import com.sinxn.mytasks.ui.screens.viewmodel.HomeViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
 
@@ -20,13 +22,20 @@ fun NavGraph(
     navController: NavHostController,
     noteViewModel: NoteViewModel,
     taskViewModel: TaskViewModel,
+    homeViewModel: HomeViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
-        startDestination = "tasks",
+        startDestination = "home",
         modifier = modifier
     ) {
+        composable("home") {
+            HomeScreen(
+                homeViewModel = homeViewModel
+            )
+        }
+
         composable("note_list") {
             NoteListScreen(
                 notes = noteViewModel.notes.collectAsState().value,
