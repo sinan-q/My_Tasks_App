@@ -35,22 +35,7 @@ class HomeViewModel @Inject constructor(
     val folder: StateFlow<Folder?> = _folder
 
     init {
-        _folder.value = Folder(name = "Root", folderId = 0L)
-        viewModelScope.launch {
-            taskRepository.getTasksByFolderId(0L).collect { taskList ->
-                _tasks.value = taskList
-            }
-        }
-        viewModelScope.launch {
-            folderRepository.getSubFolders(0L).collect { folderList ->
-                _folders.value = folderList
-            }
-        }
-        viewModelScope.launch {
-            noteRepository.getNotesByFolderId(0L).collect { noteList ->
-                _notes.value = noteList
-            }
-        }
+        getSubFolders(Folder(name = "Root", folderId = 0L))
     }
 
     fun addFolder(folder: Folder) {
@@ -58,17 +43,35 @@ class HomeViewModel @Inject constructor(
             folderRepository.insertFolder(folder)
         }
     }
-//
-//    fun deleteFolder(folder: Folder) {
-//        viewModelScope.launch {
-//            folderRepository.deleteFolder(folder)
-//        }
-//    }
 
-    fun getSubFolders(folderId: Long?) {
+    fun deleteFolder(folder: Folder) {
         viewModelScope.launch {
-            folderRepository.getSubFolders(folderId).collect { folderList ->
+            onBack(folder)
+            folderRepository.deleteFolder(folder)
+        }
+    }
+    fun onBack(folder: Folder) {
+        viewModelScope.launch {
+            getSubFolders(folderRepository.getFolderById(folder.parentFolderId?: 0L))
+
+        }
+    }
+
+    fun getSubFolders(folder: Folder) {
+        _folder.value = folder
+        viewModelScope.launch {
+            taskRepository.getTasksByFolderId(folder.folderId).collect { taskList ->
+                _tasks.value = taskList
+            }
+        }
+        viewModelScope.launch {
+            folderRepository.getSubFolders(folder.folderId).collect { folderList ->
                 _folders.value = folderList
+            }
+        }
+        viewModelScope.launch {
+            noteRepository.getNotesByFolderId(folder.folderId).collect { noteList ->
+                _notes.value = noteList
             }
         }
     }

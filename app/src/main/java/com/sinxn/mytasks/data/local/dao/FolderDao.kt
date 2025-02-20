@@ -15,11 +15,11 @@ interface FolderDao {
     @Delete
     suspend fun deleteFolder(folder: Folder)
 
-    @Query("SELECT * FROM folders WHERE parentFolderId IS NULL")
-    fun getRootFolders(): Flow<List<Folder>>
-
     @Query("SELECT * FROM folders WHERE parentFolderId = :parentId")
     fun getSubFolders(parentId: Long?): Flow<List<Folder>>
+
+    @Query("SELECT * FROM folders WHERE folderId = :folderId")
+    suspend fun getFolderById(folderId: Long): Folder
 
     // Additional methods as needed
 }

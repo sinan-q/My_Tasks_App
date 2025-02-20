@@ -3,10 +3,16 @@ package com.sinxn.mytasks.ui.screens
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -20,6 +26,7 @@ import com.sinxn.mytasks.ui.components.NoteItem
 import com.sinxn.mytasks.ui.components.TaskItem
 import com.sinxn.mytasks.ui.screens.viewmodel.HomeViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel
@@ -35,14 +42,40 @@ fun HomeScreen(
             FloatingActionButton(onClick = { folderEditToggle = true }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Folder")
             }
+        },
+
+        topBar = {
+            currentFolder?.let { folder ->
+            if(folder.folderId != 0L) TopAppBar(
+                title = { Text(folder.name?:"") },
+                navigationIcon = {
+                    IconButton(onClick = {  homeViewModel.onBack(folder) }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        homeViewModel.deleteFolder(folder)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete"
+                        )
+                    }
+
+                })
         }
+        },
     ) { padding ->
         LazyColumn(contentPadding = padding) {
             if (folderEditToggle) item {
                 FolderItemEdit(folder = Folder(name = "New Folder", parentFolderId = currentFolder?.folderId), onDismiss = { folderEditToggle = false }) { homeViewModel.addFolder(it) }
             }
             items(folders) { folder ->
-                FolderItem(folder = folder, onClick = {  })
+                FolderItem(folder = folder, onClick = { homeViewModel.getSubFolders(folder) })
             }
             items(tasks) { task ->
                 TaskItem(

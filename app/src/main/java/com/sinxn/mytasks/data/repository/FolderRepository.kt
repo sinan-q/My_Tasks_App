@@ -10,7 +10,7 @@ import javax.inject.Singleton
 class FolderRepository @Inject constructor(
     private val folderDao: FolderDao
 ) {
-    suspend fun getSubFolders(parentId: Long?): Flow<List<Folder>> {
+    fun getSubFolders(parentId: Long?): Flow<List<Folder>> {
         return folderDao.getSubFolders(parentId)
     }
     suspend fun insertFolder(folder: Folder) {
@@ -19,6 +19,11 @@ class FolderRepository @Inject constructor(
     suspend fun deleteFolder(folder: Folder) {
         folderDao.deleteFolder(folder)
 
+    }
+
+    suspend fun getFolderById(folderId: Long): Folder {
+        if (folderId == 0L) return Folder(name = "Root", folderId = 0L)
+        return folderDao.getFolderById(folderId)
     }
 
 }
