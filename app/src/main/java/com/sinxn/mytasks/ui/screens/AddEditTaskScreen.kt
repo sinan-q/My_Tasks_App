@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,23 +20,30 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -52,11 +60,14 @@ fun AddEditTaskScreen(
 
     var taskInputState by remember { mutableStateOf(Task()) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
     var isEditing by remember { mutableStateOf(taskId == -1L) }
 
     val taskState by taskViewModel.task.collectAsState()
     val folder by taskViewModel.folder.collectAsState()
 
+    val snackBarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     // Use a single LaunchedEffect for fetching data
     LaunchedEffect(taskId, folderId) {
         if (taskId != -1L) {
@@ -95,13 +106,15 @@ fun AddEditTaskScreen(
                                 timestamp = taskInputState.timestamp
                             )
                             taskViewModel.insertTask(taskToSave)
+                            scope.launch {
+                                snackBarHostState.showSnackbar("Task Saved", duration = SnackbarDuration.Short)
+
+                            }
                             onFinish()
                         } else {
-                            // Consider using a Snackbar or Dialog for better user feedback
-                            // Example:
-                            // scope.launch {
-                            //     snackbarHostState.showSnackbar("Title or description cannot be empty")
-                            // }
+                            scope.launch {
+                                snackBarHostState.showSnackbar("Title or description cannot be empty")
+                            }
                         }
                     } else {
                         isEditing = true
@@ -194,6 +207,7 @@ fun AddEditTaskScreen(
                                     due = datePickerState.selectedDateMillis?.let { Date(it) }
                                 )
                                 showDatePicker = false
+                                showTimePicker = true
                             }
                         ) {
                             Text("OK")
@@ -208,12 +222,58 @@ fun AddEditTaskScreen(
                     DatePicker(state = datePickerState)
                 }
             }
+            if (showTimePicker) {
+                val timePickerState = rememberTimePickerState()
+
+                TimePickerDialog(
+                    onDismiss = { showTimePicker = false },
+                    onConfirm = {
+                        taskInputState = taskInputState.copy(
+                            due = mergeDateAndTime(taskInputState.due!! , timePickerState))
+                        showTimePicker = false
+                    }
+                ) {
+                    TimePicker(
+                        state = timePickerState,
+                    )
+                }
+            }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+fun mergeDateAndTime(date: Date, timePickerState: TimePickerState): Date {
+    val calendar = Calendar.getInstance()
+    calendar.time = date
+    calendar.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+    calendar.set(Calendar.MINUTE, timePickerState.minute)
+    return calendar.time
+}
+@Composable
+fun TimePickerDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        dismissButton = {
+            TextButton(onClick = { onDismiss() }) {
+                Text("Dismiss")
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm() }) {
+                Text("OK")
+            }
+        },
+        text = { content() }
+    )
+}
+
 // Extension function for formatting Date
 fun Date.formatDate(): String {
-    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
     return formatter.format(this)
 }
