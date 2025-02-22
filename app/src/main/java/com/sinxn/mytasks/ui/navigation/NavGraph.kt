@@ -32,26 +32,43 @@ fun NavGraph(
     ) {
         composable("home") {
             HomeScreen(
-                homeViewModel = homeViewModel
+                homeViewModel = homeViewModel,
+                onAddNoteClick = { folderId -> navController.navigate("add_edit_note/-1L/$folderId") },
+                onNoteClick = { noteId ->
+                    navController.navigate("add_edit_note/$noteId/0")
+                },
+                onAddTaskClick = { folderId->
+                    navController.navigate("add_edit_task/-1L/$folderId")
+
+                },
+                onTaskClick = { taskId ->
+                    navController.navigate("add_edit_task/$taskId/0")
+                }
             )
         }
 
         composable("note_list") {
             NoteListScreen(
                 notes = noteViewModel.notes.collectAsState().value,
-                onAddNoteClick = { navController.navigate("add_edit_note/-1L") },
+                onAddNoteClick = { navController.navigate("add_edit_note/-1L/0") },
                 onNoteClick = { noteId ->
-                    navController.navigate("add_edit_note/$noteId")
+                    navController.navigate("add_edit_note/$noteId/0")
                 }
             )
         }
         composable(
-            route = "add_edit_note/{noteId}",
-            arguments = listOf(navArgument("noteId") { type = NavType.LongType; defaultValue = -1L })
+            route = "add_edit_note/{noteId}/{folderId}",
+            arguments = listOf(
+                navArgument("noteId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
+
+                )
         ) { backStackEntry ->
             val noteId = backStackEntry.arguments?.getLong("noteId") ?: -1L
+            val folderId = backStackEntry.arguments?.getLong("folderId") ?: 0
             AddEditNoteScreen(
                 noteId = noteId,
+                folderId = folderId,
                 onFinish = { navController.popBackStack() },
                 noteViewModel = noteViewModel,
                 modifier = Modifier
@@ -61,20 +78,27 @@ fun NavGraph(
         composable("tasks") {
             TaskListScreen(
                 tasks = taskViewModel.tasks.collectAsState().value,
-                onAddTaskClick = { navController.navigate("add_edit_task/-1L") },
+                onAddTaskClick = { parentId->
+                    navController.navigate("add_edit_task/-1L/$parentId")
+                },
                 onTaskClick = { taskId ->
-                    navController.navigate("add_edit_task/$taskId")
+                    navController.navigate("add_edit_task/$taskId/0")
                 },
                 taskViewModel = taskViewModel
             )
         }
         composable(
-            route = "add_edit_task/{taskId}",
-            arguments = listOf(navArgument("taskId") { type = NavType.LongType; defaultValue = -1L })
+            route = "add_edit_task/{taskId}/{folderId}",
+            arguments = listOf(
+                navArgument("taskId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
+            )
         ) { backStackEntry ->
             val taskId = backStackEntry.arguments?.getLong("taskId") ?: -1L
+            val folderId = backStackEntry.arguments?.getLong("folderId") ?: 0
             AddEditTaskScreen(
                 taskId = taskId,
+                folderId = folderId,
                 taskViewModel = taskViewModel,
                 onFinish = { navController.popBackStack() },
             )

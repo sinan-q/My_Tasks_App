@@ -35,60 +35,73 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
-import com.sinxn.mytasks.utils.formatDate
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditTaskScreen(
     modifier: Modifier = Modifier,
     taskId: Long = -1L,
+    folderId: Long = 0,
     taskViewModel: TaskViewModel,
     onFinish: () -> Unit,
 ) {
-    val taskState by taskViewModel.task.collectAsState()
-    var title by remember { mutableStateOf(TextFieldValue("")) }
-    var description by remember { mutableStateOf(TextFieldValue("")) }
-    var dueDate by remember { mutableStateOf<Date?>(null) }
-    var timestamp by remember { mutableStateOf<Date?>(null) }
-    var isCompleted by remember { mutableStateOf(false) }
 
+
+    var taskInputState by remember { mutableStateOf(Task()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var isEditing by remember { mutableStateOf(taskId == -1L) }
 
-    LaunchedEffect(taskId) {
+    val taskState by taskViewModel.task.collectAsState()
+    val folder by taskViewModel.folder.collectAsState()
+
+    // Use a single LaunchedEffect for fetching data
+    LaunchedEffect(taskId, folderId) {
         if (taskId != -1L) {
             taskViewModel.fetchTaskById(taskId)
+        } else {
+            taskViewModel.fetchFolderById(folderId)
         }
     }
+    // Update the input state when the task state changes
     LaunchedEffect(taskState) {
         taskState?.let { task ->
-            dueDate = task.due
-            title = TextFieldValue(task.title)
-            description = TextFieldValue(task.description)
-            timestamp = task.timestamp
-            isCompleted = task.isCompleted
+            taskInputState = taskInputState.copy(
+                title = (task.title),
+                folderId = task.folderId,
+                description = (task.description),
+                due = task.due,
+                timestamp = task.timestamp,
+                isCompleted = task.isCompleted,
+            )
         }
     }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
                     if (isEditing) {
-                        if (title.text.isNotEmpty() || description.text.isNotEmpty()) {
-                            taskViewModel.insertTask(
-                                Task(
-                                    id = if (taskId == -1L) null else taskId,
-                                    title = title.text,
-                                    description = description.text,
-                                    due = dueDate,
-                                    isCompleted = isCompleted,
-                                    timestamp = timestamp ?: Date()
-                                )
+                        if (taskInputState.title?.isNotEmpty() == true || taskInputState.description?.isNotEmpty() == true) {
+                            val taskToSave = Task(
+                                id = if (taskId == -1L) null else taskId,
+                                folderId = taskInputState.folderId,
+                                title = taskInputState.title,
+                                description = taskInputState.description,
+                                due = taskInputState.due,
+                                isCompleted = taskInputState.isCompleted,
+                                timestamp = taskInputState.timestamp
                             )
+                            taskViewModel.insertTask(taskToSave)
                             onFinish()
                         } else {
-                            // Handle empty fields, e.g., show a Toast or Snackbar
+                            // Consider using a Snackbar or Dialog for better user feedback
+                            // Example:
+                            // scope.launch {
+                            //     snackbarHostState.showSnackbar("Title or description cannot be empty")
+                            // }
                         }
                     } else {
                         isEditing = true
@@ -97,7 +110,7 @@ fun AddEditTaskScreen(
             ) {
                 Icon(
                     if (!isEditing) Icons.Default.Edit else Icons.Default.Check,
-                    contentDescription = null
+                    contentDescription = if (!isEditing) "Edit Task" else "Save Task"
                 )
             }
         },
@@ -113,43 +126,46 @@ fun AddEditTaskScreen(
                     }
                 },
                 actions = {
-                    if (taskId != -1L) IconButton(onClick = {
-                        taskState?.let { taskViewModel.deleteTask(it) }
-                        onFinish()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete"
-                        )
+                    if (taskId != -1L) {
+                        IconButton(onClick = {
+                            taskState?.let { taskViewModel.deleteTask(it) }
+                            onFinish()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete"
+                            )
+                        }
                     }
-
-                })
+                }
+            )
         },
         modifier = Modifier.imePadding()
-    ) {
+    ) { innerPadding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(innerPadding)
         ) {
             OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
+                value = taskInputState.title?:"",
+                onValueChange = { taskInputState = taskInputState.copy(title = it) },
                 label = { Text("Title") },
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
+            Text(folder?.name ?: "Parent")
             OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
+                value = taskInputState.description?:"",
+                onValueChange = { taskInputState = taskInputState.copy(description = it) },
                 label = { Text("Description") },
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = dueDate?.let { formatDate(it) } ?: "No Due",
+                value = taskInputState.due?.formatDate() ?: "No Due",
                 onValueChange = {},
                 label = { Text("Due Date") },
                 readOnly = true,
@@ -166,7 +182,7 @@ fun AddEditTaskScreen(
 
             if (showDatePicker) {
                 val datePickerState = rememberDatePickerState(
-                    initialSelectedDateMillis = dueDate?.time ?: Date().time
+                    initialSelectedDateMillis = taskInputState.due?.time ?: Date().time
                 )
 
                 DatePickerDialog(
@@ -174,7 +190,9 @@ fun AddEditTaskScreen(
                     confirmButton = {
                         TextButton(
                             onClick = {
-                                dueDate = datePickerState.selectedDateMillis?.let { Date(it) }!!
+                                taskInputState = taskInputState.copy(
+                                    due = datePickerState.selectedDateMillis?.let { Date(it) }
+                                )
                                 showDatePicker = false
                             }
                         ) {
@@ -192,4 +210,10 @@ fun AddEditTaskScreen(
             }
         }
     }
+}
+
+// Extension function for formatting Date
+fun Date.formatDate(): String {
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    return formatter.format(this)
 }

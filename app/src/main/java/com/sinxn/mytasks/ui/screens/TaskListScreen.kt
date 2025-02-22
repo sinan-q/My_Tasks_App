@@ -20,13 +20,13 @@ import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
 fun TaskListScreen(
     tasks: List<Task>,
     taskViewModel: TaskViewModel,
-    onAddTaskClick: () -> Unit,
+    onAddTaskClick: (Long?) -> Unit,
     onTaskClick: (Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddTaskClick) {
+            FloatingActionButton(onClick = { onAddTaskClick(0L) }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Task")
             }
         },

@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
 import java.util.Date
@@ -39,6 +40,7 @@ import java.util.Date
 fun AddEditNoteScreen(
     modifier: Modifier = Modifier,
     noteId: Long = -1L,
+    folderId: Long = 0,
     noteViewModel: NoteViewModel,
     onFinish: () -> Unit,
 ) {
@@ -48,12 +50,16 @@ fun AddEditNoteScreen(
     var content by remember { mutableStateOf(TextFieldValue("")) }
     var timestamp by remember { mutableStateOf<Date?>(null) }
     var isEditing by remember { mutableStateOf(noteId == -1L) }
+    val folder by noteViewModel.folder.collectAsState()
 
     // Load existing note if noteId is valid
     LaunchedEffect(noteId) {
         if (noteId != -1L) {
             noteViewModel.fetchNoteById(noteId)
         }
+    }
+    LaunchedEffect(folder) {
+        noteViewModel.fetchFolderById(folderId)
     }
 
     LaunchedEffect(noteState) {
@@ -72,6 +78,7 @@ fun AddEditNoteScreen(
                             noteViewModel.addNote(
                                 Note(
                                     id = if (noteId == -1L) null else noteId,
+                                    folderId = folderId,
                                     title = title.text,
                                     content = content.text,
                                     timestamp = timestamp ?: Date()
@@ -133,6 +140,7 @@ fun AddEditNoteScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
+            Text(folder?.name?:"Parent")
             OutlinedTextField(
                 value = content,
                 onValueChange = { content = it },

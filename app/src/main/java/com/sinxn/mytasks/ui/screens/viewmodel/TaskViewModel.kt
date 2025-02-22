@@ -2,7 +2,9 @@ package com.sinxn.mytasks.ui.screens.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.data.repository.FolderRepository
 import com.sinxn.mytasks.data.repository.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +16,10 @@ import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 
 @HiltViewModel
-class TaskViewModel @Inject constructor(private val repository: TaskRepository) : ViewModel() {
+class TaskViewModel @Inject constructor(
+    private val repository: TaskRepository,
+    private val folderRepository: FolderRepository
+    ) : ViewModel() {
 
     val tasks = repository.getAllTasks().stateIn(
         viewModelScope,
@@ -25,10 +30,15 @@ class TaskViewModel @Inject constructor(private val repository: TaskRepository) 
     private val _task = MutableStateFlow<Task?>(null)
     val task: StateFlow<Task?> = _task
 
+    private val _folder = MutableStateFlow<Folder?>(null)
+    val folder: StateFlow<Folder?> = _folder
+
     fun fetchTaskById(taskId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val fetchedTask = repository.getTaskById(taskId)
+            val fetchedFolder = folderRepository.getFolderById(fetchedTask?.folderId?: 0)
             _task.value = fetchedTask
+            _folder.value = fetchedFolder
         }
     }
 
@@ -48,6 +58,16 @@ class TaskViewModel @Inject constructor(private val repository: TaskRepository) 
         viewModelScope.launch(Dispatchers.IO) {
            repository.updateStatusTask(taskId, status)
 
+        }
+    }
+
+    fun fetchFolderById(folderId: Long) {
+        viewModelScope.launch {
+            val fetchedFolder = folderRepository.getFolderById(folderId)
+            _folder.value = fetchedFolder
+            _task.value = Task(
+                folderId = fetchedFolder.folderId,
+            )
         }
     }
 }

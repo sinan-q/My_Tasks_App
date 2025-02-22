@@ -18,13 +18,13 @@ import com.sinxn.mytasks.ui.components.NoteItem
 @Composable
 fun NoteListScreen(
     notes: List<Note>,
-    onAddNoteClick: () -> Unit,
+    onAddNoteClick: (Long?) -> Unit,
     onNoteClick: (Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddNoteClick) {
+            FloatingActionButton(onClick = { onAddNoteClick(-1L) }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Note")
             }
         },
