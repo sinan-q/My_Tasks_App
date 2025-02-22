@@ -28,12 +28,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,29 +41,28 @@ fun AddEditNoteScreen(
     noteViewModel: NoteViewModel,
     onFinish: () -> Unit,
 ) {
-    val noteState by noteViewModel.note.collectAsState()
 
-    var title by remember { mutableStateOf(TextFieldValue("")) }
-    var content by remember { mutableStateOf(TextFieldValue("")) }
-    var timestamp by remember { mutableStateOf<Date?>(null) }
+    var noteInputState by remember { mutableStateOf(Note()) }
     var isEditing by remember { mutableStateOf(noteId == -1L) }
+    val noteState by noteViewModel.note.collectAsState()
     val folder by noteViewModel.folder.collectAsState()
 
     // Load existing note if noteId is valid
-    LaunchedEffect(noteId) {
+    LaunchedEffect(noteId, folderId) {
         if (noteId != -1L) {
             noteViewModel.fetchNoteById(noteId)
+        } else {
+            noteViewModel.fetchFolderById(folderId)
         }
     }
-    LaunchedEffect(folder) {
-        noteViewModel.fetchFolderById(folderId)
-    }
-
     LaunchedEffect(noteState) {
         noteState?.let { note ->
-            title = TextFieldValue(note.title)
-            content = TextFieldValue(note.content)
-            timestamp = note.timestamp
+            noteInputState = noteInputState.copy(
+                title = note.title,
+                folderId = note.folderId,
+                content = note.content,
+                timestamp = note.timestamp
+            )
         }
     }
     Scaffold(
@@ -74,14 +70,14 @@ fun AddEditNoteScreen(
             FloatingActionButton(
                 onClick = {
                     if (isEditing) {
-                        if (title.text.isNotEmpty() || content.text.isNotEmpty()) {
+                        if (noteInputState.title.isNotEmpty() || noteInputState.content.isNotEmpty()) {
                             noteViewModel.addNote(
                                 Note(
                                     id = if (noteId == -1L) null else noteId,
-                                    folderId = folderId,
-                                    title = title.text,
-                                    content = content.text,
-                                    timestamp = timestamp ?: Date()
+                                    folderId = noteInputState.folderId,
+                                    title = noteInputState.title,
+                                    content = noteInputState.content,
+                                    timestamp = noteInputState.timestamp
                                 )
                             )
                             onFinish()
@@ -126,15 +122,15 @@ fun AddEditNoteScreen(
                 })
         },
         modifier = Modifier.imePadding()
-    ) {
+    ) { padding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(padding)
         ) {
             OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
+                value = noteInputState.title,
+                onValueChange = { noteInputState = noteInputState.copy(title = it) },
                 label = { Text("Title") },
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
@@ -142,8 +138,8 @@ fun AddEditNoteScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Text(folder?.name?:"Parent")
             OutlinedTextField(
-                value = content,
-                onValueChange = { content = it },
+                value = noteInputState.content,
+                onValueChange = {noteInputState = noteInputState.copy( content = it )},
                 label = { Text("Description") },
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxSize()

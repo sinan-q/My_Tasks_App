@@ -84,7 +84,7 @@ fun AddEditTaskScreen(
             FloatingActionButton(
                 onClick = {
                     if (isEditing) {
-                        if (taskInputState.title?.isNotEmpty() == true || taskInputState.description?.isNotEmpty() == true) {
+                        if (taskInputState.title.isNotEmpty() || taskInputState.description.isNotEmpty()) {
                             val taskToSave = Task(
                                 id = if (taskId == -1L) null else taskId,
                                 folderId = taskInputState.folderId,
@@ -148,7 +148,7 @@ fun AddEditTaskScreen(
                 .padding(innerPadding)
         ) {
             OutlinedTextField(
-                value = taskInputState.title?:"",
+                value = taskInputState.title,
                 onValueChange = { taskInputState = taskInputState.copy(title = it) },
                 label = { Text("Title") },
                 readOnly = !isEditing,
@@ -157,7 +157,7 @@ fun AddEditTaskScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Text(folder?.name ?: "Parent")
             OutlinedTextField(
-                value = taskInputState.description?:"",
+                value = taskInputState.description,
                 onValueChange = { taskInputState = taskInputState.copy(description = it) },
                 label = { Text("Description") },
                 readOnly = !isEditing,

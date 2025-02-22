@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.data.repository.FolderRepository
 import com.sinxn.mytasks.data.repository.NoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -58,6 +59,9 @@ class NoteViewModel @Inject constructor(
         viewModelScope.launch {
             val fetchedFolder = folderRepository.getFolderById(folderId)
             _folder.value = fetchedFolder
+            _note.value = Note(
+                folderId = fetchedFolder.folderId,
+            )
         }
     }
 }
