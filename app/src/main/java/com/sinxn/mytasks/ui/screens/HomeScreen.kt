@@ -1,7 +1,12 @@
 package com.sinxn.mytasks.ui.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -115,22 +120,31 @@ fun HomeScreen(
         }
         },
     ) { padding ->
-        LazyColumn(contentPadding = padding) {
-            if (folderEditToggle) item {
+        Column (modifier = Modifier.padding(padding)) {
+            if (folderEditToggle) {
                 FolderItemEdit(folder = Folder(name = "New Folder", parentFolderId = currentFolder?.folderId), onDismiss = { folderEditToggle = false }) { homeViewModel.addFolder(it) }
             }
-            items(folders) { folder ->
-                FolderItem(folder = folder, onClick = { homeViewModel.getSubFolders(folder) })
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+            ) {
+                items(folders) { folder ->
+                    FolderItem(folder = folder, onClick = { homeViewModel.getSubFolders(folder) })
+                }
             }
-            items(tasks) { task ->
-                TaskItem(
-                    task = task, onClick = { onTaskClick(task.id) },
-                    onUpdate = {}
-                )
+            LazyColumn {
+                items(tasks) { task ->
+                    TaskItem(
+                        task = task, onClick = { onTaskClick(task.id) },
+                        onUpdate = {}
+                    )
+                }
             }
-            items(notes) { note ->
-                NoteItem(note = note, onClick = { onNoteClick(note.id) })
+            LazyVerticalGrid(columns = GridCells.Fixed(2)) {
+                items(notes) { note ->
+                    NoteItem(note = note, onClick = { onNoteClick(note.id) })
+                }
             }
         }
+
     }
 }

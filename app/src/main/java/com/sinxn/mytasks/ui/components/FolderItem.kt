@@ -1,12 +1,14 @@
 package com.sinxn.mytasks.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -19,24 +21,36 @@ import com.sinxn.mytasks.data.local.entities.Folder
 
 @Composable
 fun FolderItem(folder: Folder, onClick: () -> Unit) {
-    Text(
-        text = folder.name,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp)
-    )
+    Card(
+        modifier = Modifier.padding(vertical = 4.dp)
+            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.extraSmall),
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+        ) {
+            Text(
+                text = folder.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onClick)
+                    .padding(16.dp)
+            )
+        }
+    }
+
 }
 
 @Composable
 fun FolderItemEdit(folder: Folder, onDismiss: () -> Unit, onSubmit: (Folder) -> Unit) {
     val text = remember { mutableStateOf(folder.name) }
-    Card(modifier = Modifier.background(Color.White)) {
+    Card(modifier = Modifier.background(Color.White).padding(vertical = 4.dp)
+    ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
         ) {
-            Text(text = "Edit Folder Name")
+            Text(text = "Add New Folder")
             TextField(
                 value = text.value,
                 onValueChange = { text.value = it },
