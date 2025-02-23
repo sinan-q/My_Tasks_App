@@ -98,12 +98,21 @@ fun FolderItemEdit(folder: Folder, onDismiss: () -> Unit, onSubmit: (Folder) -> 
                 onValueChange = { text.value = it },
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
             )
-            Button(
-                onClick = { onSubmit(Folder(name = text.value, parentFolderId = folder.parentFolderId)); onDismiss() },
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                Text("Submit")
+            Row {
+                Button(
+                    onClick = { onDismiss() },
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Text("Cancel")
+                }
+                Button(
+                    onClick = { onSubmit(Folder(name = text.value, parentFolderId = folder.parentFolderId)); onDismiss() },
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Text("Submit")
+                }
             }
+
         }
     }
 }

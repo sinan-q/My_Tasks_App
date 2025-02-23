@@ -1,6 +1,9 @@
 package com.sinxn.mytasks.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -112,14 +116,18 @@ fun HomeScreen(
     ) { padding ->
 
         Column(modifier = Modifier.padding(padding)) {
-            if (folderEditToggle) {
+            AnimatedVisibility(
+                visible = folderEditToggle
+            ) {
                 FolderItemEdit(
                     folder = Folder(
                         name = "New Folder",
                         parentFolderId = currentFolder?.folderId
                     ), onDismiss = { folderEditToggle = false }) { homeViewModel.addFolder(it) }
+
             }
-            androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+
+            LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
             ) {
                 items(folders) { folder ->
@@ -156,49 +164,58 @@ fun ShowOptionsFAB(
     currentFolder: Folder? = null,
 ) {
     var showOptions by remember { mutableStateOf(false) }
-    val isExtended by remember {
-        derivedStateOf {
-            showOptions
+    Column( verticalArrangement = Arrangement.spacedBy(10.dp),horizontalAlignment = Alignment.End) {
+        AnimatedVisibility(
+            visible = showOptions,
+        ) {
+            Column (verticalArrangement = Arrangement.spacedBy(10.dp),horizontalAlignment = Alignment.End ) {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        showOptions = false
+                        onAddTaskClick(currentFolder?.folderId)
+                    }, icon = {
+                        Icon(
+                            Icons.Filled.Person,
+                            contentDescription = "Add Task"
+                        )
+                    }, text = { Text(text = "Add Task") })
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        showOptions = false
+                        onAddFolderClick()
+                    }, icon = {
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = "Add Folder"
+                        )
+                    }, text = { Text(text = "Add Folder") })
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        showOptions = false
+                        onAddNoteClick(currentFolder?.folderId)
+                    }, icon = {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = "Add Note"
+                        )
+                    }, text = { Text(text = "Add Note") })
+
+            }
         }
+        AnimatedVisibility(
+            visible = true,
+            enter = fadeIn(animationSpec = spring())
+        ) {
+
+            FloatingActionButton(onClick = { showOptions = !showOptions }) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = "Add"
+                )
+            }
+        }
+
+
     }
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.End) {
-        if (showOptions) {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    showOptions = false
-                    onAddTaskClick(currentFolder?.folderId)
-                }, icon = {
-                    Icon(
-                        Icons.Filled.Person,
-                        contentDescription = "Add Task"
-                    )
-                }, text = { Text(text = "Add Task") })
-            ExtendedFloatingActionButton(
-                onClick = {
-                    showOptions = false
-                    onAddFolderClick()
-                }, icon = {
-                    Icon(
-                        Icons.Filled.Add,
-                        contentDescription = "Add Folder"
-                    )
-                }, text = { Text(text = "Add Folder") })
-            ExtendedFloatingActionButton(
-                onClick = {
-                    showOptions = false
-                    onAddNoteClick(currentFolder?.folderId)
-                }, icon = {
-                    Icon(
-                        Icons.Filled.Check,
-                        contentDescription = "Add Note"
-                    )
-                }, text = { Text(text = "Add Note") })
-        }
-        FloatingActionButton(onClick = { showOptions = !showOptions }) {
-            Icon(
-                Icons.Default.Add,
-                contentDescription = "Add"
-            )
-        }
-                    }
 }
+
