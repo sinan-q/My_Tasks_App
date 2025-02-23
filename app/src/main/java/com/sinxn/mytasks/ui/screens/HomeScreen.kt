@@ -108,6 +108,7 @@ fun HomeScreen(
                 },
                 actions = {
                     IconButton(onClick = {
+                        homeViewModel.onBack(folder)
                         homeViewModel.deleteFolder(folder)
                     }) {
                         Icon(

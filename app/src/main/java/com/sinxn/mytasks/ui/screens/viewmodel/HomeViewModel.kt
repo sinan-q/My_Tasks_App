@@ -1,6 +1,5 @@
 package com.sinxn.mytasks.ui.screens.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.data.local.entities.Folder
@@ -13,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -46,7 +46,13 @@ class HomeViewModel @Inject constructor(
 
     fun deleteFolder(folder: Folder) {
         viewModelScope.launch {
-            onBack(folder)
+            val subfolders = folderRepository.getSubFolders(folder.folderId).first { true }
+            subfolders.forEach { subfolder -> deleteFolder(subfolder) }
+            val noteList = noteRepository.getNotesByFolderId(folder.folderId).first { true }
+            noteList.forEach { note -> noteRepository.deleteNote(note) }
+            val tasks = taskRepository.getTasksByFolderId(folder.folderId).first {true}
+            tasks.forEach { task -> taskRepository.deleteTask(task) }
+
             folderRepository.deleteFolder(folder)
         }
     }
