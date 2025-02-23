@@ -1,12 +1,13 @@
 package com.sinxn.mytasks.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -16,22 +17,26 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.FolderItem
 import com.sinxn.mytasks.ui.components.FolderItemEdit
@@ -53,95 +58,78 @@ fun HomeScreen(
     onTaskClick: (Long?) -> Unit,
 ) {
     val folders by homeViewModel.folders.collectAsState(initial = emptyList())
-    val currentFolder by homeViewModel.folder.collectAsState(initial = Folder(name = "Root", folderId = 0L))
+    val currentFolder by homeViewModel.folder.collectAsState(
+        initial = Folder(
+            name = "Root",
+            folderId = 0L
+        )
+    )
     val tasks by homeViewModel.tasks.collectAsState(initial = emptyList())
     val notes by homeViewModel.notes.collectAsState(initial = emptyList())
-    val scope = rememberCoroutineScope()
     var folderEditToggle by remember { mutableStateOf(false) }
-    var showOptions by remember { mutableStateOf(false) }
 
     BackHandler(
         enabled = currentFolder?.folderId != 0L
     ) {
-            homeViewModel.onBack(currentFolder!!)
+        homeViewModel.onBack(currentFolder!!)
     }
     Scaffold(
         floatingActionButton = {
-            if (showOptions) {
-                Surface {
-                    LazyColumn {
-                        item {
-                            ListItem(headlineContent = { Text(text = "Add Task") }, leadingContent = {
-                                Icon(
-                                    Icons.Filled.Person,
-                                    contentDescription = "Localized description"
-                                )
-                            }, modifier = Modifier.clickable { scope.launch {
-                                onAddTaskClick(currentFolder?.folderId);
-                                showOptions = false; } })
-                        }
-                        item {
-                            ListItem(headlineContent = { Text(text = "Add Folder") }, leadingContent = {
-                                Icon(
-                                    Icons.Filled.Add,
-                                    contentDescription = "Localized description"
-                                )
-                            }, modifier = Modifier.clickable { scope.launch { folderEditToggle = true;showOptions = false } })
-                        }
-                        item {
-                            ListItem(headlineContent = { Text(text = "Add Note") }, leadingContent = { Icon(Icons.Filled.Check, contentDescription = "Localized description") },
-                                modifier = Modifier.clickable { scope.launch {
-                                    showOptions = false;
-                                    onAddNoteClick(currentFolder?.folderId)
-                                } })
-                        }
-                    }
-                }
-            } else FloatingActionButton(onClick = { showOptions = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
-            }
+            ShowOptionsFAB(
+                onAddTaskClick = onAddTaskClick,
+                onAddNoteClick = onAddNoteClick,
+                onAddFolderClick = { folderEditToggle = true },
+                currentFolder = currentFolder
+            )
         },
 
         topBar = {
             currentFolder?.let { folder ->
-            if(folder.folderId != 0L) TopAppBar(
-                title = { Text(folder.name) },
-                navigationIcon = {
-                    IconButton(onClick = {  homeViewModel.onBack(folder) }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        homeViewModel.onBack(folder)
-                        homeViewModel.deleteFolder(folder)
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete"
-                        )
-                    }
+                if (folder.folderId != 0L) TopAppBar(
+                    title = { Text(folder.name) },
+                    navigationIcon = {
+                        IconButton(onClick = { homeViewModel.onBack(folder) }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            homeViewModel.onBack(folder)
+                            homeViewModel.deleteFolder(folder)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete"
+                            )
+                        }
 
-                })
-        }
+                    })
+            }
         },
     ) { padding ->
 
-        Column (modifier = Modifier.padding(padding)) {
+        Column(modifier = Modifier.padding(padding)) {
             if (folderEditToggle) {
-                FolderItemEdit(folder = Folder(name = "New Folder", parentFolderId = currentFolder?.folderId), onDismiss = { folderEditToggle = false }) { homeViewModel.addFolder(it) }
+                FolderItemEdit(
+                    folder = Folder(
+                        name = "New Folder",
+                        parentFolderId = currentFolder?.folderId
+                    ), onDismiss = { folderEditToggle = false }) { homeViewModel.addFolder(it) }
             }
-            LazyVerticalGrid(
+            androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
             ) {
                 items(folders) { folder ->
-                    FolderItem(folder = folder, onClick = { homeViewModel.getSubFolders(folder) }, onDelete = {homeViewModel.deleteFolder(folder)})
+                    FolderItem(
+                        folder = folder,
+                        onClick = { homeViewModel.getSubFolders(folder) },
+                        onDelete = { homeViewModel.deleteFolder(folder) })
                 }
             }
-            LazyColumn {
+            androidx.compose.foundation.lazy.LazyColumn {
                 items(tasks) { task ->
                     TaskItem(
                         task = task, onClick = { onTaskClick(task.id) },
@@ -150,7 +138,7 @@ fun HomeScreen(
                     )
                 }
             }
-            LazyVerticalGrid(columns = GridCells.Fixed(2)) {
+            androidx.compose.foundation.lazy.grid.LazyVerticalGrid(columns = GridCells.Fixed(2)) {
                 items(notes) { note ->
                     NoteItem(note = note, onClick = { onNoteClick(note.id) })
                 }
@@ -158,4 +146,59 @@ fun HomeScreen(
         }
 
     }
+}
+
+@Composable
+fun ShowOptionsFAB(
+    onAddTaskClick: (Long?) -> Unit = {},
+    onAddNoteClick: (Long?) -> Unit = {},
+    onAddFolderClick: () -> Unit = {},
+    currentFolder: Folder? = null,
+) {
+    var showOptions by remember { mutableStateOf(false) }
+    val isExtended by remember {
+        derivedStateOf {
+            showOptions
+        }
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.End) {
+        if (showOptions) {
+            ExtendedFloatingActionButton(
+                onClick = {
+                    showOptions = false
+                    onAddTaskClick(currentFolder?.folderId)
+                }, icon = {
+                    Icon(
+                        Icons.Filled.Person,
+                        contentDescription = "Add Task"
+                    )
+                }, text = { Text(text = "Add Task") })
+            ExtendedFloatingActionButton(
+                onClick = {
+                    showOptions = false
+                    onAddFolderClick()
+                }, icon = {
+                    Icon(
+                        Icons.Filled.Add,
+                        contentDescription = "Add Folder"
+                    )
+                }, text = { Text(text = "Add Folder") })
+            ExtendedFloatingActionButton(
+                onClick = {
+                    showOptions = false
+                    onAddNoteClick(currentFolder?.folderId)
+                }, icon = {
+                    Icon(
+                        Icons.Filled.Check,
+                        contentDescription = "Add Note"
+                    )
+                }, text = { Text(text = "Add Note") })
+        }
+        FloatingActionButton(onClick = { showOptions = !showOptions }) {
+            Icon(
+                Icons.Default.Add,
+                contentDescription = "Add"
+            )
+        }
+                    }
 }
