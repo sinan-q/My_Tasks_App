@@ -42,7 +42,11 @@ fun NavGraph(
 
                 },
                 onTaskClick = { taskId ->
-                    navController.navigate("add_edit_task/$taskId/0")
+                    navController.navigate("add_edit_task/$taskId/0"){
+                        popUpTo(navController.currentBackStackEntry!!.destination.id){
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }

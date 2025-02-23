@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -57,6 +58,11 @@ fun HomeScreen(
     var folderEditToggle by remember { mutableStateOf(false) }
     var showOptions by remember { mutableStateOf(false) }
 
+    BackHandler(
+        enabled = currentFolder?.folderId != 0L
+    ) {
+            homeViewModel.onBack(currentFolder!!)
+    }
     Scaffold(
         floatingActionButton = {
             if (showOptions) {
@@ -121,6 +127,7 @@ fun HomeScreen(
         }
         },
     ) { padding ->
+
         Column (modifier = Modifier.padding(padding)) {
             if (folderEditToggle) {
                 FolderItemEdit(folder = Folder(name = "New Folder", parentFolderId = currentFolder?.folderId), onDismiss = { folderEditToggle = false }) { homeViewModel.addFolder(it) }
