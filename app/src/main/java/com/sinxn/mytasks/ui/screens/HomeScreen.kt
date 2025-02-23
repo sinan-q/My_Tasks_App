@@ -128,7 +128,7 @@ fun HomeScreen(
                 columns = GridCells.Fixed(2),
             ) {
                 items(folders) { folder ->
-                    FolderItem(folder = folder, onClick = { homeViewModel.getSubFolders(folder) })
+                    FolderItem(folder = folder, onClick = { homeViewModel.getSubFolders(folder) }, onDelete = {homeViewModel.deleteFolder(folder)})
                 }
             }
             LazyColumn {
