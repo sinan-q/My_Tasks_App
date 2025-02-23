@@ -33,6 +33,7 @@ fun NavGraph(
         composable("home") {
             HomeScreen(
                 homeViewModel = homeViewModel,
+                taskViewModel = taskViewModel,
                 onAddNoteClick = { folderId -> navController.navigate("add_edit_note/-1L/$folderId") },
                 onNoteClick = { noteId ->
                     navController.navigate("add_edit_note/$noteId/0")
@@ -47,7 +48,7 @@ fun NavGraph(
                             inclusive = true
                         }
                     }
-                }
+                },
             )
         }
 

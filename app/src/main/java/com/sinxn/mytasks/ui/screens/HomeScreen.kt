@@ -38,12 +38,14 @@ import com.sinxn.mytasks.ui.components.FolderItemEdit
 import com.sinxn.mytasks.ui.components.NoteItem
 import com.sinxn.mytasks.ui.components.TaskItem
 import com.sinxn.mytasks.ui.screens.viewmodel.HomeViewModel
+import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel,
+    taskViewModel: TaskViewModel,
     onAddNoteClick: (Long?) -> Unit,
     onNoteClick: (Long?) -> Unit,
     modifier: Modifier = Modifier,
@@ -143,7 +145,7 @@ fun HomeScreen(
                 items(tasks) { task ->
                     TaskItem(
                         task = task, onClick = { onTaskClick(task.id) },
-                        onUpdate = {},
+                        onUpdate = { status -> taskViewModel.updateStatusTask(task.id!!, status) },
                         path = null,
                     )
                 }
