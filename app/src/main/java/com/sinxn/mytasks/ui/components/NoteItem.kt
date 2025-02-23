@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.utils.formatDate
+import com.sinxn.mytasks.ui.screens.formatDate
 
 @Composable
 fun NoteItem(
@@ -51,7 +51,7 @@ fun NoteItem(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = formatDate(note.timestamp),
+                text = note.timestamp.formatDate(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

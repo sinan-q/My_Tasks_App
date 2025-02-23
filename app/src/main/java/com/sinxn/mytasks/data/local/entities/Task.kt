@@ -2,7 +2,7 @@ package com.sinxn.mytasks.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.Date
+import java.time.LocalDateTime
 
 @Entity(tableName = "tasks")
 data class Task(
@@ -12,6 +12,6 @@ data class Task(
     val title: String = "",
     val description: String = "",
     val isCompleted: Boolean = false,
-    val timestamp: Date = Date(),
-    val due: Date? = null
+    val timestamp: LocalDateTime = LocalDateTime.now(),
+    val due: LocalDateTime? = null
 )

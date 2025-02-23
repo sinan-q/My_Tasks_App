@@ -25,7 +25,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -40,12 +39,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.ui.screens.addTimerPickerState
+import com.sinxn.mytasks.ui.screens.formatDate
+import com.sinxn.mytasks.ui.screens.fromMillis
+import com.sinxn.mytasks.ui.screens.toMillis
 import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -195,7 +195,7 @@ fun AddEditTaskScreen(
 
             if (showDatePicker) {
                 val datePickerState = rememberDatePickerState(
-                    initialSelectedDateMillis = taskInputState.due?.time ?: Date().time
+                    initialSelectedDateMillis = taskInputState.due?.toMillis() ?: Instant.now().toEpochMilli()
                 )
 
                 DatePickerDialog(
@@ -204,7 +204,7 @@ fun AddEditTaskScreen(
                         TextButton(
                             onClick = {
                                 taskInputState = taskInputState.copy(
-                                    due = datePickerState.selectedDateMillis?.let { Date(it) }
+                                    due = datePickerState.selectedDateMillis?.let { fromMillis(it) }
                                 )
                                 showDatePicker = false
                                 showTimePicker = true
@@ -229,7 +229,7 @@ fun AddEditTaskScreen(
                     onDismiss = { showTimePicker = false },
                     onConfirm = {
                         taskInputState = taskInputState.copy(
-                            due = mergeDateAndTime(taskInputState.due!! , timePickerState))
+                            due = taskInputState.due?.addTimerPickerState(timePickerState))
                         showTimePicker = false
                     }
                 ) {
@@ -242,14 +242,7 @@ fun AddEditTaskScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-fun mergeDateAndTime(date: Date, timePickerState: TimePickerState): Date {
-    val calendar = Calendar.getInstance()
-    calendar.time = date
-    calendar.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
-    calendar.set(Calendar.MINUTE, timePickerState.minute)
-    return calendar.time
-}
+
 @Composable
 fun TimePickerDialog(
     onDismiss: () -> Unit,
@@ -270,10 +263,4 @@ fun TimePickerDialog(
         },
         text = { content() }
     )
-}
-
-// Extension function for formatting Date
-fun Date.formatDate(): String {
-    val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-    return formatter.format(this)
 }

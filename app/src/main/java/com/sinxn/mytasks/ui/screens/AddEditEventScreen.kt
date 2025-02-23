@@ -22,7 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -36,13 +35,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
-import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -69,9 +66,6 @@ fun AddEditEventScreen(
 
     val eventState by eventViewModel.event.collectAsState()
     val folder by eventViewModel.folder.collectAsState()
-
-    val snackBarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
     // Use a single LaunchedEffect for fetching data
     LaunchedEffect(eventId, folderId, date) {
         if (eventId != -1L) {
@@ -265,17 +259,17 @@ fun AddEditEventScreen(
 
                 TimePickerDialog(
                     onDismiss = {
-                        showTimePicker = false;
+                        showTimePicker = false
                         isDatePickerForStart = null
                     },
                     onConfirm = {
                         if (isDatePickerForStart == true)
                             eventInputState = eventInputState.copy(
-                                start = mergeDateAndTime(eventInputState.start!! , timePickerState)
+                                start = eventInputState.start?.addTimerPickerState(timePickerState)
                             )
                         else if (isDatePickerForStart == false)
                             eventInputState = eventInputState.copy(
-                                end = mergeDateAndTime(eventInputState.end!! , timePickerState)
+                                end = eventInputState.end?.addTimerPickerState(timePickerState)
                             )
                         isDatePickerForStart = null
                         showTimePicker = false
@@ -291,8 +285,8 @@ fun AddEditEventScreen(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-fun mergeDateAndTime(date: LocalDateTime, timePickerState: TimePickerState): LocalDateTime {
-    return date.withHour(timePickerState.hour).withMinute(timePickerState.minute)
+fun LocalDateTime.addTimerPickerState(timePickerState: TimePickerState): LocalDateTime {
+    return this.withHour(timePickerState.hour).withMinute(timePickerState.minute)
 }
 @Composable
 fun TimePickerDialog(

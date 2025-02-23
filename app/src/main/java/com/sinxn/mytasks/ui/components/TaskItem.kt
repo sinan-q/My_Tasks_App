@@ -1,6 +1,5 @@
 package com.sinxn.mytasks.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -22,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.utils.formatDate
+import com.sinxn.mytasks.ui.screens.formatDate
 
 @Composable
 fun TaskItem(
@@ -73,7 +72,7 @@ fun TaskItem(
 
                 task.due?.let {
                     Text(
-                        text = formatDate(it),
+                        text = it.formatDate(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )

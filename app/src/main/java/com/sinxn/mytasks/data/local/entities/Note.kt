@@ -2,7 +2,7 @@ package com.sinxn.mytasks.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.Date
+import java.time.LocalDateTime
 
 @Entity(tableName = "notes")
 data class Note(
@@ -10,5 +10,5 @@ data class Note(
     val folderId: Long = 0L,
     val title: String = "",
     val content: String = "",
-    val timestamp: Date = Date()
+    val timestamp: LocalDateTime = LocalDateTime.now()
 )
