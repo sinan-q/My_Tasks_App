@@ -9,10 +9,13 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.sinxn.mytasks.ui.screens.AddEditEventScreen
 import com.sinxn.mytasks.ui.screens.AddEditNoteScreen
+import com.sinxn.mytasks.ui.screens.EventListScreen
 import com.sinxn.mytasks.ui.screens.HomeScreen
 import com.sinxn.mytasks.ui.screens.NoteListScreen
 import com.sinxn.mytasks.ui.screens.TaskListScreen
+import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.HomeViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
@@ -23,6 +26,7 @@ fun NavGraph(
     noteViewModel: NoteViewModel,
     taskViewModel: TaskViewModel,
     homeViewModel: HomeViewModel,
+    eventViewModel: EventViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -49,6 +53,9 @@ fun NavGraph(
                         }
                     }
                 },
+                onEventClick = {
+                    navController.navigate("event_list")
+                }
             )
         }
 
@@ -107,6 +114,34 @@ fun NavGraph(
                 taskViewModel = taskViewModel,
                 onFinish = { navController.popBackStack() },
             )
+        }
+        composable("event_list") {
+            EventListScreen(
+                eventViewModel = eventViewModel,
+                onAddEventClick = { navController.navigate("add_edit_event/-1L/0") },
+                onEventClick = { eventId ->
+                    navController.navigate("add_edit_event/$eventId/0")
+                }
+            )
+        }
+
+        composable(
+            route = "add_edit_event/{eventId}/{folderId}",
+            arguments = listOf(
+            navArgument("eventId") { type = NavType.LongType; defaultValue = -1L },
+            navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
+            )
+        ){ backStackEntry ->
+            val eventId = backStackEntry.arguments?.getLong("eventId") ?: -1L
+            val folderId = backStackEntry.arguments?.getLong("folderId") ?: 0
+            AddEditEventScreen(
+                eventId = eventId,
+                folderId = folderId,
+                eventViewModel = eventViewModel,
+                onFinish = { navController.popBackStack() },
+            )
+
+
         }
     }
 }

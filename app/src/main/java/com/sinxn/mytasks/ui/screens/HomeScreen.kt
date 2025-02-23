@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -60,6 +61,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onAddTaskClick: (Long?) -> Unit,
     onTaskClick: (Long?) -> Unit,
+    onEventClick: () -> Unit
 ) {
     val folders by homeViewModel.folders.collectAsState(initial = emptyList())
     val currentFolder by homeViewModel.folder.collectAsState(
@@ -116,6 +118,9 @@ fun HomeScreen(
     ) { padding ->
 
         Column(modifier = Modifier.padding(padding)) {
+            Text(text ="Calender", modifier = Modifier.clickable {
+                onEventClick()
+            })
             AnimatedVisibility(
                 visible = folderEditToggle
             ) {
@@ -137,7 +142,7 @@ fun HomeScreen(
                         onDelete = { homeViewModel.deleteFolder(folder) })
                 }
             }
-            androidx.compose.foundation.lazy.LazyColumn {
+            LazyColumn {
                 items(tasks) { task ->
                     TaskItem(
                         task = task, onClick = { onTaskClick(task.id) },
@@ -146,7 +151,7 @@ fun HomeScreen(
                     )
                 }
             }
-            androidx.compose.foundation.lazy.grid.LazyVerticalGrid(columns = GridCells.Fixed(2)) {
+            LazyVerticalGrid(columns = GridCells.Fixed(2)) {
                 items(notes) { note ->
                     NoteItem(note = note, onClick = { onNoteClick(note.id) })
                 }
