@@ -121,22 +121,28 @@ fun NavGraph(
                 onAddEventClick = { navController.navigate("add_edit_event/-1L/0") },
                 onEventClick = { eventId ->
                     navController.navigate("add_edit_event/$eventId/0")
+                },
+                onDayClick = { epochDay ->
+                    navController.navigate("add_edit_event/-1L/0/$epochDay")
                 }
             )
         }
 
         composable(
-            route = "add_edit_event/{eventId}/{folderId}",
+            route = "add_edit_event/{eventId}/{folderId}/{date}",
             arguments = listOf(
-            navArgument("eventId") { type = NavType.LongType; defaultValue = -1L },
-            navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
+                navArgument("eventId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
+                navArgument("date") { type = NavType.LongType; defaultValue = -1L }
             )
         ){ backStackEntry ->
             val eventId = backStackEntry.arguments?.getLong("eventId") ?: -1L
             val folderId = backStackEntry.arguments?.getLong("folderId") ?: 0
+            val date = backStackEntry.arguments?.getLong("date") ?: 0L
             AddEditEventScreen(
                 eventId = eventId,
                 folderId = folderId,
+                date = date,
                 eventViewModel = eventViewModel,
                 onFinish = { navController.popBackStack() },
             )

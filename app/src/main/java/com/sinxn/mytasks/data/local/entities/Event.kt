@@ -2,7 +2,7 @@ package com.sinxn.mytasks.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.Date
+import java.time.LocalDateTime
 
 @Entity(tableName = "events")
 data class Event(
@@ -11,7 +11,7 @@ data class Event(
     val folderId: Long = 0L,
     val title: String = "",
     val description: String = "",
-    val timestamp: Date = Date(),
-    val start: Date? = null,
-    val end: Date? = null
+    val timestamp: LocalDateTime = LocalDateTime.now(),
+    val start: LocalDateTime? = null,
+    val end: LocalDateTime? = null
 )

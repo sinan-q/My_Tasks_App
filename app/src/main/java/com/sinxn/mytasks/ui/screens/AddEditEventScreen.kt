@@ -1,6 +1,5 @@
 package com.sinxn.mytasks.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,13 +41,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
-import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
-import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,6 +55,7 @@ fun AddEditEventScreen(
     modifier: Modifier = Modifier,
     eventId: Long = -1L,
     folderId: Long = 0,
+    date: Long? = null,
     eventViewModel: EventViewModel,
     onFinish: () -> Unit,
 ) {
@@ -75,11 +73,16 @@ fun AddEditEventScreen(
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     // Use a single LaunchedEffect for fetching data
-    LaunchedEffect(eventId, folderId) {
+    LaunchedEffect(eventId, folderId, date) {
         if (eventId != -1L) {
             eventViewModel.fetchEventById(eventId)
-        } else {
+        } else if (folderId != 0L) {
             eventViewModel.fetchFolderById(folderId)
+        } else if (date != null){
+            eventInputState = eventInputState.copy(
+                start = fromMillis(date)
+
+            )
         }
     }
     // Update the input state when the task state changes
@@ -220,7 +223,7 @@ fun AddEditEventScreen(
 
             if (showDatePicker) {
                 val datePickerState = rememberDatePickerState(
-                    initialSelectedDateMillis = eventInputState.start?.time ?:eventInputState.end?.time?: Date().time
+                    initialSelectedDateMillis = eventInputState.start?.toMillis()?:eventInputState.end?.toMillis()?: Instant.now().toEpochMilli()
                 )
 
                 DatePickerDialog(
@@ -230,12 +233,12 @@ fun AddEditEventScreen(
                             onClick = {
                                 if (isDatePickerForStart == true) {
                                     eventInputState = eventInputState.copy(
-                                        start = datePickerState.selectedDateMillis?.let { Date(it) }
+                                        start = datePickerState.selectedDateMillis?.let { fromMillis(it) }
                                     )
                                 }
                                 else if (isDatePickerForStart == false){
                                     eventInputState = eventInputState.copy(
-                                        end = datePickerState.selectedDateMillis?.let { Date(it) }
+                                        end = datePickerState.selectedDateMillis?.let { fromMillis(it) }
                                     )
                                 }
                                 showDatePicker = false
@@ -288,12 +291,8 @@ fun AddEditEventScreen(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-fun mergeDateAndTime(date: Date, timePickerState: TimePickerState): Date {
-    val calendar = Calendar.getInstance()
-    calendar.time = date
-    calendar.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
-    calendar.set(Calendar.MINUTE, timePickerState.minute)
-    return calendar.time
+fun mergeDateAndTime(date: LocalDateTime, timePickerState: TimePickerState): LocalDateTime {
+    return date.withHour(timePickerState.hour).withMinute(timePickerState.minute)
 }
 @Composable
 fun TimePickerDialog(
@@ -318,7 +317,16 @@ fun TimePickerDialog(
 }
 
 // Extension function for formatting Date
-fun Date.formatDate(): String {
-    val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-    return formatter.format(this)
+fun LocalDateTime.formatDate(): String {
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.getDefault())
+    return this.format(formatter)
 }
+
+fun fromMillis(millis :Long): LocalDateTime {
+    return LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault())
+}
+
+fun LocalDateTime.toMillis(): Long {
+    return this.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+}
+

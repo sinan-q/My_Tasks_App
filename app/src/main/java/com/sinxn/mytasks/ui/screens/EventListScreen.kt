@@ -1,6 +1,7 @@
 package com.sinxn.mytasks.ui.screens
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,13 +33,17 @@ import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventListScreen(
     eventViewModel: EventViewModel,
     onAddEventClick: () -> Unit,
-    onEventClick: (Event) -> Unit
+    onEventClick: (Event) -> Unit,
+    onDayClick: (Long) -> Unit
 ) {
     val events = eventViewModel.events.collectAsState()
     Scaffold(
@@ -54,7 +59,9 @@ fun EventListScreen(
         }
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
-            CalendarGrid(events = events.value)
+            CalendarGrid(events = events.value, onClick = {
+                onDayClick(it)
+            })
             LazyColumn {
                 items(events.value) {
                     Text(text = it.title)
@@ -66,7 +73,7 @@ fun EventListScreen(
 }
 
 @Composable
-fun CalendarGrid(events: List<Event>) {
+fun CalendarGrid(events: List<Event>, onClick: (Long) -> Unit) {
     val currentDate = LocalDate.now()
 
     val firstDayOfMonth = currentDate.withDayOfMonth(1)
@@ -79,26 +86,29 @@ fun CalendarGrid(events: List<Event>) {
     ) {
         items(firstDay.datesUntil(lastDayOfMonth).toList()
         ) { day ->
-            CalendarDayItem(day = day.dayOfMonth, events = events.filter {
-                val eventDate = LocalDate.ofInstant(it.start?.toInstant(), java.time.ZoneId.systemDefault())
-                eventDate.isEqual(day)})
+            CalendarDayItem(day = day, events = events.filter {
+                val eventDate = it.start
+                eventDate?.dayOfYear == day.dayOfYear }, onClick = {
+                    onClick(it)
+            })
         }
     }
 }
 
 @Composable
-fun CalendarDayItem(day: Int, events: List<Event>) {
+fun CalendarDayItem(day: LocalDate, events: List<Event>, onClick: (Long) -> Unit = {}) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp)
-            .border(1.dp, MaterialTheme.colorScheme.outline, RectangleShape),
+            .border(1.dp, MaterialTheme.colorScheme.outline, RectangleShape)
+            .clickable { onClick(LocalDateTime.of(day, LocalTime.now()).toMillis()) },
         colors = CardDefaults.cardColors(
-            containerColor = if (day == LocalDate.now().dayOfMonth) Color.LightGray else Color.Transparent
+            containerColor = if (day == LocalDate.now()) Color.LightGray else Color.Transparent
         )
     ) {
         Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = day.toString())
+            Text(text = day.dayOfMonth.toString())
             if (events.isNotEmpty()) {
                 events.forEach {
                     Text(text = it.title, fontSize = MaterialTheme.typography.labelSmall.fontSize)
