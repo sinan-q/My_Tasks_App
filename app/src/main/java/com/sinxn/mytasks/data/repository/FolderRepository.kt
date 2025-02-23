@@ -10,6 +10,10 @@ import javax.inject.Singleton
 class FolderRepository @Inject constructor(
     private val folderDao: FolderDao
 ) {
+    fun getAllFolders(): Flow<List<Folder>> {
+        return folderDao.getAllFolders()
+    }
+
     fun getSubFolders(parentId: Long?): Flow<List<Folder>> {
         return folderDao.getSubFolders(parentId)
     }

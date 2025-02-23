@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FolderDao {
+    @Query("SELECT * FROM folders")
+    fun getAllFolders(): Flow<List<Folder>>
+
     @Insert
     suspend fun insertFolder(folder: Folder): Long
 

@@ -40,6 +40,7 @@ fun TaskListScreen(
             items(tasks) { task ->
                 TaskItem(
                     task = task,
+                    path = taskViewModel.getPath(task.folderId),
                     onClick = { onTaskClick(task.id) },
                     onUpdate = { task.id?.let { it1 -> taskViewModel.updateStatusTask(it1,it) } })
             }

@@ -135,7 +135,8 @@ fun HomeScreen(
                 items(tasks) { task ->
                     TaskItem(
                         task = task, onClick = { onTaskClick(task.id) },
-                        onUpdate = {}
+                        onUpdate = {},
+                        path = null,
                     )
                 }
             }

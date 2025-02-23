@@ -27,6 +27,7 @@ import com.sinxn.mytasks.utils.formatDate
 @Composable
 fun TaskItem(
     task: Task,
+    path: String?,
     onClick: () -> Unit,
     onUpdate: (Boolean) -> Unit,
     modifier: Modifier = Modifier
@@ -44,12 +45,15 @@ fun TaskItem(
         Row (modifier = Modifier.fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically
             ) {
+
             Checkbox(
                 checked = task.isCompleted,
                 onCheckedChange = { onUpdate(it) }
             )
-            Column(modifier = Modifier.padding(8.dp)) {
-                 if(task.title.isNotEmpty())
+            Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+                path?.let { Text(text = path, style = MaterialTheme.typography.bodySmall) }
+
+                if(task.title.isNotEmpty())
                     Text(
                         text = task.title,
                         style = MaterialTheme.typography.titleMedium,

@@ -33,6 +33,17 @@ class TaskViewModel @Inject constructor(
     private val _folder = MutableStateFlow<Folder?>(null)
     val folder: StateFlow<Folder?> = _folder
 
+    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
+    val folders: StateFlow<List<Folder>> = _folders
+
+    init {
+        viewModelScope.launch {
+            folderRepository.getAllFolders().collect { folders ->
+                _folders.value = folders
+            }
+        }
+    }
+
     fun fetchTaskById(taskId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val fetchedTask = repository.getTaskById(taskId)
@@ -69,5 +80,19 @@ class TaskViewModel @Inject constructor(
                 folderId = fetchedFolder.folderId,
             )
         }
+    }
+
+    fun getPath(folderId: Long): String {
+        val path = StringBuilder()
+        var curr = folderId
+        while (curr != 0L) {
+            val folder = folders.value.find { it.folderId == curr }
+            path.insert(0, "/")
+            path.insert(0, folder?.name)
+            curr = folder?.parentFolderId ?: 0L
+
+        }
+
+        return path.toString()
     }
 }
