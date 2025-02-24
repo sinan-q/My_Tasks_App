@@ -1,6 +1,5 @@
 package com.sinxn.mytasks.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -86,7 +85,7 @@ fun FolderItem(folder: Folder, onClick: () -> Unit, onDelete: () -> Unit) {
 @Composable
 fun FolderItemEdit(folder: Folder, onDismiss: () -> Unit, onSubmit: (Folder) -> Unit) {
     val text = remember { mutableStateOf(folder.name) }
-    Card(modifier = Modifier.background(Color.White).padding(vertical = 4.dp)
+    Card(modifier = Modifier.padding(vertical = 4.dp)
     ) {
         Column(
             modifier = Modifier
