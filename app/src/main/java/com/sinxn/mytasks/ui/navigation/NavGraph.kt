@@ -53,6 +53,9 @@ fun NavGraph(
                         }
                     }
                 },
+                onAddEventClick = { folderId ->
+                    navController.navigate("add_edit_event/-1L/$folderId/-1L")
+                },
                 onEventClick = {
                     navController.navigate("event_list")
                 }
@@ -138,7 +141,7 @@ fun NavGraph(
         ){ backStackEntry ->
             val eventId = backStackEntry.arguments?.getLong("eventId") ?: -1L
             val folderId = backStackEntry.arguments?.getLong("folderId") ?: 0
-            val date = backStackEntry.arguments?.getLong("date") ?: 0L
+            val date = backStackEntry.arguments?.getLong("date") ?: -1L
             AddEditEventScreen(
                 eventId = eventId,
                 folderId = folderId,

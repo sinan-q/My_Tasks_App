@@ -52,7 +52,7 @@ fun AddEditEventScreen(
     modifier: Modifier = Modifier,
     eventId: Long = -1L,
     folderId: Long = 0,
-    date: Long? = null,
+    date: Long = -1L,
     eventViewModel: EventViewModel,
     onFinish: () -> Unit,
 ) {
@@ -72,10 +72,14 @@ fun AddEditEventScreen(
             eventViewModel.fetchEventById(eventId)
         } else if (folderId != 0L) {
             eventViewModel.fetchFolderById(folderId)
-        } else if (date != null){
-            eventInputState = eventInputState.copy(
+        }
+        eventInputState = if (date != -1L){
+            eventInputState.copy(
                 start = fromMillis(date)
-
+            )
+        } else {
+            eventInputState.copy(
+                start = LocalDateTime.now()
             )
         }
     }

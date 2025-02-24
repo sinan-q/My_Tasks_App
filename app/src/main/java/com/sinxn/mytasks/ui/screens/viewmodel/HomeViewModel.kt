@@ -30,7 +30,6 @@ class HomeViewModel @Inject constructor(
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
-
     private val _folder = MutableStateFlow<Folder?>(null)
     val folder: StateFlow<Folder?> = _folder
 
