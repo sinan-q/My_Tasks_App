@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -26,6 +27,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Folder
 
@@ -35,28 +38,29 @@ fun FolderItem(folder: Folder, onClick: () -> Unit, onDelete: () -> Unit) {
 
     Card(
         modifier = Modifier.padding(vertical = 4.dp)
-            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.extraSmall),
+            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.extraSmall)
+            .clickable {
+                onClick()
+            },
     ) {
-        Row(modifier= Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(modifier= Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column(
-                modifier = Modifier
-                    .padding(8.dp)
+                modifier = Modifier.weight(0.9f).fillMaxWidth(0.9f).padding(2.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Text(
                     text = folder.name,
-                    modifier = Modifier
-                        .clickable(onClick = onClick)
-                        .padding(16.dp)
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
-            Column (horizontalAlignment = Alignment.End) {
+            Column (horizontalAlignment = Alignment.End, modifier = Modifier.fillMaxSize().weight(0.2f)) {
                 IconButton(
                     onClick = { expanded = true }
                 ) {
                     Icon(
                         Icons.Default.MoreVert,
-                        contentDescription = "Delete",
+                        contentDescription = "More Options",
                     )
                 }
                 DropdownMenu(
