@@ -105,16 +105,12 @@ fun AddEditTaskScreen(
                                 isCompleted = taskInputState.isCompleted,
                                 timestamp = taskInputState.timestamp
                             )
-                            taskViewModel.insertTask(taskToSave)
-                            scope.launch {
-                                snackBarHostState.showSnackbar("Task Saved", duration = SnackbarDuration.Short)
+                            if (taskId == -1L) taskViewModel.insertTask(taskToSave)
+                            else taskViewModel.updateTask(taskToSave)
 
-                            }
                             onFinish()
                         } else {
-                            scope.launch {
-                                snackBarHostState.showSnackbar("Title or description cannot be empty")
-                            }
+                            //TODO
                         }
                     } else {
                         isEditing = true
