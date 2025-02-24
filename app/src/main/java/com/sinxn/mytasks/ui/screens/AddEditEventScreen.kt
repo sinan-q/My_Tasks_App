@@ -99,20 +99,24 @@ fun AddEditEventScreen(
             FloatingActionButton(
                 onClick = {
                     if (isEditing) {
-                        if (eventInputState.title.isNotEmpty() || eventInputState.description.isNotEmpty() || eventInputState.start != null) {
-                            val eventToSave = Event(
-                                id = if (eventId == -1L) null else eventId,
-                                folderId = eventInputState.folderId,
-                                title = eventInputState.title,
-                                description = eventInputState.description,
-                                start = eventInputState.start,
-                                end = eventInputState.end,
-                                timestamp = eventInputState.timestamp
-                            )
+                        var save = true
+                        if (eventInputState.title.isEmpty() && eventInputState.description.isEmpty()) save = false
+                        if (eventInputState.start == null) save = false
+                        if (eventInputState.end != null && eventInputState.start!! < eventInputState.end!!) save = false
+
+                        val eventToSave = Event(
+                            id = if (eventId == -1L) null else eventId,
+                            folderId = eventInputState.folderId,
+                            title = eventInputState.title,
+                            description = eventInputState.description,
+                            start = eventInputState.start,
+                            end = eventInputState.end,
+                            timestamp = eventInputState.timestamp
+                        )
+
+                        if(save) {
                             eventViewModel.insertEvent(eventToSave)
                             onFinish()
-                        } else {
-                            //TODO show error
                         }
                     } else {
                         isEditing = true
