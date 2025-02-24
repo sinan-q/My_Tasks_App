@@ -123,7 +123,7 @@ fun NavGraph(
                 eventViewModel = eventViewModel,
                 onAddEventClick = { navController.navigate("add_edit_event/-1L/0") },
                 onEventClick = { eventId ->
-                    navController.navigate("add_edit_event/$eventId/0")
+                    navController.navigate("add_edit_event/$eventId/0/-1L")
                 },
                 onDayClick = { epochDay ->
                     navController.navigate("add_edit_event/-1L/0/$epochDay")

@@ -1,7 +1,5 @@
 package com.sinxn.mytasks.ui.components
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,11 +10,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -27,7 +23,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Folder
@@ -36,13 +31,7 @@ import com.sinxn.mytasks.data.local.entities.Folder
 fun FolderItem(folder: Folder, onClick: () -> Unit, onDelete: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
-    Card(
-        modifier = Modifier.padding(vertical = 4.dp)
-            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.extraSmall)
-            .clickable {
-                onClick()
-            },
-    ) {
+    RectangleCard(onClick = onClick) {
         Row(modifier= Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column(
                 modifier = Modifier.weight(0.9f).fillMaxWidth(0.9f).padding(2.dp),
@@ -89,8 +78,7 @@ fun FolderItem(folder: Folder, onClick: () -> Unit, onDelete: () -> Unit) {
 @Composable
 fun FolderItemEdit(folder: Folder, onDismiss: () -> Unit, onSubmit: (Folder) -> Unit) {
     val text = remember { mutableStateOf(folder.name) }
-    Card(modifier = Modifier.padding(vertical = 4.dp)
-    ) {
+    RectangleCard(onClick = {}){
         Column(
             modifier = Modifier
                 .padding(16.dp)
