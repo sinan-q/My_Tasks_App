@@ -1,14 +1,14 @@
 package com.sinxn.mytasks.ui.components
 
-import android.icu.util.Calendar.WeekData
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -73,11 +73,11 @@ fun CalendarDayItem(modifier: Modifier,day: LocalDate, events: List<Event>, onCl
             containerColor = if (day == LocalDate.now()) Color.Unspecified else Color.Transparent
         )
     ) {
-        Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = day.dayOfMonth.toString())
+        Column(modifier = Modifier.padding(4.dp).fillMaxSize(), verticalArrangement = if (events.isEmpty()) Arrangement.Center else Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = day.dayOfMonth.toString(), style = if(events.isEmpty()) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.bodySmall)
             if (events.isNotEmpty()) {
                 events.forEach {
-                    Text(text = it.title, fontSize = MaterialTheme.typography.labelSmall.fontSize)
+                    Text(text = it.title, style = MaterialTheme.typography.labelSmall)
                 }
             }
         }
