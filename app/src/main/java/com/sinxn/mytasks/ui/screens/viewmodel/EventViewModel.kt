@@ -11,8 +11,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,11 +24,14 @@ class EventViewModel @Inject constructor(
     private val folderRepository: FolderRepository
 ) : ViewModel() {
 
-    val events = repository.getAllEvents().stateIn(
+    val upcomingEvents = repository.getUpcomingEvents(10).stateIn(
         viewModelScope,
         SharingStarted.Lazily,
         emptyList()
     )
+
+    private val _eventsOnMonth = MutableStateFlow<List<Event>>(emptyList())
+    val eventsOnMonth: StateFlow<List<Event>> = _eventsOnMonth
 
     private val _event = MutableStateFlow<Event?>(null)
     val event: StateFlow<Event?> = _event
@@ -36,11 +42,30 @@ class EventViewModel @Inject constructor(
     private val _folders = MutableStateFlow<List<Folder>>(emptyList())
     val folders: StateFlow<List<Folder>> = _folders
 
+    private val _startOfMonth = MutableStateFlow(LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0))
+    val startOfMonth: StateFlow<LocalDateTime> = _startOfMonth
+    private val _endOfMonth = MutableStateFlow(LocalDateTime.now().withDayOfMonth(LocalDate.now().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59))
+    val endOfMonth: StateFlow<LocalDateTime> = _endOfMonth
+
+    fun onMonthChange(month: LocalDateTime) {
+        _startOfMonth.value = month.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0)
+        _endOfMonth.value = month.withDayOfMonth(month.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59)
+        getEventsByMonth()
+    }
+
+
     init {
         viewModelScope.launch {
             folderRepository.getAllFolders().collect { folders ->
                 _folders.value = folders
             }
+        }
+        getEventsByMonth()
+    }
+    private fun getEventsByMonth() = viewModelScope.launch {
+            repository.getEventsByMonth(startOfMonth.value, endOfMonth.value ).collectLatest { events ->
+                _eventsOnMonth.value = events
+
         }
     }
 
