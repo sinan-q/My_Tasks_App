@@ -31,7 +31,7 @@ fun CalendarGrid(events: List<Event>, onClick: (Long) -> Unit) {
 
     val firstDayOfMonth = currentDate.withDayOfMonth(1)
     val firstDay = firstDayOfMonth.minusDays(firstDayOfMonth.dayOfWeek.value.toLong())
-    val lastDayOfMonth = firstDayOfMonth.plusMonths(1).minusDays(1)
+    val lastDayOfMonth = firstDayOfMonth.plusMonths(1)
     val days = firstDay.datesUntil(lastDayOfMonth).toList()
     val totalColumns = ceil(days.size / 7f).toInt()
     Column {
