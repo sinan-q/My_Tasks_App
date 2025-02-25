@@ -23,4 +23,9 @@ interface EventDao {
 
     @Query("SELECT * FROM events WHERE folderId = :folderId")
     fun getEventsByFolderId(folderId: Long?): Flow<List<Event>>
+
+    @Query("SELECT * FROM events WHERE timestamp > strftime('%s', 'now') ORDER BY timestamp ASC LIMIT :limit")
+    fun getUpcomingEvents(limit: Int): Flow<List<Event>>
+
+
 }

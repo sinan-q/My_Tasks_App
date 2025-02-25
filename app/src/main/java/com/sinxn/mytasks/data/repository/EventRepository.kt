@@ -31,4 +31,9 @@ class EventRepository @Inject constructor(
     fun getEventsByFolderId(folderId: Long?): Flow<List<Event>> {
         return eventDao.getEventsByFolderId(folderId)
     }
+
+    fun getUpcomingEvents(limit: Int): Flow<List<Event>> {
+        return eventDao.getUpcomingEvents(limit)
+
+    }
 }

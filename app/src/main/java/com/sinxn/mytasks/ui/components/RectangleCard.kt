@@ -11,18 +11,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun RectangleCard(
+    modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     content: @Composable (ColumnScope.() -> Unit)
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.extraSmall)
+            .padding(1.dp)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RectangleShape)
             .clickable {
                 if (onClick != null) {
                     onClick()

@@ -27,6 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.ui.components.EventItem
+import com.sinxn.mytasks.ui.components.EventSmallItem
 import com.sinxn.mytasks.ui.components.FolderItem
 import com.sinxn.mytasks.ui.components.FolderItemEdit
 import com.sinxn.mytasks.ui.components.NoteItem
@@ -48,6 +50,7 @@ fun HomeScreen(
     onEventClick: () -> Unit,
 ) {
     val folders by homeViewModel.folders.collectAsState(initial = emptyList())
+    val events by homeViewModel.events.collectAsState(initial = emptyList())
     val currentFolder by homeViewModel.folder.collectAsState(
         initial = Folder(
             name = "Root",
@@ -103,9 +106,15 @@ fun HomeScreen(
     ) { padding ->
 
         Column(modifier = Modifier.padding(padding)) {
-            Text(text ="Calender", modifier = Modifier.clickable {
+            Text(text ="Upcoming Events", modifier = Modifier.clickable {
                 onEventClick()
             })
+            LazyColumn {
+                items(events) { event ->
+                    EventSmallItem(event)
+                }
+            }
+
             AnimatedVisibility(
                 visible = folderEditToggle
             ) {

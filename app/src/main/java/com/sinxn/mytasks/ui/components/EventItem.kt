@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.ui.screens.formatDate
@@ -42,6 +43,25 @@ fun EventItem(
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = event.end?.formatDate()?:"Error",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun EventSmallItem(event: Event) {
+    RectangleCard()  {
+        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+            Text(
+                text = event.title,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = event.start?.formatDate()?:"Error",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
