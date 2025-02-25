@@ -17,6 +17,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import com.sinxn.mytasks.ui.components.CalendarGrid
 import com.sinxn.mytasks.ui.components.EventItem
+import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,6 +46,7 @@ fun EventListScreen(
         LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxWidth()) {
             item {
                 CalendarGrid(eventOnMonth.value, onDayClick)
+                MyTitle(title = "Upcoming Events")
             }
 
             items(upcomingEvents.value) { event ->

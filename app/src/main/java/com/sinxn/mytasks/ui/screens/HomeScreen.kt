@@ -31,6 +31,7 @@ import com.sinxn.mytasks.ui.components.EventItem
 import com.sinxn.mytasks.ui.components.EventSmallItem
 import com.sinxn.mytasks.ui.components.FolderItem
 import com.sinxn.mytasks.ui.components.FolderItemEdit
+import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.NoteItem
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.components.TaskItem
@@ -106,15 +107,15 @@ fun HomeScreen(
     ) { padding ->
 
         Column(modifier = Modifier.padding(padding)) {
-            Text(text ="Upcoming Events", modifier = Modifier.clickable {
+            MyTitle(modifier = Modifier.clickable {
                 onEventClick()
-            })
+            },title = "Upcoming Events")
             LazyColumn {
                 items(events) { event ->
                     EventSmallItem(event)
                 }
             }
-
+            MyTitle(title = "Root")
             AnimatedVisibility(
                 visible = folderEditToggle
             ) {
