@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,7 +42,7 @@ fun EventListScreen(
             }
         }
     ) { paddingValues ->
-        LazyColumn(modifier = Modifier.padding(paddingValues)) {
+        LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxWidth()) {
             item {
                 CalendarGrid(eventOnMonth.value, onDayClick)
             }

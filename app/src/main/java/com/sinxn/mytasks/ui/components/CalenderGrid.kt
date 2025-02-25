@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.components
 
+import android.icu.util.Calendar.WeekData
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -28,18 +29,25 @@ import kotlin.math.ceil
 @Composable
 fun CalendarGrid(events: List<Event>, onClick: (Long) -> Unit) {
     val currentDate = LocalDate.now()
+    val WEEK_DAYS = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
     val firstDayOfMonth = currentDate.withDayOfMonth(1)
-    val firstDay = firstDayOfMonth.minusDays(firstDayOfMonth.dayOfWeek.value.toLong())
-    val lastDayOfMonth = firstDayOfMonth.plusMonths(1)
-    val days = firstDay.datesUntil(lastDayOfMonth).toList()
+    val firstDayOfWeek = firstDayOfMonth.minusDays(firstDayOfMonth.dayOfWeek.value.toLong())
+    val lastDayOfMonth = firstDayOfMonth.plusMonths(1).minusDays(1)
+    val lastDayOfWeek = lastDayOfMonth.plusDays(7 - lastDayOfMonth.dayOfWeek.value.toLong())
+    val days = firstDayOfWeek.datesUntil(lastDayOfWeek).toList()
     val totalColumns = ceil(days.size / 7f).toInt()
-    Column {
+
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Row {
+           for (day in WEEK_DAYS) {
+               CalendarDayWeekItem(modifier = Modifier.weight(1f), day = day)
+           }
+        }
         for (x in 0 until totalColumns) {
             Row(Modifier.fillMaxWidth()) {
                 for (y in x*7 until x*7+7) {
-                    if (y >= days.size) break
-                    CalendarDayItem(day = days[y], events = events.filter {
+                    CalendarDayItem(modifier = Modifier.weight(1f), day = days[y], events = events.filter {
                         val eventDate = it.start
                         eventDate?.dayOfYear == days[y].dayOfYear
                     }, onClick = {
@@ -54,15 +62,15 @@ fun CalendarGrid(events: List<Event>, onClick: (Long) -> Unit) {
 }
 
 @Composable
-fun CalendarDayItem(day: LocalDate, events: List<Event>, onClick: (Long) -> Unit = {}) {
+fun CalendarDayItem(modifier: Modifier,day: LocalDate, events: List<Event>, onClick: (Long) -> Unit = {}) {
     Card(
-        modifier = Modifier
+        modifier = modifier
+            .fillMaxWidth()
             .height(80.dp)
-            .width(50.dp)
             .border(1.dp, MaterialTheme.colorScheme.outline, RectangleShape)
             .clickable { onClick(LocalDateTime.of(day, LocalTime.now()).toMillis()) },
         colors = CardDefaults.cardColors(
-            containerColor = if (day == LocalDate.now()) Color.LightGray else Color.Transparent
+            containerColor = if (day == LocalDate.now()) Color.Unspecified else Color.Transparent
         )
     ) {
         Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -72,6 +80,19 @@ fun CalendarDayItem(day: LocalDate, events: List<Event>, onClick: (Long) -> Unit
                     Text(text = it.title, fontSize = MaterialTheme.typography.labelSmall.fontSize)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun CalendarDayWeekItem(modifier: Modifier, day: String) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(1.dp, MaterialTheme.colorScheme.outline, RectangleShape)
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = day)
         }
     }
 }
