@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.sinxn.mytasks.ui.components.BottomBar
@@ -18,8 +17,8 @@ import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.FolderViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.HomeViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
-import com.sinxn.mytasks.ui.theme.MyTasksTheme
 import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
+import com.sinxn.mytasks.ui.theme.MyTasksTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

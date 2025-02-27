@@ -104,8 +104,6 @@ fun FolderListScreen(
     ) { padding ->
 
         Column(modifier = Modifier.padding(padding)) {
-
-            MyTitle(title = "Root")
             AnimatedVisibility(
                 visible = folderEditToggle
             ) {
