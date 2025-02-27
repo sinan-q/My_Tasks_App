@@ -27,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.ui.components.EventItem
 import com.sinxn.mytasks.ui.components.EventSmallItem
 import com.sinxn.mytasks.ui.components.FolderItem
 import com.sinxn.mytasks.ui.components.FolderItemEdit
@@ -49,24 +48,16 @@ fun HomeScreen(
     onTaskClick: (Long?) -> Unit,
     onAddEventClick: (Long?) -> Unit,
     onEventClick: () -> Unit,
+    onFolderClick: (Long) -> Unit,
 ) {
     val folders by homeViewModel.folders.collectAsState(initial = emptyList())
     val events by homeViewModel.events.collectAsState(initial = emptyList())
-    val currentFolder by homeViewModel.folder.collectAsState(
-        initial = Folder(
-            name = "Root",
-            folderId = 0L
-        )
-    )
+
     val tasks by homeViewModel.tasks.collectAsState(initial = emptyList())
     val notes by homeViewModel.notes.collectAsState(initial = emptyList())
     var folderEditToggle by remember { mutableStateOf(false) }
 
-    BackHandler(
-        enabled = currentFolder?.folderId != 0L
-    ) {
-        homeViewModel.onBack(currentFolder!!)
-    }
+
     Scaffold(
         floatingActionButton = {
             ShowOptionsFAB(
@@ -74,35 +65,11 @@ fun HomeScreen(
                 onAddNoteClick = onAddNoteClick,
                 onAddEventClick = onAddEventClick,
                 onAddFolderClick = { folderEditToggle = true },
-                currentFolder = currentFolder
             )
         },
 
         topBar = {
-            currentFolder?.let { folder ->
-                if (folder.folderId != 0L) TopAppBar(
-                    title = { Text(folder.name) },
-                    navigationIcon = {
-                        IconButton(onClick = { homeViewModel.onBack(folder) }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = {
-                            homeViewModel.onBack(folder)
-                            homeViewModel.deleteFolder(folder)
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete"
-                            )
-                        }
 
-                    })
-            }
         },
     ) { padding ->
 
@@ -122,7 +89,6 @@ fun HomeScreen(
                 FolderItemEdit(
                     folder = Folder(
                         name = "New Folder",
-                        parentFolderId = currentFolder?.folderId
                     ), onDismiss = { folderEditToggle = false }) { homeViewModel.addFolder(it) }
 
             }
@@ -133,7 +99,7 @@ fun HomeScreen(
                 items(folders) { folder ->
                     FolderItem(
                         folder = folder,
-                        onClick = { homeViewModel.getSubFolders(folder) },
+                        onClick = { onFolderClick(folder.folderId) },
                         onDelete = { homeViewModel.deleteFolder(folder) })
                 }
             }

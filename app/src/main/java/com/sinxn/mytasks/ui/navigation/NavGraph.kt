@@ -12,10 +12,12 @@ import androidx.navigation.navArgument
 import com.sinxn.mytasks.ui.screens.AddEditEventScreen
 import com.sinxn.mytasks.ui.screens.AddEditNoteScreen
 import com.sinxn.mytasks.ui.screens.EventListScreen
+import com.sinxn.mytasks.ui.screens.FolderListScreen
 import com.sinxn.mytasks.ui.screens.HomeScreen
 import com.sinxn.mytasks.ui.screens.NoteListScreen
 import com.sinxn.mytasks.ui.screens.TaskListScreen
 import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
+import com.sinxn.mytasks.ui.screens.viewmodel.FolderViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.HomeViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
@@ -27,6 +29,7 @@ fun NavGraph(
     taskViewModel: TaskViewModel,
     homeViewModel: HomeViewModel,
     eventViewModel: EventViewModel,
+    folderViewModel: FolderViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -58,6 +61,9 @@ fun NavGraph(
                 },
                 onEventClick = {
                     navController.navigate("event_list")
+                },
+                onFolderClick = { folderId ->
+                    navController.navigate("folder_list/$folderId")
                 }
             )
         }
@@ -151,6 +157,35 @@ fun NavGraph(
             )
 
 
+        }
+
+        composable(
+            route = "folder_list/{folderId}",
+            arguments = listOf(
+                navArgument("folderId") {type = NavType.LongType; defaultValue = 0},
+            )
+        ) { backStackEntry ->
+            val folderId = backStackEntry.arguments?.getLong("folderId") ?: 0
+            FolderListScreen(
+                folderId = folderId,
+                folderViewModel = folderViewModel,
+                onAddNoteClick = { folderId -> navController.navigate("add_edit_note/-1L/$folderId") },
+                onNoteClick = { noteId ->
+                    navController.navigate("add_edit_note/$noteId/0")
+                },
+                onAddTaskClick = { folderId->
+                    navController.navigate("add_edit_task/-1L/$folderId")
+
+                },
+                onTaskClick = { taskId ->
+                    navController.navigate("add_edit_task/$taskId/0"){
+                        popUpTo(navController.currentBackStackEntry!!.destination.id){
+                            inclusive = true
+                        }
+                    }
+                },
+
+            )
         }
     }
 }

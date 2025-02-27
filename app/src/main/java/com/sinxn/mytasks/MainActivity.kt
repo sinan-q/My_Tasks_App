@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.navigation.NavGraph
 import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
+import com.sinxn.mytasks.ui.screens.viewmodel.FolderViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.HomeViewModel
 import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
 import com.sinxn.mytasks.ui.theme.MyTasksTheme
@@ -27,36 +28,32 @@ class MainActivity : ComponentActivity() {
     private val taskViewModel: TaskViewModel by viewModels()
     private val homeViewModel: HomeViewModel by viewModels()
     private val eventViewModel: EventViewModel by viewModels()
+    private val folderViewModel: FolderViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
+            val navController = rememberNavController()
+
             MyTasksTheme {
-                MainScreen(noteViewModel = noteViewModel,
-                    taskViewModel = taskViewModel,
-                    homeViewModel = homeViewModel,
-                    eventViewModel = eventViewModel)
+                Scaffold(
+                    contentWindowInsets = WindowInsets.safeContent,
+                    bottomBar = { BottomBar(navController = navController) }
+                ) { paddingValues ->
+                    NavGraph(
+                        navController = navController,
+                        noteViewModel = noteViewModel,
+                        taskViewModel = taskViewModel,
+                        homeViewModel = homeViewModel,
+                        eventViewModel = eventViewModel,
+                        modifier = Modifier.padding(paddingValues),
+                        folderViewModel = folderViewModel
+                    )
+                }
             }
         }
-    }
-}
-
-@Composable
-fun MainScreen(noteViewModel: NoteViewModel, taskViewModel: TaskViewModel, homeViewModel: HomeViewModel, eventViewModel: EventViewModel) {
-    val navController = rememberNavController()
-    Scaffold(
-        contentWindowInsets = WindowInsets.safeContent,
-        bottomBar = { BottomBar(navController = navController) }
-    ) { paddingValues ->
-        NavGraph(
-            navController = navController,
-            noteViewModel = noteViewModel,
-            taskViewModel = taskViewModel,
-            homeViewModel = homeViewModel,
-            eventViewModel = eventViewModel,
-            modifier = Modifier.padding(paddingValues)
-        )
     }
 }
 
