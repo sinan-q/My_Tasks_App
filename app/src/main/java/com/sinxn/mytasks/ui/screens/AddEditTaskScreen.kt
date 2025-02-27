@@ -20,7 +20,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,11 +39,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.screens.addTimerPickerState
-import com.sinxn.mytasks.ui.screens.formatDate
-import com.sinxn.mytasks.ui.screens.fromMillis
-import com.sinxn.mytasks.ui.screens.toMillis
 import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
-import kotlinx.coroutines.launch
+import com.sinxn.mytasks.utils.formatDate
+import com.sinxn.mytasks.utils.fromMillis
+import com.sinxn.mytasks.utils.toMillis
 import java.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,8 +64,6 @@ fun AddEditTaskScreen(
     val taskState by taskViewModel.task.collectAsState()
     val folder by taskViewModel.folder.collectAsState()
 
-    val snackBarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
     // Use a single LaunchedEffect for fetching data
     LaunchedEffect(taskId, folderId) {
         if (taskId != -1L) {

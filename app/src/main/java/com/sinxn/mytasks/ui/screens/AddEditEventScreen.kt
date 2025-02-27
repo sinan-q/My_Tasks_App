@@ -40,11 +40,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
+import com.sinxn.mytasks.utils.formatDate
+import com.sinxn.mytasks.utils.fromMillis
+import com.sinxn.mytasks.utils.toMillis
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,11 +75,13 @@ fun AddEditEventScreen(
         }
         eventInputState = if (date != -1L){
             eventInputState.copy(
-                start = fromMillis(date)
+                start = fromMillis(date).withHour(10).withMinute(0),
+                end = fromMillis(date).withHour(11).withMinute(0),
             )
         } else {
             eventInputState.copy(
-                start = LocalDateTime.now()
+                start = LocalDateTime.now().withHour(10).withMinute(0),
+                end = LocalDateTime.now().withHour(11).withMinute(0)
             )
         }
     }
@@ -105,7 +107,7 @@ fun AddEditEventScreen(
                     if (isEditing) {
                         var save = true
                         if (eventInputState.title.isEmpty() && eventInputState.description.isEmpty()) save = false
-                        if (eventInputState.start == null) save = false
+                        if (eventInputState.start == null || eventInputState.end == null) save = false
                         if (eventInputState.end != null && eventInputState.start!! < eventInputState.end!!) save = false
 
                         val eventToSave = Event(
@@ -318,17 +320,4 @@ fun TimePickerDialog(
     )
 }
 
-// Extension function for formatting Date
-fun LocalDateTime.formatDate(): String {
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.getDefault())
-    return this.format(formatter)
-}
-
-fun fromMillis(millis :Long): LocalDateTime {
-    return LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault())
-}
-
-fun LocalDateTime.toMillis(): Long {
-    return this.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-}
 
