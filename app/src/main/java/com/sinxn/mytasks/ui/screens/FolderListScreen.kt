@@ -61,7 +61,7 @@ fun FolderListScreen(
     var folderEditToggle by remember { mutableStateOf(false) }
 
     BackHandler(
-        enabled = currentFolder?.folderId != 0L
+        enabled = currentFolder?.parentFolderId != 0L
     ) {
         folderViewModel.onBack(currentFolder!!)
     }
