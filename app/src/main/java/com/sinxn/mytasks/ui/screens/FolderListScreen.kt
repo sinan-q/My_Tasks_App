@@ -44,6 +44,7 @@ fun FolderListScreen(
     onNoteClick: (Long?) -> Unit,
     onAddTaskClick: (Long?) -> Unit,
     onTaskClick: (Long?) -> Unit,
+    onBack: () -> Unit,
 ) {
     LaunchedEffect(folderId) {
         folderViewModel.getSubFolders(folderId)
@@ -79,7 +80,7 @@ fun FolderListScreen(
                  TopAppBar(
                     title = { Text(folder.name) },
                     navigationIcon = {
-                        IconButton(onClick = { folderViewModel.onBack(folder) }) {
+                        IconButton(onClick = { if (folder.parentFolderId == 0L) onBack() else folderViewModel.onBack(folder) }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back"

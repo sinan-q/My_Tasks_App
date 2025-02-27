@@ -29,7 +29,7 @@ class NoteRepository @Inject constructor(
         return noteDao.getNoteById(noteId)
     }
 
-    suspend fun getNotesByFolderId(folderId: Long?): Flow<List<Note>> {
+    fun getNotesByFolderId(folderId: Long?): Flow<List<Note>> {
         return noteDao.getNotesByFolderId(folderId)
 
     }
