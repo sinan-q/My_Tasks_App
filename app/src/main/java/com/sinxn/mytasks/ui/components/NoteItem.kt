@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.ui.screens.formatDate
+import com.sinxn.mytasks.utils.formatDate
 
 @Composable
 fun NoteItem(

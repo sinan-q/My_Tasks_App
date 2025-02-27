@@ -1,12 +1,9 @@
 package com.sinxn.mytasks.ui.components
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,8 +17,6 @@ fun MyTitle(modifier: Modifier = Modifier,title: String) {
         Spacer(Modifier.padding(top = 20.dp))
         Text(text = title, style = MaterialTheme.typography.titleLarge)
         HorizontalDivider(Modifier.width(80.dp).padding(top = 4.dp, bottom = 15.dp), thickness = 3.dp, color = MaterialTheme.colorScheme.outline)
-
-
     }
 
 }

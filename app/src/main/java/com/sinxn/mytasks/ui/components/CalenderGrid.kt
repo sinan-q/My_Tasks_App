@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
-import com.sinxn.mytasks.ui.screens.toMillis
+import com.sinxn.mytasks.utils.toMillis
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime

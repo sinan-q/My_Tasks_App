@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.ui.screens.formatDate
+import com.sinxn.mytasks.utils.formatDate
 
 @Composable
 fun TaskItem(
