@@ -127,7 +127,7 @@ fun NavGraph(
         composable("event_list") {
             EventListScreen(
                 eventViewModel = eventViewModel,
-                onAddEventClick = { navController.navigate("add_edit_event/-1L/0") },
+                onAddEventClick = { navController.navigate("add_edit_event/-1L/0/-1L") },
                 onEventClick = { eventId ->
                     navController.navigate("add_edit_event/$eventId/0/-1L")
                 },

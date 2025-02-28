@@ -284,10 +284,15 @@ fun AddEditEventScreen(
                         isDatePickerForStart = null
                     },
                     onConfirm = {
-                        if (isDatePickerForStart == true)
+                        if (isDatePickerForStart == true) {
                             eventInputState = eventInputState.copy(
-                                start = eventInputState.start?.addTimerPickerState(timePickerState)
+                                start = eventInputState.start?.addTimerPickerState(timePickerState),
                             )
+                            if (eventInputState.end!!.isBefore(eventInputState.start))
+                                eventInputState = eventInputState.copy(
+                                    end = eventInputState.start?.plusHours(1),
+                                )
+                        }
                         else if (isDatePickerForStart == false)
                             eventInputState = eventInputState.copy(
                                 end = eventInputState.end?.addTimerPickerState(timePickerState)
