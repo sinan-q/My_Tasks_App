@@ -10,6 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,6 +28,9 @@ class NoteViewModel @Inject constructor(
 
     private val _folder = MutableStateFlow<Folder?>(null)
     val folder: StateFlow<Folder?> = _folder
+
+    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
+    val folders: StateFlow<List<Folder>> = _folders
 
     init {
         viewModelScope.launch {
@@ -51,16 +55,18 @@ class NoteViewModel @Inject constructor(
     fun fetchNoteById(noteId: Long) {
         viewModelScope.launch {
             val fetchedNote = noteRepository.getNoteById(noteId)
+            fetchFolderById(fetchedNote?.folderId?:0)
             _note.value = fetchedNote
-
         }
     }
 
     fun fetchFolderById(folderId: Long) {
         viewModelScope.launch {
             val fetchedFolder = folderRepository.getFolderById(folderId)
+            val subFolders = folderRepository.getSubFolders(folderId).first()
+            _folders.value = subFolders
             _folder.value = fetchedFolder
-            _note.value = Note(
+            _note.value = note.value?.copy(
                 folderId = fetchedFolder.folderId,
             )
         }

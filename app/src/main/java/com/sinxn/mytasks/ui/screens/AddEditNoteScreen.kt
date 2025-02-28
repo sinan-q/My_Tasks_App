@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -30,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.ui.components.RectangleCard
 import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,7 +50,8 @@ fun AddEditNoteScreen(
     var isEditing by remember { mutableStateOf(noteId == -1L) }
     val noteState by noteViewModel.note.collectAsState()
     val folder by noteViewModel.folder.collectAsState()
-
+    val folders by noteViewModel.folders.collectAsState(initial = emptyList())
+    var folderChangeExpanded by remember { mutableStateOf(false) }
     // Load existing note if noteId is valid
     LaunchedEffect(noteId, folderId) {
         if (noteId != -1L) {
@@ -136,7 +141,23 @@ fun AddEditNoteScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(folder?.name?:"Parent")
+            Text(folder?.name?:"Parent", modifier = Modifier.clickable(enabled = isEditing) { folderChangeExpanded = true })
+            DropdownMenu(
+                expanded = folderChangeExpanded,
+                onDismissRequest = { folderChangeExpanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("...") },
+                    onClick = { noteViewModel.fetchFolderById(folder?.parentFolderId?:0) }
+                )
+                folders.forEach { folder ->
+                    DropdownMenuItem(
+                        text = { Text(folder.name) },
+                        onClick = { noteViewModel.fetchFolderById(folder.folderId)}
+                    )
+                }
+
+            }
             OutlinedTextField(
                 value = noteInputState.content,
                 onValueChange = {noteInputState = noteInputState.copy( content = it )},
