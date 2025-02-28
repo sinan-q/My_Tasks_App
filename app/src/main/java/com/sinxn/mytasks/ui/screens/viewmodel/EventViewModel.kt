@@ -81,7 +81,7 @@ class EventViewModel @Inject constructor(
 
     fun insertEvent(event: Event) = viewModelScope.launch {
         if (event.start != null && event.end !=null)
-            if (event.start < event.end) repository.insertEvent(event)
+            if (event.start.isBefore(event.end)) repository.insertEvent(event)
             else return@launch
         else repository.insertEvent(event)
     }

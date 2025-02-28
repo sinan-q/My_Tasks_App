@@ -112,7 +112,7 @@ fun AddEditEventScreen(
                         var save = true
                         if (eventInputState.title.isEmpty() && eventInputState.description.isEmpty()) save = false
                         if (eventInputState.start == null || eventInputState.end == null) save = false
-                        if (eventInputState.end != null && eventInputState.start!! < eventInputState.end!!) save = false
+                        if (eventInputState.start!!.isAfter(eventInputState.end!!)) save = false
 
                         val eventToSave = Event(
                             id = if (eventId == -1L) null else eventId,
@@ -126,7 +126,7 @@ fun AddEditEventScreen(
 
                         if(save) {
                             eventViewModel.insertEvent(eventToSave)
-                            onFinish()
+                            isEditing = false
                         }
                     } else {
                         isEditing = true
