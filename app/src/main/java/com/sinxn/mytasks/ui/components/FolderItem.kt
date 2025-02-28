@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -105,5 +107,33 @@ fun FolderItemEdit(folder: Folder, onDismiss: () -> Unit, onSubmit: (Folder) -> 
             }
 
         }
+    }
+}
+
+@Composable
+fun FolderDropDown(
+    onClick: (folderDd: Long) -> Unit,
+    isEditing: Boolean,
+    folder: Folder?,
+    folders: List<Folder>
+) {
+    var folderChangeExpanded by remember { mutableStateOf(false) }
+
+    Text(folder?.name?:"Parent", modifier = Modifier.clickable(enabled = isEditing) { folderChangeExpanded = true })
+    DropdownMenu(
+        expanded = folderChangeExpanded,
+        onDismissRequest = { folderChangeExpanded = false }
+    ) {
+        DropdownMenuItem(
+            text = { Text("...") },
+            onClick = { onClick(folder?.parentFolderId?:0) }
+        )
+        folders.forEach { folder ->
+            DropdownMenuItem(
+                text = { Text(folder.name) },
+                onClick = { onClick(folder.folderId)}
+            )
+        }
+
     }
 }
