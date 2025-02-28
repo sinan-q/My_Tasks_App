@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.ui.components.FolderDropDown
 import com.sinxn.mytasks.ui.screens.addTimerPickerState
 import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
 import com.sinxn.mytasks.utils.formatDate
@@ -61,6 +62,8 @@ fun AddEditTaskScreen(
 
     val taskState by taskViewModel.task.collectAsState()
     val folder by taskViewModel.folder.collectAsState()
+    val folders by taskViewModel.folders.collectAsState()
+
 
     // Use a single LaunchedEffect for fetching data
     LaunchedEffect(taskId, folderId) {
@@ -158,7 +161,14 @@ fun AddEditTaskScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(folder?.name ?: "Parent")
+            FolderDropDown(
+                onClick = {folderId ->
+                    taskViewModel.fetchFolderById(folderId)
+                },
+                isEditing = isEditing,
+                folder = folder,
+                folders = folders
+            )
             OutlinedTextField(
                 value = taskInputState.description,
                 onValueChange = { taskInputState = taskInputState.copy(description = it) },

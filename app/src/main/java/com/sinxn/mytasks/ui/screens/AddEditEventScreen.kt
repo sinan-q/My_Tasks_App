@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
+import com.sinxn.mytasks.ui.components.FolderDropDown
 import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
 import com.sinxn.mytasks.utils.formatDate
 import com.sinxn.mytasks.utils.fromMillis
@@ -66,6 +67,9 @@ fun AddEditEventScreen(
 
     val eventState by eventViewModel.event.collectAsState()
     val folder by eventViewModel.folder.collectAsState()
+    val folders by eventViewModel.folders.collectAsState()
+
+
     // Use a single LaunchedEffect for fetching data
     LaunchedEffect(eventId, folderId, date) {
         if (eventId != -1L) {
@@ -176,7 +180,14 @@ fun AddEditEventScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(folder?.name ?: "Parent")
+            FolderDropDown(
+                onClick = {folderId ->
+                    eventViewModel.fetchFolderById(folderId)
+                },
+                isEditing = isEditing,
+                folder = folder,
+                folders = folders
+            )
             OutlinedTextField(
                 value = eventInputState.description,
                 onValueChange = { eventInputState = eventInputState.copy(description = it) },

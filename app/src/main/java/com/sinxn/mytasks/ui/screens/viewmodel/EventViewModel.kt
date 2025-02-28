@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -96,8 +97,10 @@ class EventViewModel @Inject constructor(
     fun fetchFolderById(folderId: Long) {
         viewModelScope.launch {
             val fetchedFolder = folderRepository.getFolderById(folderId)
+            val subFolders = folderRepository.getSubFolders(folderId).first()
+            _folders.value = subFolders
             _folder.value = fetchedFolder
-            _event.value = Event(
+            _event.value = event.value?.copy(
                 folderId = fetchedFolder.folderId,
             )
         }
