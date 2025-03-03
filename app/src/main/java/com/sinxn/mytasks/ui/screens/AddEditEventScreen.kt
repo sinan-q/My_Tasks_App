@@ -57,8 +57,6 @@ fun AddEditEventScreen(
     eventViewModel: EventViewModel,
     onFinish: () -> Unit,
 ) {
-
-
     var eventInputState by remember { mutableStateOf(Event()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -69,38 +67,22 @@ fun AddEditEventScreen(
     val folder by eventViewModel.folder.collectAsState()
     val folders by eventViewModel.folders.collectAsState()
 
-
-    // Use a single LaunchedEffect for fetching data
     LaunchedEffect(eventId, folderId, date) {
         if (eventId != -1L) {
             eventViewModel.fetchEventById(eventId)
         } else if (folderId != 0L) {
             eventViewModel.fetchFolderById(folderId)
         }
-        eventInputState = if (date != -1L){
-            eventInputState.copy(
-                start = fromMillis(date).withHour(10).withMinute(0),
-                end = fromMillis(date).withHour(11).withMinute(0),
+        val initialDate = if (date != -1L) fromMillis(date) else LocalDateTime.now()
+        eventInputState = eventInputState.copy(
+                start = initialDate.withHour(10).withMinute(0),
+                end = initialDate.withHour(11).withMinute(0),
             )
-        } else {
-            eventInputState.copy(
-                start = LocalDateTime.now().withHour(10).withMinute(0),
-                end = LocalDateTime.now().withHour(11).withMinute(0)
-            )
-        }
     }
     // Update the input state when the task state changes
     LaunchedEffect(eventState) {
         eventState?.let { event ->
-            eventInputState = eventInputState.copy(
-                id = event.id,
-                title = event.title,
-                folderId = event.folderId,
-                description = (event.description),
-                start = event.start,
-                end = event.end,
-                timestamp = event.timestamp,
-            )
+            eventInputState = event.copy() // Use copy to avoid shared mutable state
         }
     }
 
@@ -109,22 +91,12 @@ fun AddEditEventScreen(
             RectangleFAB(
                 onClick = {
                     if (isEditing) {
-                        var save = true
-                        if (eventInputState.title.isEmpty() && eventInputState.description.isEmpty()) save = false
-                        if (eventInputState.start == null || eventInputState.end == null) save = false
-                        if (eventInputState.start!!.isAfter(eventInputState.end!!)) save = false
+                        val isInputValid = validateEventInput(eventInputState)
 
-                        val eventToSave = Event(
-                            id = if (eventId == -1L) null else eventId,
-                            folderId = eventInputState.folderId,
-                            title = eventInputState.title,
-                            description = eventInputState.description,
-                            start = eventInputState.start,
-                            end = eventInputState.end,
-                            timestamp = eventInputState.timestamp
-                        )
-
-                        if(save) {
+                        if (isInputValid) {
+                            val eventToSave = eventInputState.copy(
+                                id = if (eventId == -1L) null else eventId,
+                            )
                             eventViewModel.insertEvent(eventToSave)
                             isEditing = false
                         }
@@ -181,7 +153,7 @@ fun AddEditEventScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             FolderDropDown(
-                onClick = {folderId ->
+                onClick = { folderId ->
                     eventViewModel.fetchFolderById(folderId)
                 },
                 isEditing = isEditing,
@@ -292,8 +264,7 @@ fun AddEditEventScreen(
                                 eventInputState = eventInputState.copy(
                                     end = eventInputState.start?.plusHours(1),
                                 )
-                        }
-                        else if (isDatePickerForStart == false)
+                        } else if (isDatePickerForStart == false)
                             eventInputState = eventInputState.copy(
                                 end = eventInputState.end?.addTimerPickerState(timePickerState)
                             )
@@ -310,10 +281,18 @@ fun AddEditEventScreen(
     }
 }
 
+fun validateEventInput(eventInputState: Event): Boolean {
+    return !(eventInputState.title.isEmpty() && eventInputState.description.isEmpty()) &&
+            eventInputState.start != null &&
+            eventInputState.end != null &&
+            !eventInputState.start.isAfter(eventInputState.end)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 fun LocalDateTime.addTimerPickerState(timePickerState: TimePickerState): LocalDateTime {
     return this.withHour(timePickerState.hour).withMinute(timePickerState.minute)
 }
+
 @Composable
 fun TimePickerDialog(
     onDismiss: () -> Unit,
@@ -335,5 +314,3 @@ fun TimePickerDialog(
         text = { content() }
     )
 }
-
-
