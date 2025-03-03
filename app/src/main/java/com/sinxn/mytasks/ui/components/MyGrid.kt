@@ -21,7 +21,7 @@ fun <T> MyGrid(
         for (x in 0 until rows) {
             Row(Modifier.fillMaxWidth()) {
                 for (y in 0 until columns) {
-                    val index = x*y
+                    val index = x*columns + y
                     if(index >= list.size){
                         break
                     }
@@ -29,6 +29,5 @@ fun <T> MyGrid(
                 }
             }
         }
-
     }
 }
