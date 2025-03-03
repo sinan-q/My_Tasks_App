@@ -55,6 +55,10 @@ fun HomeScreen(
                 onAddNoteClick = onAddNoteClick,
                 onAddEventClick = onAddEventClick,
                 onAddFolderClick = { folderEditToggle = true },
+                currentFolder = Folder(
+                    folderId = 0L,
+                    name = "Root"
+                ),
             )
         },
 

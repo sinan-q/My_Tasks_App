@@ -66,12 +66,14 @@ fun FolderListScreen(
     }
     Scaffold(
         floatingActionButton = {
-            ShowOptionsFAB(
-                onAddTaskClick = onAddTaskClick,
-                onAddNoteClick = onAddNoteClick,
-                onAddFolderClick = { folderEditToggle = true },
-                currentFolder = currentFolder
-            )
+            currentFolder?.let {
+                ShowOptionsFAB(
+                    onAddTaskClick = onAddTaskClick,
+                    onAddNoteClick = onAddNoteClick,
+                    onAddFolderClick = { folderEditToggle = true },
+                    currentFolder = it
+                )
+            }
         },
 
         topBar = {

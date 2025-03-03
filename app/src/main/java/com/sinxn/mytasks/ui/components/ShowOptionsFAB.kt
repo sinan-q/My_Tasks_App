@@ -30,7 +30,7 @@ fun ShowOptionsFAB(
     onAddNoteClick: (Long?) -> Unit = {},
     onAddEventClick: (Long?) -> Unit = {},
     onAddFolderClick: () -> Unit = {},
-    currentFolder: Folder? = null,
+    currentFolder: Folder,
 ) {
     var isOptionsVisible by remember { mutableStateOf(false) }
 
