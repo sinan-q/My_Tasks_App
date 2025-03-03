@@ -42,13 +42,12 @@ fun AddEditNoteScreen(
     noteViewModel: NoteViewModel,
     onFinish: () -> Unit,
 ) {
-
     var noteInputState by remember { mutableStateOf(Note()) }
     var isEditing by remember { mutableStateOf(noteId == -1L) }
     val noteState by noteViewModel.note.collectAsState()
     val folder by noteViewModel.folder.collectAsState()
     val folders by noteViewModel.folders.collectAsState(initial = emptyList())
-    // Load existing note if noteId is valid
+
     LaunchedEffect(noteId, folderId) {
         if (noteId != -1L) {
             noteViewModel.fetchNoteById(noteId)
@@ -58,12 +57,7 @@ fun AddEditNoteScreen(
     }
     LaunchedEffect(noteState) {
         noteState?.let { note ->
-            noteInputState = noteInputState.copy(
-                title = note.title,
-                folderId = note.folderId,
-                content = note.content,
-                timestamp = note.timestamp
-            )
+            noteInputState = note.copy()
         }
     }
     Scaffold(
@@ -73,12 +67,8 @@ fun AddEditNoteScreen(
                     if (isEditing) {
                         if (noteInputState.title.isNotEmpty() || noteInputState.content.isNotEmpty()) {
                             noteViewModel.addNote(
-                                Note(
-                                    id = if (noteId == -1L) null else noteId,
-                                    folderId = noteInputState.folderId,
-                                    title = noteInputState.title,
-                                    content = noteInputState.content,
-                                    timestamp = noteInputState.timestamp
+                                noteInputState.copy(
+                                    id = if (noteId == -1L) null else noteId
                                 )
                             )
                             onFinish()
@@ -154,9 +144,4 @@ fun AddEditNoteScreen(
             )
         }
     }
-
-
-
-
-
 }

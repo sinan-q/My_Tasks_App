@@ -40,7 +40,9 @@ import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.ui.components.FolderDropDown
 import com.sinxn.mytasks.ui.components.RectangleFAB
+import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
+import com.sinxn.mytasks.utils.addTimerPickerState
 import com.sinxn.mytasks.utils.formatDate
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
@@ -286,31 +288,4 @@ fun validateEventInput(eventInputState: Event): Boolean {
             eventInputState.start != null &&
             eventInputState.end != null &&
             !eventInputState.start.isAfter(eventInputState.end)
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-fun LocalDateTime.addTimerPickerState(timePickerState: TimePickerState): LocalDateTime {
-    return this.withHour(timePickerState.hour).withMinute(timePickerState.minute)
-}
-
-@Composable
-fun TimePickerDialog(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        dismissButton = {
-            TextButton(onClick = { onDismiss() }) {
-                Text("Dismiss")
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm() }) {
-                Text("OK")
-            }
-        },
-        text = { content() }
-    )
 }

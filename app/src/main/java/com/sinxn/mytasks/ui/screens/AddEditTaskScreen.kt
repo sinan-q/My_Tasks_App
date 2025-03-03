@@ -37,8 +37,9 @@ import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.components.FolderDropDown
 import com.sinxn.mytasks.ui.components.RectangleFAB
-import com.sinxn.mytasks.ui.screens.addTimerPickerState
+import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
+import com.sinxn.mytasks.utils.addTimerPickerState
 import com.sinxn.mytasks.utils.formatDate
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
@@ -53,8 +54,6 @@ fun AddEditTaskScreen(
     taskViewModel: TaskViewModel,
     onFinish: () -> Unit,
 ) {
-
-
     var taskInputState by remember { mutableStateOf(Task()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -64,8 +63,6 @@ fun AddEditTaskScreen(
     val folder by taskViewModel.folder.collectAsState()
     val folders by taskViewModel.folders.collectAsState()
 
-
-    // Use a single LaunchedEffect for fetching data
     LaunchedEffect(taskId, folderId) {
         if (taskId != -1L) {
             taskViewModel.fetchTaskById(taskId)
@@ -73,17 +70,10 @@ fun AddEditTaskScreen(
             taskViewModel.fetchFolderById(folderId)
         }
     }
-    // Update the input state when the task state changes
+
     LaunchedEffect(taskState) {
         taskState?.let { task ->
-            taskInputState = taskInputState.copy(
-                title = (task.title),
-                folderId = task.folderId,
-                description = (task.description),
-                due = task.due,
-                timestamp = task.timestamp,
-                isCompleted = task.isCompleted,
-            )
+            taskInputState = task.copy()
         }
     }
 
@@ -93,18 +83,10 @@ fun AddEditTaskScreen(
                 onClick = {
                     if (isEditing) {
                         if (taskInputState.title.isNotEmpty() || taskInputState.description.isNotEmpty()) {
-                            val taskToSave = Task(
+                            val taskToSave = taskInputState.copy(
                                 id = if (taskId == -1L) null else taskId,
-                                folderId = taskInputState.folderId,
-                                title = taskInputState.title,
-                                description = taskInputState.description,
-                                due = taskInputState.due,
-                                isCompleted = taskInputState.isCompleted,
-                                timestamp = taskInputState.timestamp
                             )
-                            if (taskId == -1L) taskViewModel.insertTask(taskToSave)
-                            else taskViewModel.updateTask(taskToSave)
-
+                            taskViewModel.insertTask(taskToSave)
                             onFinish()
                         } else {
                             //TODO
@@ -240,27 +222,4 @@ fun AddEditTaskScreen(
             }
         }
     }
-}
-
-
-@Composable
-fun TimePickerDialog(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        dismissButton = {
-            TextButton(onClick = { onDismiss() }) {
-                Text("Dismiss")
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm() }) {
-                Text("OK")
-            }
-        },
-        text = { content() }
-    )
 }

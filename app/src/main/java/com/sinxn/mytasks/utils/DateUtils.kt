@@ -1,5 +1,7 @@
 package com.sinxn.mytasks.utils
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TimePickerState
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -18,4 +20,9 @@ fun fromMillis(millis :Long): LocalDateTime {
 
 fun LocalDateTime.toMillis(): Long {
     return this.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+fun LocalDateTime.addTimerPickerState(timePickerState: TimePickerState): LocalDateTime {
+    return this.withHour(timePickerState.hour).withMinute(timePickerState.minute)
 }
