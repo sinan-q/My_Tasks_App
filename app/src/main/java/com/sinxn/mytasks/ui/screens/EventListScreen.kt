@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,6 +17,7 @@ import androidx.compose.ui.Modifier
 import com.sinxn.mytasks.ui.components.CalendarGrid
 import com.sinxn.mytasks.ui.components.EventItem
 import com.sinxn.mytasks.ui.components.MyTitle
+import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,7 +38,7 @@ fun EventListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { onAddEventClick() }) {
+            RectangleFAB(onClick = { onAddEventClick() }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Event")
             }
         }

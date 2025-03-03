@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.FolderItem
 import com.sinxn.mytasks.ui.components.FolderItemEdit
-import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.NoteItem
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.components.TaskItem

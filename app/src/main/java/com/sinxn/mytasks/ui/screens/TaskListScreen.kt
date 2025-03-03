@@ -6,13 +6,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.TaskItem
 import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
 
@@ -26,7 +26,7 @@ fun TaskListScreen(
 ) {
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { onAddTaskClick(0L) }) {
+            RectangleFAB(onClick = { onAddTaskClick(0L) }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Task")
             }
         },

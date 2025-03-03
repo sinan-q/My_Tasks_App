@@ -10,9 +10,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,8 +19,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Folder
+
 
 @Composable
 fun ShowOptionsFAB(
@@ -31,69 +32,103 @@ fun ShowOptionsFAB(
     onAddFolderClick: () -> Unit = {},
     currentFolder: Folder? = null,
 ) {
+    var isOptionsVisible by remember { mutableStateOf(false) }
 
-    var showOptions by remember { mutableStateOf(false) }
-    Column( verticalArrangement = Arrangement.spacedBy(10.dp),horizontalAlignment = Alignment.End) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp), // Increased spacing for better readability
+        horizontalAlignment = Alignment.End
+    ) {
         AnimatedVisibility(
-            visible = showOptions,
+            visible = isOptionsVisible,
         ) {
-            Column (verticalArrangement = Arrangement.spacedBy(10.dp),horizontalAlignment = Alignment.End ) {
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        showOptions = false
-                        onAddEventClick(currentFolder?.folderId)
-                    }, icon = {
-                        Icon(
-                            Icons.Filled.Notifications,
-                            contentDescription = "Add Event"
-                        )
-                    }, text = { Text(text = "Add Event") })
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        showOptions = false
-                        onAddTaskClick(currentFolder?.folderId)
-                    }, icon = {
-                        Icon(
-                            Icons.Filled.Person,
-                            contentDescription = "Add Task"
-                        )
-                    }, text = { Text(text = "Add Task") })
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        showOptions = false
-                        onAddFolderClick()
-                    }, icon = {
-                        Icon(
-                            Icons.Filled.Add,
-                            contentDescription = "Add Folder"
-                        )
-                    }, text = { Text(text = "Add Folder") })
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        showOptions = false
-                        onAddNoteClick(currentFolder?.folderId)
-                    }, icon = {
-                        Icon(
-                            Icons.Filled.Check,
-                            contentDescription = "Add Note"
-                        )
-                    }, text = { Text(text = "Add Note") })
-
-            }
+            OptionsColumn(
+                onAddTaskClick = { onAddTaskClick(currentFolder?.folderId) },
+                onAddNoteClick = { onAddNoteClick(currentFolder?.folderId) },
+                onAddEventClick = { onAddEventClick(currentFolder?.folderId) },
+                onAddFolderClick = onAddFolderClick,
+                onCloseOptions = { isOptionsVisible = false }
+            )
         }
+
         AnimatedVisibility(
             visible = true,
             enter = fadeIn(animationSpec = spring())
         ) {
-
-            FloatingActionButton(onClick = { showOptions = !showOptions }) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Add"
-                )
-            }
+            MainFloatingActionButton(
+                isOptionsVisible = isOptionsVisible,
+                onToggleOptions = { isOptionsVisible = !isOptionsVisible }
+            )
         }
+    }
+}
 
+@Composable
+fun OptionsColumn(
+    onAddTaskClick: () -> Unit,
+    onAddNoteClick: () -> Unit,
+    onAddEventClick: () -> Unit,
+    onAddFolderClick: () -> Unit,
+    onCloseOptions: () -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalAlignment = Alignment.End
+    ) {
+        OptionButton(
+            onClick = { onCloseOptions(); onAddEventClick() },
+            icon = Icons.Filled.Notifications,
+            contentDescription = "Add Event",
+            text = "Add Event"
+        )
+        OptionButton(
+            onClick = { onCloseOptions(); onAddTaskClick() },
+            icon = Icons.Filled.Person,
+            contentDescription = "Add Task",
+            text = "Add Task"
+        )
+        OptionButton(
+            onClick = { onCloseOptions(); onAddFolderClick() },
+            icon = Icons.Filled.Add,
+            contentDescription = "Add Folder",
+            text = "Add Folder"
+        )
+        OptionButton(
+            onClick = { onCloseOptions(); onAddNoteClick() },
+            icon = Icons.Filled.Check,
+            contentDescription = "Add Note",
+            text = "Add Note"
+        )
+    }
+}
 
+@Composable
+fun OptionButton(
+    onClick: () -> Unit,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String,
+    text: String
+) {
+    ExtendedRectangleFAB(
+        onClick = onClick,
+        icon = { Icon(icon, contentDescription = contentDescription) },
+        text = { Text(text = text) }
+    )
+}
+
+@Composable
+fun MainFloatingActionButton(
+    isOptionsVisible: Boolean,
+    onToggleOptions: () -> Unit
+) {
+    RectangleFAB(
+        onClick = onToggleOptions,
+        shape = RectangleShape,
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    ) {
+        Icon(
+            Icons.Default.Add,
+            contentDescription = if (isOptionsVisible) "Close Options" else "Open Options"
+        )
     }
 }
