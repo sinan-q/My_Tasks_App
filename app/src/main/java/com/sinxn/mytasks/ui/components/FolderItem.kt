@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -30,11 +29,11 @@ import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Folder
 
 @Composable
-fun FolderItem(folder: Folder, onClick: () -> Unit, onDelete: () -> Unit) {
+fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit, onDelete: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
-    RectangleCard(onClick = onClick) {
-        Row(modifier= Modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+    RectangleCard(modifier = modifier,onClick = onClick) {
+        Row(modifier= Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column(
                 modifier = Modifier.weight(0.9f).fillMaxWidth(0.9f).padding(2.dp),
                 verticalArrangement = Arrangement.Center,
@@ -45,7 +44,7 @@ fun FolderItem(folder: Folder, onClick: () -> Unit, onDelete: () -> Unit) {
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            Column (horizontalAlignment = Alignment.End, modifier = Modifier.fillMaxSize().weight(0.2f)) {
+            Column (horizontalAlignment = Alignment.End, modifier = Modifier.fillMaxWidth().weight(0.2f)) {
                 IconButton(
                     onClick = { expanded = true }
                 ) {

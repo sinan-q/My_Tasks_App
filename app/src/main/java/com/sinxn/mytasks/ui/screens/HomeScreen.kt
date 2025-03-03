@@ -2,12 +2,8 @@ package com.sinxn.mytasks.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -21,6 +17,7 @@ import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.EventSmallItem
 import com.sinxn.mytasks.ui.components.FolderItem
 import com.sinxn.mytasks.ui.components.FolderItemEdit
+import com.sinxn.mytasks.ui.components.MyGrid
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.NoteItem
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
@@ -66,53 +63,58 @@ fun HomeScreen(
 
         },
     ) { padding ->
-
-        Column(modifier = Modifier.padding(padding)) {
-            MyTitle(modifier = Modifier.clickable {
-                onEventClick()
-            },title = "Upcoming Events")
-            LazyColumn {
-                items(events) { event ->
-                    EventSmallItem(event)
+        LazyColumn(modifier = Modifier.padding(padding)) {
+            item {
+                MyTitle(modifier = Modifier.clickable {
+                    onEventClick()
+                }, title = "Upcoming Events")
+            }
+            items(events) { event ->
+                EventSmallItem(event)
+            }
+            item {
+                MyTitle(title = "Root")
+                AnimatedVisibility(
+                    visible = folderEditToggle
+                ) {
+                    FolderItemEdit(
+                        folder = Folder(
+                            name = "New Folder",
+                        ),
+                        onDismiss = { folderEditToggle = false }
+                    ) { homeViewModel.addFolder(it) }
                 }
-            }
-            MyTitle(title = "Root")
-            AnimatedVisibility(
-                visible = folderEditToggle
-            ) {
-                FolderItemEdit(
-                    folder = Folder(
-                        name = "New Folder",
-                    ), onDismiss = { folderEditToggle = false }) { homeViewModel.addFolder(it) }
-
-            }
-
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-            ) {
-                items(folders) { folder ->
+                MyGrid(
+                    list = folders,
+                    columns = 2
+                ) { folder ->
                     FolderItem(
+                        modifier = Modifier.weight(1f),
                         folder = folder,
                         onClick = { onFolderClick(folder.folderId) },
                         onDelete = { homeViewModel.deleteFolder(folder) })
                 }
             }
-            LazyColumn {
-                items(tasks) { task ->
-                    TaskItem(
-                        task = task, onClick = { onTaskClick(task.id) },
-                        onUpdate = { status -> taskViewModel.updateStatusTask(task.id!!, status) },
-                        path = null,
+            items(tasks) { task ->
+                TaskItem(
+                    task = task, onClick = { onTaskClick(task.id) },
+                    onUpdate = { status -> taskViewModel.updateStatusTask(task.id!!, status) },
+                    path = null,
+                )
+            }
+            item {
+                MyGrid(
+                    list = notes,
+                    columns = 2
+                ) { note ->
+                    NoteItem(
+                        modifier = Modifier.weight(1f),
+                        note = note,
+                        onClick = { onNoteClick(note.id) }
                     )
                 }
             }
-            LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-                items(notes) { note ->
-                    NoteItem(note = note, onClick = { onNoteClick(note.id) })
-                }
-            }
         }
-
     }
 }
 
