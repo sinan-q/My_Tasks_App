@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.ui.components.FolderDropDown
@@ -42,11 +44,13 @@ fun AddEditNoteScreen(
     noteViewModel: NoteViewModel,
     onFinish: () -> Unit,
 ) {
+    val context = LocalContext.current
     var noteInputState by remember { mutableStateOf(Note()) }
     var isEditing by remember { mutableStateOf(noteId == -1L) }
     val noteState by noteViewModel.note.collectAsState()
     val folder by noteViewModel.folder.collectAsState()
     val folders by noteViewModel.folders.collectAsState(initial = emptyList())
+    val toastMessage by noteViewModel.toastMessage.collectAsState()
 
     LaunchedEffect(noteId, folderId) {
         if (noteId != -1L) {
@@ -59,6 +63,12 @@ fun AddEditNoteScreen(
         noteState?.let { note ->
             noteInputState = note.copy()
         }
+    }
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let { message ->
+            Toast.makeText(context,message,Toast.LENGTH_LONG).show()
+        }
+
     }
     Scaffold(
         floatingActionButton = {
@@ -73,7 +83,7 @@ fun AddEditNoteScreen(
                             )
                             onFinish()
                         } else {
-                            // Handle empty fields, e.g., show a Toast or Snackbar
+                            noteViewModel.toast("Note cannot be empty")
                         }
                     } else {
                         isEditing = true

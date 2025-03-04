@@ -32,6 +32,9 @@ class NoteViewModel @Inject constructor(
     private val _folders = MutableStateFlow<List<Folder>>(emptyList())
     val folders: StateFlow<List<Folder>> = _folders
 
+    private val _toastMessage = MutableStateFlow<String?>(null)
+    val toastMessage: StateFlow<String?> = _toastMessage
+
     init {
         viewModelScope.launch {
             noteRepository.getAllNotes().collect { noteList ->
@@ -43,12 +46,14 @@ class NoteViewModel @Inject constructor(
     fun addNote(note: Note) {
         viewModelScope.launch {
             noteRepository.insertNote(note)
+            toast("Note added successfully")
         }
     }
 
     fun deleteNote(note: Note) {
         viewModelScope.launch {
             noteRepository.deleteNote(note)
+            toast("Note Deleted")
         }
     }
 
@@ -70,5 +75,10 @@ class NoteViewModel @Inject constructor(
                 folderId = fetchedFolder.folderId,
             )
         }
+    }
+
+    fun toast(message: String) {
+        _toastMessage.value = message
+
     }
 }
