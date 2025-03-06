@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.screens
+package com.sinxn.mytasks.ui.screens.homeScreen
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
@@ -14,16 +14,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.ui.components.EventSmallItem
-import com.sinxn.mytasks.ui.components.FolderItem
-import com.sinxn.mytasks.ui.components.FolderItemEdit
+import com.sinxn.mytasks.ui.screens.eventScreen.EventSmallItem
+import com.sinxn.mytasks.ui.screens.folderScreen.FolderItem
+import com.sinxn.mytasks.ui.screens.folderScreen.FolderItemEdit
 import com.sinxn.mytasks.ui.components.MyGrid
 import com.sinxn.mytasks.ui.components.MyTitle
-import com.sinxn.mytasks.ui.components.NoteItem
+import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
-import com.sinxn.mytasks.ui.components.TaskItem
-import com.sinxn.mytasks.ui.screens.viewmodel.HomeViewModel
-import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
+import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
+import com.sinxn.mytasks.ui.screens.taskScreen.TaskViewModel
 
 @Composable
 fun HomeScreen(

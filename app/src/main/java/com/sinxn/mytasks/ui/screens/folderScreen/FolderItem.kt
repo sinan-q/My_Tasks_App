@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.components
+package com.sinxn.mytasks.ui.screens.folderScreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.ui.components.RectangleCard
 
 @Composable
 fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit, onDelete: () -> Unit) {

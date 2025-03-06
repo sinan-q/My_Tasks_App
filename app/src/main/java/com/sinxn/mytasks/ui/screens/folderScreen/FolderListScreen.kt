@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.screens
+package com.sinxn.mytasks.ui.screens.folderScreen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -27,12 +27,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.ui.components.FolderItem
-import com.sinxn.mytasks.ui.components.FolderItemEdit
-import com.sinxn.mytasks.ui.components.NoteItem
+import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
-import com.sinxn.mytasks.ui.components.TaskItem
-import com.sinxn.mytasks.ui.screens.viewmodel.FolderViewModel
+import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.screens
+package com.sinxn.mytasks.ui.screens.eventScreen
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,10 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import com.sinxn.mytasks.ui.components.CalendarGrid
-import com.sinxn.mytasks.ui.components.EventItem
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.RectangleFAB
-import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

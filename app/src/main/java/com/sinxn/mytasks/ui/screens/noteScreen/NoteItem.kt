@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.components
+package com.sinxn.mytasks.ui.screens.noteScreen
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable

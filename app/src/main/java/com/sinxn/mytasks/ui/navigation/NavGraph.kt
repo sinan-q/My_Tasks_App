@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.ui.navigation
 
-import AddEditTaskScreen
+import com.sinxn.mytasks.ui.screens.taskScreen.AddEditTaskScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
@@ -9,18 +9,18 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.sinxn.mytasks.ui.screens.AddEditEventScreen
-import com.sinxn.mytasks.ui.screens.AddEditNoteScreen
-import com.sinxn.mytasks.ui.screens.EventListScreen
-import com.sinxn.mytasks.ui.screens.FolderListScreen
-import com.sinxn.mytasks.ui.screens.HomeScreen
-import com.sinxn.mytasks.ui.screens.NoteListScreen
-import com.sinxn.mytasks.ui.screens.TaskListScreen
-import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
-import com.sinxn.mytasks.ui.screens.viewmodel.FolderViewModel
-import com.sinxn.mytasks.ui.screens.viewmodel.HomeViewModel
-import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
-import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
+import com.sinxn.mytasks.ui.screens.eventScreen.AddEditEventScreen
+import com.sinxn.mytasks.ui.screens.noteScreen.AddEditNoteScreen
+import com.sinxn.mytasks.ui.screens.eventScreen.EventListScreen
+import com.sinxn.mytasks.ui.screens.folderScreen.FolderListScreen
+import com.sinxn.mytasks.ui.screens.homeScreen.HomeScreen
+import com.sinxn.mytasks.ui.screens.noteScreen.NoteListScreen
+import com.sinxn.mytasks.ui.screens.taskScreen.TaskListScreen
+import com.sinxn.mytasks.ui.screens.eventScreen.EventViewModel
+import com.sinxn.mytasks.ui.screens.folderScreen.FolderViewModel
+import com.sinxn.mytasks.ui.screens.homeScreen.HomeViewModel
+import com.sinxn.mytasks.ui.screens.noteScreen.NoteViewModel
+import com.sinxn.mytasks.ui.screens.taskScreen.TaskViewModel
 
 @Composable
 fun NavGraph(

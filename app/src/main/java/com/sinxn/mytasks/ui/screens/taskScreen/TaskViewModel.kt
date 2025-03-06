@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.screens.viewmodel
+package com.sinxn.mytasks.ui.screens.taskScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

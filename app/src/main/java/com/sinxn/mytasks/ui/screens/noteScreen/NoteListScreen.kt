@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.screens
+package com.sinxn.mytasks.ui.screens.noteScreen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.ui.components.NoteItem
 import com.sinxn.mytasks.ui.components.RectangleFAB
 
 @Composable

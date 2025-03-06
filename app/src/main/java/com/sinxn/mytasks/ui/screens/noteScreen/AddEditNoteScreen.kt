@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.screens
+package com.sinxn.mytasks.ui.screens.noteScreen
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
@@ -31,9 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.ui.components.FolderDropDown
+import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
 import com.sinxn.mytasks.ui.components.RectangleFAB
-import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

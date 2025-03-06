@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.screens
+package com.sinxn.mytasks.ui.screens.taskScreen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,8 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.components.RectangleFAB
-import com.sinxn.mytasks.ui.components.TaskItem
-import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
 
 @Composable
 fun TaskListScreen(

@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.components
+package com.sinxn.mytasks.ui.screens.eventScreen
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
+import com.sinxn.mytasks.ui.components.RectangleCard
 import com.sinxn.mytasks.utils.formatDate
 
 @Composable

@@ -13,11 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.navigation.NavGraph
-import com.sinxn.mytasks.ui.screens.viewmodel.EventViewModel
-import com.sinxn.mytasks.ui.screens.viewmodel.FolderViewModel
-import com.sinxn.mytasks.ui.screens.viewmodel.HomeViewModel
-import com.sinxn.mytasks.ui.screens.viewmodel.NoteViewModel
-import com.sinxn.mytasks.ui.screens.viewmodel.TaskViewModel
+import com.sinxn.mytasks.ui.screens.eventScreen.EventViewModel
+import com.sinxn.mytasks.ui.screens.folderScreen.FolderViewModel
+import com.sinxn.mytasks.ui.screens.homeScreen.HomeViewModel
+import com.sinxn.mytasks.ui.screens.noteScreen.NoteViewModel
+import com.sinxn.mytasks.ui.screens.taskScreen.TaskViewModel
 import com.sinxn.mytasks.ui.theme.MyTasksTheme
 import dagger.hilt.android.AndroidEntryPoint
 
