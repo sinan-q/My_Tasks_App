@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.navigation.NavGraph
+import com.sinxn.mytasks.ui.screens.backupScreen.BackupViewModel
 import com.sinxn.mytasks.ui.screens.eventScreen.EventViewModel
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderViewModel
 import com.sinxn.mytasks.ui.screens.homeScreen.HomeViewModel
@@ -28,6 +29,7 @@ class MainActivity : ComponentActivity() {
     private val homeViewModel: HomeViewModel by viewModels()
     private val eventViewModel: EventViewModel by viewModels()
     private val folderViewModel: FolderViewModel by viewModels()
+    private val backupViewModel: BackupViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +50,7 @@ class MainActivity : ComponentActivity() {
                         homeViewModel = homeViewModel,
                         eventViewModel = eventViewModel,
                         modifier = Modifier.padding(paddingValues),
+                        backupViewModel = backupViewModel,
                         folderViewModel = folderViewModel
                     )
                 }

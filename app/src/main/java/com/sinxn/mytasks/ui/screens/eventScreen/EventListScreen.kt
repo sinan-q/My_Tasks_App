@@ -22,7 +22,7 @@ import com.sinxn.mytasks.ui.components.RectangleFAB
 @Composable
 fun EventListScreen(
     eventViewModel: EventViewModel,
-    onAddEventClick: () -> Unit,
+    onAddEventClick: (folderId: Long) -> Unit,
     onEventClick: (Long) -> Unit,
     onDayClick: (Long) -> Unit
 ) {
@@ -36,7 +36,7 @@ fun EventListScreen(
             )
         },
         floatingActionButton = {
-            RectangleFAB(onClick = { onAddEventClick() }) {
+            RectangleFAB(onClick = { onAddEventClick( 0L) }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Event")
             }
         }

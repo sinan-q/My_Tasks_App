@@ -18,13 +18,13 @@ import com.sinxn.mytasks.ui.components.RectangleFAB
 @Composable
 fun NoteListScreen(
     notes: List<Note>,
-    onAddNoteClick: (Long?) -> Unit,
+    onAddNoteClick: (folder: Long?) -> Unit,
     onNoteClick: (Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         floatingActionButton = {
-            RectangleFAB(onClick = { onAddNoteClick(-1L) }) {
+            RectangleFAB(onClick = { onAddNoteClick(0) }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Note")
             }
         },

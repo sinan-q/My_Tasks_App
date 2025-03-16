@@ -9,6 +9,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.sinxn.mytasks.ui.screens.backupScreen.BackupScreen
+import com.sinxn.mytasks.ui.screens.backupScreen.BackupViewModel
 import com.sinxn.mytasks.ui.screens.eventScreen.AddEditEventScreen
 import com.sinxn.mytasks.ui.screens.noteScreen.AddEditNoteScreen
 import com.sinxn.mytasks.ui.screens.eventScreen.EventListScreen
@@ -30,8 +32,43 @@ fun NavGraph(
     homeViewModel: HomeViewModel,
     eventViewModel: EventViewModel,
     folderViewModel: FolderViewModel,
+    backupViewModel: BackupViewModel,
     modifier: Modifier = Modifier
 ) {
+    val onAddNoteClick: (folderId: Long?) -> Unit = { folderId -> navController.navigate("add_edit_note/-1L/$folderId") }
+    val onNoteClick: (noteId: Long?) -> Unit = { noteId ->
+        navController.navigate("add_edit_note/$noteId/0")
+    }
+    val onAddTaskClick: (folderId: Long?) -> Unit = { folderId->
+        navController.navigate("add_edit_task/-1L/$folderId")
+    }
+    val onTaskClick: (taskId: Long?) -> Unit = { taskId ->
+        navController.navigate("add_edit_task/$taskId/0"){
+            popUpTo(navController.currentBackStackEntry!!.destination.id){
+                inclusive = true
+            }
+        }
+    }
+
+    val onAddEventClick: (folderId: Long?) -> Unit = { folderId ->
+        navController.navigate("add_edit_event/-1L/$folderId/-1L")
+    }
+
+    val onEventClick: () -> Unit = {
+        navController.navigate("event_list")
+    }
+    val onFolderClick: (folderId: Long) -> Unit = { folderId ->
+        navController.navigate("folder_list/$folderId")
+    }
+
+    val onBack: () -> Unit = {
+        navController.popBackStack()
+    }
+
+    val onBackup: () -> Unit = {
+        navController.navigate("backup")
+    }
+
     NavHost(
         navController = navController,
         startDestination = "home",
@@ -41,40 +78,22 @@ fun NavGraph(
             HomeScreen(
                 homeViewModel = homeViewModel,
                 taskViewModel = taskViewModel,
-                onAddNoteClick = { folderId -> navController.navigate("add_edit_note/-1L/$folderId") },
-                onNoteClick = { noteId ->
-                    navController.navigate("add_edit_note/$noteId/0")
-                },
-                onAddTaskClick = { folderId->
-                    navController.navigate("add_edit_task/-1L/$folderId")
-
-                },
-                onTaskClick = { taskId ->
-                    navController.navigate("add_edit_task/$taskId/0"){
-                        popUpTo(navController.currentBackStackEntry!!.destination.id){
-                            inclusive = true
-                        }
-                    }
-                },
-                onAddEventClick = { folderId ->
-                    navController.navigate("add_edit_event/-1L/$folderId/-1L")
-                },
-                onEventClick = {
-                    navController.navigate("event_list")
-                },
-                onFolderClick = { folderId ->
-                    navController.navigate("folder_list/$folderId")
-                }
+                onAddNoteClick = onAddNoteClick,
+                onNoteClick = onNoteClick,
+                onAddTaskClick = onAddTaskClick,
+                onTaskClick = onTaskClick,
+                onAddEventClick = onAddEventClick,
+                onEventClick = onEventClick,
+                onFolderClick = onFolderClick,
+                onBackup = onBackup
             )
         }
 
         composable("note_list") {
             NoteListScreen(
                 notes = noteViewModel.notes.collectAsState().value,
-                onAddNoteClick = { navController.navigate("add_edit_note/-1L/0") },
-                onNoteClick = { noteId ->
-                    navController.navigate("add_edit_note/$noteId/0")
-                }
+                onAddNoteClick = onAddNoteClick,
+                onNoteClick = onNoteClick
             )
         }
         composable(
@@ -82,7 +101,6 @@ fun NavGraph(
             arguments = listOf(
                 navArgument("noteId") { type = NavType.LongType; defaultValue = -1L },
                 navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
-
                 )
         ) { backStackEntry ->
             val noteId = backStackEntry.arguments?.getLong("noteId") ?: -1L
@@ -99,12 +117,8 @@ fun NavGraph(
         composable("tasks") {
             TaskListScreen(
                 tasks = taskViewModel.tasks.collectAsState().value,
-                onAddTaskClick = { parentId->
-                    navController.navigate("add_edit_task/-1L/$parentId")
-                },
-                onTaskClick = { taskId ->
-                    navController.navigate("add_edit_task/$taskId/0")
-                },
+                onAddTaskClick = onAddTaskClick,
+                onTaskClick = onTaskClick,
                 taskViewModel = taskViewModel
             )
         }
@@ -127,10 +141,8 @@ fun NavGraph(
         composable("event_list") {
             EventListScreen(
                 eventViewModel = eventViewModel,
-                onAddEventClick = { navController.navigate("add_edit_event/-1L/0/-1L") },
-                onEventClick = { eventId ->
-                    navController.navigate("add_edit_event/$eventId/0/-1L")
-                },
+                onAddEventClick = onAddEventClick,
+                onEventClick = onAddEventClick,
                 onDayClick = { epochDay ->
                     navController.navigate("add_edit_event/-1L/0/$epochDay")
                 }
@@ -153,7 +165,7 @@ fun NavGraph(
                 folderId = folderId,
                 date = date,
                 eventViewModel = eventViewModel,
-                onFinish = { navController.popBackStack() },
+                onFinish = onBack
             )
 
 
@@ -169,26 +181,20 @@ fun NavGraph(
             FolderListScreen(
                 folderId = folderId,
                 folderViewModel = folderViewModel,
-                onAddNoteClick = { folderId -> navController.navigate("add_edit_note/-1L/$folderId") },
-                onNoteClick = { noteId ->
-                    navController.navigate("add_edit_note/$noteId/0")
-                },
-                onAddTaskClick = { folderId->
-                    navController.navigate("add_edit_task/-1L/$folderId")
-
-                },
-                onTaskClick = { taskId ->
-                    navController.navigate("add_edit_task/$taskId/0"){
-                        popUpTo(navController.currentBackStackEntry!!.destination.id){
-                            inclusive = true
-                        }
-                    }
-                },
-                onBack = {
-                    navController.popBackStack()
-                }
+                onAddNoteClick = onAddNoteClick,
+                onNoteClick = onNoteClick,
+                onAddTaskClick = onAddTaskClick,
+                onTaskClick = onTaskClick,
+                onBack = onBack
 
             )
+        }
+
+        composable(
+            route = "backup",
+
+        ) {
+            BackupScreen(viewModel = backupViewModel)
         }
     }
 }
