@@ -22,14 +22,14 @@ class TaskViewModel @Inject constructor(
     private val folderRepository: FolderRepository
     ) : ViewModel() {
 
-    val tasks = repository.getAllTasks().stateIn(
+    val tasks = repository.getAllTasksSorted().stateIn(
         viewModelScope,
         SharingStarted.Lazily,
         emptyList()
     )
 
-    private val _task = MutableStateFlow<Task?>(null)
-    val task: StateFlow<Task?> = _task
+    private val _task = MutableStateFlow(Task())
+    val task: StateFlow<Task> = _task
 
     private val _folder = MutableStateFlow<Folder?>(null)
     val folder: StateFlow<Folder?> = _folder
@@ -47,7 +47,7 @@ class TaskViewModel @Inject constructor(
 
     fun fetchTaskById(taskId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            val fetchedTask = repository.getTaskById(taskId)
+            val fetchedTask = repository.getTaskById(taskId)!!
             val fetchedFolder = folderRepository.getFolderById(fetchedTask?.folderId?: 0)
             _task.value = fetchedTask
             _folder.value = fetchedFolder
@@ -79,7 +79,7 @@ class TaskViewModel @Inject constructor(
             val subFolders = folderRepository.getSubFolders(folderId).first()
             _folders.value = subFolders
             _folder.value = fetchedFolder
-            _task.value = task.value?.copy(
+            _task.value = task.value.copy(
                 folderId = fetchedFolder.folderId,
             )
         }

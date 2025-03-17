@@ -72,7 +72,7 @@ fun AddEditTaskScreen(
     }
 
     LaunchedEffect(taskState) {
-        taskState?.let { task ->
+        taskState.let { task ->
             taskInputState = task.copy()
         }
     }
@@ -87,7 +87,7 @@ fun AddEditTaskScreen(
                                 id = if (taskId == -1L) null else taskId,
                             )
                             taskViewModel.insertTask(taskToSave)
-                            onFinish()
+                            isEditing = false
                         } else {
                             //TODO
                         }
@@ -116,7 +116,7 @@ fun AddEditTaskScreen(
                 actions = {
                     if (taskId != -1L) {
                         IconButton(onClick = {
-                            taskState?.let { taskViewModel.deleteTask(it) }
+                            taskViewModel.deleteTask(taskState)
                             onFinish()
                         }) {
                             Icon(
