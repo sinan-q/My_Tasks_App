@@ -9,7 +9,7 @@ interface TaskDao {
     @Query("SELECT * FROM tasks")
     fun getAllTasks(): Flow<List<Task>>
 
-    @Query("SELECT * FROM tasks ORDER BY due DESC")
+    @Query("SELECT * FROM tasks ORDER BY isCompleted = true,due DESC")
     fun getAllTasksSorted(): Flow<List<Task>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
