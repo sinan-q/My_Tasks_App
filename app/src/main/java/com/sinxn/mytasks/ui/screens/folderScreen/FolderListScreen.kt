@@ -108,7 +108,7 @@ fun FolderListScreen(
                 FolderItemEdit(
                     folder = Folder(
                         name = "New Folder",
-                        parentFolderId = currentFolder?.folderId
+                        parentFolderId = currentFolder?.folderId?: 0L
                     ), onDismiss = { folderEditToggle = false }) { folderViewModel.addFolder(it) }
 
             }

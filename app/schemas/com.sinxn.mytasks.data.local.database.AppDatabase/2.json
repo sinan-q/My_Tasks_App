@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "0335f5e16db07184a819fdab065632c5",
+    "identityHash": "37457783949249e53b7b743ca2107776",
     "entities": [
       {
         "tableName": "notes",
@@ -106,7 +106,7 @@
       },
       {
         "tableName": "folders",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`folderId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `parentFolderId` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`folderId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `parentFolderId` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "folderId",
@@ -124,7 +124,7 @@
             "fieldPath": "parentFolderId",
             "columnName": "parentFolderId",
             "affinity": "INTEGER",
-            "notNull": false
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -196,7 +196,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0335f5e16db07184a819fdab065632c5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '37457783949249e53b7b743ca2107776')"
     ]
   }
 }

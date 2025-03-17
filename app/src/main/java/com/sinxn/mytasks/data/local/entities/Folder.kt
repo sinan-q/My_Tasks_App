@@ -7,5 +7,5 @@ import androidx.room.PrimaryKey
 data class Folder(
     @PrimaryKey(autoGenerate = true) val folderId: Long = 0L,
     val name: String,
-    val parentFolderId: Long? = null // Nullable to allow top-level folders
+    val parentFolderId: Long = 0L
 )
