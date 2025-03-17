@@ -4,7 +4,6 @@ import com.sinxn.mytasks.data.local.dao.EventDao
 import com.sinxn.mytasks.data.local.entities.Event
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
-import java.time.Month
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,7 +37,7 @@ class EventRepository @Inject constructor(
     }
 
     fun getUpcomingEvents(limit: Int): Flow<List<Event>> {
-        return eventDao.getUpcomingEvents(limit)
+        return eventDao.getUpcomingEvents(LocalDateTime.now(), limit)
 
     }
 }
