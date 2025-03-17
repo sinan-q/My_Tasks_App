@@ -21,7 +21,7 @@ fun RectangleCard(
     content: @Composable (ColumnScope.() -> Unit)
 ) {
     Card(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .padding(1.dp)
             .border(1.dp, MaterialTheme.colorScheme.outline, RectangleShape)
@@ -29,7 +29,7 @@ fun RectangleCard(
                 if (onClick != null) {
                     onClick()
                 }
-            },
+            }.then(modifier),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
         )

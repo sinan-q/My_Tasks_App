@@ -7,8 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -23,16 +21,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.ui.components.MyGrid
+import com.sinxn.mytasks.ui.components.MyTitle
+import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.screens.eventScreen.EventSmallItem
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderItem
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderItemEdit
-import com.sinxn.mytasks.ui.components.MyGrid
-import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
-import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskViewModel
 
@@ -89,16 +86,13 @@ fun HomeScreen(
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
                     ) {
-                        Button(
-                            onClick = {
+                        Text(
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp).clickable {
                                 expanded = false
                                 onBackup()
                             },
-                            modifier = Modifier.padding(2.dp),
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-                        ) {
-                            Text(text = "Backup", color = Color.Red)
-                        }
+                            text = "Backup"
+                        ) 
                     }
                 },
                 title = { Text("My Tasks") }

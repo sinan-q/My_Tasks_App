@@ -1,9 +1,11 @@
 package com.sinxn.mytasks.ui.screens.folderScreen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -13,6 +15,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -33,7 +36,7 @@ import com.sinxn.mytasks.ui.components.RectangleCard
 fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit, onDelete: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
-    RectangleCard(modifier = modifier,onClick = onClick) {
+    RectangleCard(modifier = modifier.fillMaxHeight().background(color = MaterialTheme.colorScheme.primaryContainer),onClick = onClick) {
         Row(modifier= Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column(
                 modifier = Modifier.weight(0.9f).fillMaxWidth(0.9f).padding(2.dp),
@@ -94,7 +97,11 @@ fun FolderItemEdit(folder: Folder, onDismiss: () -> Unit, onSubmit: (Folder) -> 
             Row {
                 RectangleButton(
                     onClick = { onDismiss() },
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = 8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
                     Text("Cancel")
                 }

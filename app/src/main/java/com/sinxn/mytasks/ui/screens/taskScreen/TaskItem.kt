@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens.taskScreen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
@@ -25,10 +27,9 @@ fun TaskItem(
     onClick: () -> Unit,
     onUpdate: (Boolean) -> Unit,
 ) {
-    RectangleCard(onClick = onClick) {
-        Row (modifier = Modifier.fillMaxHeight(),
-            verticalAlignment = Alignment.CenterVertically
-            ) {
+    RectangleCard(onClick = onClick, modifier = Modifier.fillMaxHeight().background(color = if (task.isCompleted) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Unspecified)) {
+
+        Row (verticalAlignment = Alignment.CenterVertically) {
 
             Checkbox(
                 checked = task.isCompleted,
