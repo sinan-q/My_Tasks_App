@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -27,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.components.RectangleCard
 
 @Composable
@@ -58,7 +58,7 @@ fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    Button(
+                    RectangleButton(
                         onClick = {
                             expanded = false
                             onDelete() },
@@ -92,13 +92,13 @@ fun FolderItemEdit(folder: Folder, onDismiss: () -> Unit, onSubmit: (Folder) -> 
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
             )
             Row {
-                Button(
+                RectangleButton(
                     onClick = { onDismiss() },
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
                     Text("Cancel")
                 }
-                Button(
+                RectangleButton (
                     onClick = { onSubmit(Folder(name = text.value, parentFolderId = folder.parentFolderId)); onDismiss() },
                     modifier = Modifier.padding(top = 8.dp)
                 ) {

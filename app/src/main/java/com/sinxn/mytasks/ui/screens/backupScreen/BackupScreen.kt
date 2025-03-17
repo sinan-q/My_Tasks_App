@@ -5,11 +5,11 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import com.sinxn.mytasks.ui.components.RectangleButton
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -38,14 +38,14 @@ fun BackupScreen(viewModel: BackupViewModel) {
         }
     }
     Column {
-        Button(onClick = {
+        RectangleButton(onClick = {
             directoryPickerLauncher.launch("backup.db")
             Toast.makeText(context, "Exported!" , Toast.LENGTH_SHORT).show()
         }) {
             Text("Export Database")
         }
 
-        Button(onClick = {
+        RectangleButton(onClick = {
             filePickerLauncher.launch("*/*")
         }) {
             Text("Import Database")
