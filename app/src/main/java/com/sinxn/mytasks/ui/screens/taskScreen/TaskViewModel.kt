@@ -3,8 +3,10 @@ package com.sinxn.mytasks.ui.screens.taskScreen
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.data.repository.AlarmRepository
 import com.sinxn.mytasks.data.repository.FolderRepository
 import com.sinxn.mytasks.data.repository.TaskRepository
 import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
@@ -24,7 +26,8 @@ import kotlin.math.log
 class TaskViewModel @Inject constructor(
     private val repository: TaskRepository,
     private val folderRepository: FolderRepository,
-    private val alarmScheduler: AlarmScheduler
+    private val alarmScheduler: AlarmScheduler,
+    private val alarmRepository: AlarmRepository
     ) : ViewModel() {
 
     val tasks = repository.getAllTasksSorted().stateIn(
@@ -66,7 +69,14 @@ class TaskViewModel @Inject constructor(
             alarmScheduler.cancelAlarm(taskId, task.title, task.description, task.due?.toMillis() ?: 0)
         } else taskId = repository.insertTask(task)
         if (taskId != -1L)
-            task.due?.let { due -> alarmScheduler.scheduleAlarm(taskId, task.title, task.description, due.toMillis()   ) }
+            task.due?.let { due ->
+                alarmRepository.insertAlarm(Alarm(
+                    taskId = taskId,
+                    isTask = true, //TODO Event
+                    time = due.toMillis()
+                ))
+                alarmScheduler.scheduleAlarm(taskId, task.title, task.description, due.toMillis()
+                ) }
     }
 
     fun deleteTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
@@ -75,6 +85,7 @@ class TaskViewModel @Inject constructor(
         }
         else {
             alarmScheduler.cancelAlarm(task.id, task.title, task.description, task.due.toMillis())
+            alarmRepository.deleteAlarm(task.id)
             repository.deleteTask(task)
         }
 

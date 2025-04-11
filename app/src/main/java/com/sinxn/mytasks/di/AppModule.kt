@@ -2,10 +2,12 @@ package com.sinxn.mytasks.di
 
 import android.content.Context
 import androidx.room.Room
+import com.sinxn.mytasks.data.local.dao.AlarmDao
 import com.sinxn.mytasks.data.local.dao.EventDao
 import com.sinxn.mytasks.data.local.dao.FolderDao
 import com.sinxn.mytasks.data.local.dao.TaskDao
 import com.sinxn.mytasks.data.local.database.AppDatabase
+import com.sinxn.mytasks.data.repository.AlarmRepository
 import com.sinxn.mytasks.data.repository.EventRepository
 import com.sinxn.mytasks.data.repository.FolderRepository
 import com.sinxn.mytasks.data.repository.NoteRepository
@@ -79,5 +81,23 @@ object AppModule {
     fun provideEventRepository(appDatabase: AppDatabase): EventRepository {
         return EventRepository(appDatabase.eventDao())
     }
+
+    @Provides
+    @Singleton
+    fun provideAlarmDao(database: AppDatabase): AlarmDao {
+        return database.alarmDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAlarmRepository(appDatabase: AppDatabase): AlarmRepository {
+        return AlarmRepository(
+            appDatabase.alarmDao(),
+            appDatabase.taskDao()
+        )
+    }
+
+
+
 
 }

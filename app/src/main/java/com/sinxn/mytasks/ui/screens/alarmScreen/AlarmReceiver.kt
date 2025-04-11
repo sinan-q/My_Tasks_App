@@ -12,17 +12,22 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        val alarmId = intent.getLongExtra("ALARM_ID", 0)
+        val title = intent.getStringExtra("ALARM_TITLE") ?: ""
+        var description = intent.getStringExtra("ALARM_DESCRIPTION") ?: ""
+        val time = intent.getStringExtra("ALARM_TIME") ?: ""
+
         val fullScreenIntent = Intent(context, AlarmScreen::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("ALARM_ID", intent.getLongExtra("ALARM_ID", 0))
-            putExtra("ALARM_TITLE", intent.getStringExtra("ALARM_TITLE"))
-            putExtra("ALARM_DESCRIPTION", intent.getStringExtra("ALARM_DESCRIPTION"))
-            putExtra("ALARM_TIME", intent.getStringExtra("ALARM_TIME"))
+            putExtra("ALARM_ID", alarmId)
+            putExtra("ALARM_TITLE", title)
+            putExtra("ALARM_DESCRIPTION", description)
+            putExtra("ALARM_TIME", time)
         }
 
         val fullScreenPendingIntent = PendingIntent.getActivity(
             context,
-            0,
+            alarmId.toInt(),
             fullScreenIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -31,29 +36,23 @@ class AlarmReceiver : BroadcastReceiver() {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // Create notification channel if necessary
-            val channel = NotificationChannel(
-                channelId,
-                "Event Reminders",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Channel for event reminders"
-            }
-            notificationManager.createNotificationChannel(channel)
+        val channel = NotificationChannel(
+            channelId,
+            "Event Reminders",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        notificationManager.createNotificationChannel(channel)
 
 
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.btn_dropdown)
-            .setContentTitle(
-                intent.getStringExtra("ALARM_TITLE")
-            )
-            .setContentText(
-                intent.getStringExtra("ALARM_DESCRIPTION")
-            )
+            .setContentTitle(title)
+            .setContentText(description)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .build()
 
-        notificationManager.notify(1, notification)
+        notificationManager.notify(alarmId.toInt(), notification)
     }
 }
