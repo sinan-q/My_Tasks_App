@@ -12,8 +12,8 @@ interface TaskDao {
     @Query("SELECT * FROM tasks ORDER BY isCompleted = true,due DESC")
     fun getAllTasksSorted(): Flow<List<Task>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTask(task: Task)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertTask(task: Task): Long
 
     @Delete
     suspend fun deleteTask(task: Task)

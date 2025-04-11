@@ -6,6 +6,8 @@ import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.data.repository.FolderRepository
 import com.sinxn.mytasks.data.repository.TaskRepository
+import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
+import com.sinxn.mytasks.utils.toMillis
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class TaskViewModel @Inject constructor(
     private val repository: TaskRepository,
-    private val folderRepository: FolderRepository
+    private val folderRepository: FolderRepository,
+    private val alarmScheduler: AlarmScheduler
     ) : ViewModel() {
 
     val tasks = repository.getAllTasksSorted().stateIn(
@@ -55,15 +58,19 @@ class TaskViewModel @Inject constructor(
     }
 
     fun insertTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
-        repository.insertTask(task)
+        if (task.id == 0L) {
+            repository.updateTask(task)
+            task.due?.let { due -> alarmScheduler.cancelAlarm(task.id) }
+        }
+        val taskId = repository.insertTask(task)
+        if (taskId != -1L)
+            task.due?.let { due -> alarmScheduler.scheduleAlarm(taskId, due.toMillis(), ) }
+
     }
 
     fun deleteTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
+        task.due?.let { alarmScheduler.cancelAlarm(task.id!!) }
         repository.deleteTask(task)
-    }
-
-    fun updateTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
-        repository.updateTask(task)
     }
 
     fun updateStatusTask(taskId: Long, status: Boolean) {
