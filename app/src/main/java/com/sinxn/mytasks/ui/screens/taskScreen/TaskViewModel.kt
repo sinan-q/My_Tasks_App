@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens.taskScreen
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.data.local.entities.Folder
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
+import kotlin.math.log
 
 @HiltViewModel
 class TaskViewModel @Inject constructor(
@@ -51,7 +53,7 @@ class TaskViewModel @Inject constructor(
     fun fetchTaskById(taskId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val fetchedTask = repository.getTaskById(taskId)!!
-            val fetchedFolder = folderRepository.getFolderById(fetchedTask?.folderId?: 0)
+            val fetchedFolder = folderRepository.getFolderById(fetchedTask.folderId)
             _task.value = fetchedTask
             _folder.value = fetchedFolder
         }
@@ -61,15 +63,21 @@ class TaskViewModel @Inject constructor(
         var taskId = task.id ?: 0L
         if (taskId != 0L) {
             repository.updateTask(task)
-            alarmScheduler.cancelAlarm(taskId)
+            alarmScheduler.cancelAlarm(taskId, task.title, task.description, task.due?.toMillis() ?: 0)
         } else taskId = repository.insertTask(task)
         if (taskId != -1L)
-            task.due?.let { due -> alarmScheduler.scheduleAlarm(taskId, due.toMillis()   ) }
+            task.due?.let { due -> alarmScheduler.scheduleAlarm(taskId, task.title, task.description, due.toMillis()   ) }
     }
 
     fun deleteTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
-        task.due?.let { alarmScheduler.cancelAlarm(task.id!!) }
-        repository.deleteTask(task)
+        if (task.id == null || task.due == null) {
+            Log.d("TaskViewModel","Task ID: ${task.id}")
+        }
+        else {
+            alarmScheduler.cancelAlarm(task.id, task.title, task.description, task.due.toMillis())
+            repository.deleteTask(task)
+        }
+
     }
 
     fun updateStatusTask(taskId: Long, status: Boolean) {

@@ -14,6 +14,10 @@ class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val fullScreenIntent = Intent(context, AlarmScreen::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("ALARM_ID", intent.getLongExtra("ALARM_ID", 0))
+            putExtra("ALARM_TITLE", intent.getStringExtra("ALARM_TITLE"))
+            putExtra("ALARM_DESCRIPTION", intent.getStringExtra("ALARM_DESCRIPTION"))
+            putExtra("ALARM_TIME", intent.getStringExtra("ALARM_TIME"))
         }
 
         val fullScreenPendingIntent = PendingIntent.getActivity(
@@ -39,8 +43,12 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.btn_dropdown)
-            .setContentTitle("Event Reminder")
-            .setContentText("Your scheduled event is starting.")
+            .setContentTitle(
+                intent.getStringExtra("ALARM_TITLE")
+            )
+            .setContentText(
+                intent.getStringExtra("ALARM_DESCRIPTION")
+            )
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(fullScreenPendingIntent, true)

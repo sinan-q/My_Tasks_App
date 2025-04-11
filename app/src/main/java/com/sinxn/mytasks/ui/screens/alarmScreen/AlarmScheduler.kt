@@ -12,11 +12,14 @@ import javax.inject.Singleton
 class AlarmScheduler @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    fun getIntent(alarmId: Long): PendingIntent {
+    private fun getIntent(alarmId: Long, title: String, description: String, timeInMillis: Long): PendingIntent {
         return Intent(context, AlarmReceiver::class.java)
             .apply {
                 action = "ACTION_ALARM"
                 putExtra("ALARM_ID", alarmId)
+                putExtra("ALARM_TITLE", title)
+                putExtra("ALARM_DESCRIPTION", description)
+                putExtra("ALARM_TIME", timeInMillis)
             }
             .let { intent ->
             PendingIntent.getBroadcast(
@@ -27,17 +30,17 @@ class AlarmScheduler @Inject constructor(
             )
         }
     }
-    fun scheduleAlarm(alarmId: Long,timeInMillis: Long) {
+    fun scheduleAlarm(alarmId: Long, title: String, description: String, timeInMillis: Long) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         assert(alarmManager.canScheduleExactAlarms())
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             timeInMillis,
-            getIntent(alarmId)
+            getIntent(alarmId, title, description, timeInMillis)
         )
     }
-    fun cancelAlarm(alarmId: Long) {
+    fun cancelAlarm(alarmId: Long, title: String, description: String, timeInMillis: Long) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
-        alarmManager?.cancel(getIntent(alarmId))
+        alarmManager?.cancel(getIntent(alarmId, title, description, timeInMillis))
     }
 }
