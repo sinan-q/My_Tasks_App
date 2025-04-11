@@ -58,14 +58,13 @@ class TaskViewModel @Inject constructor(
     }
 
     fun insertTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
-        if (task.id == 0L) {
+        var taskId = task.id ?: 0L
+        if (taskId != 0L) {
             repository.updateTask(task)
-            task.due?.let { due -> alarmScheduler.cancelAlarm(task.id) }
-        }
-        val taskId = repository.insertTask(task)
+            alarmScheduler.cancelAlarm(taskId)
+        } else taskId = repository.insertTask(task)
         if (taskId != -1L)
-            task.due?.let { due -> alarmScheduler.scheduleAlarm(taskId, due.toMillis(), ) }
-
+            task.due?.let { due -> alarmScheduler.scheduleAlarm(taskId, due.toMillis()   ) }
     }
 
     fun deleteTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
