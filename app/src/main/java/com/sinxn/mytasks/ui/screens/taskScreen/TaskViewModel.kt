@@ -40,7 +40,7 @@ class TaskViewModel @Inject constructor(
     private val _task = MutableStateFlow(Task())
     val task: StateFlow<Task> = _task
 
-    private val _reminders = MutableStateFlow((listOf(Pair(0,ChronoUnit.MINUTES))))
+    private val _reminders = MutableStateFlow(emptyList<Pair<Int, ChronoUnit>>())
     val reminders: StateFlow<List<Pair<Int, ChronoUnit>>> = _reminders
 
     private val _folder = MutableStateFlow<Folder?>(null)

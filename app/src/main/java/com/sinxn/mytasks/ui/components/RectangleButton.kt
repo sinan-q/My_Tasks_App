@@ -25,7 +25,7 @@ fun RectangleButton(
 ) {
     Button(
         modifier = modifier,
-        onClick = onClick,
+        onClick = { onClick() },
         shape = shape,
         colors = colors,
         elevation = elevation,

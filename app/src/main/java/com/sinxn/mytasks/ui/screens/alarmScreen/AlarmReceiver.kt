@@ -7,10 +7,19 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import com.sinxn.mytasks.data.repository.TaskRepository
+import com.sinxn.mytasks.utils.formatDate
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AlarmReceiver : BroadcastReceiver() {
+    @Inject
+    lateinit var taskRepository: TaskRepository
+
     override fun onReceive(context: Context, intent: Intent) {
         val alarmId = intent.getLongExtra("ALARM_ID", 0)
         val taskId = intent.getLongExtra("ALARM_TASK_ID", 0L)
@@ -41,16 +50,20 @@ class AlarmReceiver : BroadcastReceiver() {
         )
         notificationManager.createNotificationChannel(channel)
 
+        CoroutineScope(Dispatchers.IO).launch {
+            taskRepository.getTaskById(taskId)?.let { task ->
+                val notification = NotificationCompat.Builder(context, channelId)
+                    .setSmallIcon(android.R.drawable.btn_dropdown)
+                    .setContentTitle(task.title)
+                    .setContentText(task.description.plus("\ndue on ").plus(task.due?.formatDate()))
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setCategory(NotificationCompat.CATEGORY_ALARM)
+                    .setFullScreenIntent(fullScreenPendingIntent, true)
+                    .build()
 
-        val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(android.R.drawable.btn_dropdown)
-            .setContentTitle(alarmId.toString())
-            .setContentText(taskId.toString())
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setFullScreenIntent(fullScreenPendingIntent, true)
-            .build()
+                notificationManager.notify(alarmId.toInt(), notification)
+            }
 
-        notificationManager.notify(alarmId.toInt(), notification)
+        }
     }
 }

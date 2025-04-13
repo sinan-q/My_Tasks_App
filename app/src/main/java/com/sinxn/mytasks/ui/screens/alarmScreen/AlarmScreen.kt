@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,18 +18,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
-import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.data.repository.AlarmRepository
-import com.sinxn.mytasks.ui.screens.backupScreen.BackupViewModel
+import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.utils.formatDate
 import com.sinxn.mytasks.utils.toMillis
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.time.LocalDateTime
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class AlarmScreen : ComponentActivity() {
@@ -96,17 +89,17 @@ fun FullScreenAlertScreen(
                 fontSize = 24.sp
             )
             Row {
-                Button(onClick = {
-                    onSnoozeAlarm(LocalDateTime.now().plusMinutes(1).toMillis()) //TODO
+                RectangleButton(onClick = {
+                    onSnoozeAlarm(LocalDateTime.now().plusMinutes(15).toMillis()) //TODO
                     onFinish()
                 }) {
                     Text(
-                        text = "Snooze 5 minute",
+                        text = "Snooze 15 minute",
                         color = Color.White,
                         fontSize = 24.sp
                     )
                 }
-                Button(onClick = onFinish) {
+                RectangleButton(onClick = onFinish) {
                     Text(
                         text = "Close",
                         color = Color.White,

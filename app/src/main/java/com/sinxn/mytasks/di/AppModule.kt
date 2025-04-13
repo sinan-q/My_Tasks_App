@@ -94,7 +94,6 @@ object AppModule {
     fun provideAlarmRepository(@ApplicationContext context: Context,appDatabase: AppDatabase): AlarmRepository {
         return AlarmRepository(
             appDatabase.alarmDao(),
-            appDatabase.taskDao(),
             AlarmScheduler(context)
         )
     }

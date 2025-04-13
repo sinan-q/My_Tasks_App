@@ -13,7 +13,7 @@ import javax.inject.Singleton
 class AlarmScheduler @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    fun getIntent(alarm: Alarm): PendingIntent {
+    private fun getIntent(alarm: Alarm): PendingIntent {
         return Intent(context, AlarmReceiver::class.java)
             .apply {
                 action = "ACTION_ALARM"

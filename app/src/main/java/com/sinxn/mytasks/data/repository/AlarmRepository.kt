@@ -1,7 +1,6 @@
 package com.sinxn.mytasks.data.repository
 
 import com.sinxn.mytasks.data.local.dao.AlarmDao
-import com.sinxn.mytasks.data.local.dao.TaskDao
 import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
 import java.time.LocalDateTime
@@ -11,15 +10,18 @@ import javax.inject.Singleton
 @Singleton
 class AlarmRepository @Inject constructor(
     private val alarmDao: AlarmDao,
-    private val taskDao: TaskDao,
     private val alarmScheduler: AlarmScheduler,
 
     ) {
     suspend fun getAlarms(): List<Alarm> = alarmDao.getAlarms()
 
     suspend fun insertAlarm(alarm: Alarm) {
-        alarmDao.insertAlarm(alarm)
-        alarmScheduler.scheduleAlarm(alarm)
+        val alarmId = alarmDao.insertAlarm(alarm)
+        if (alarmId != -1L) {
+            alarmScheduler.scheduleAlarm(alarm.copy(
+                alarmId = alarmId
+            ))
+        }
     }
 //    suspend fun rescheduleAlarms() { //TODO
 //        alarmDao.insertAlarm(alarm)

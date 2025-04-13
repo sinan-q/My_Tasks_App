@@ -70,7 +70,9 @@ fun AddEditTaskScreen(
     val context = LocalContext.current
 
     var taskInputState by remember { mutableStateOf(Task()) }
-    val reminders by taskViewModel.reminders.collectAsState()
+    val reminders by taskViewModel.reminders.collectAsState(
+
+    )
     var reminder by remember { mutableStateOf("0") }
     var expandedDropDown by remember { mutableStateOf(false) }
     var reminderType by remember { mutableStateOf(ReminderTypes.MINUTE) }
