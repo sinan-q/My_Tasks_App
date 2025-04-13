@@ -44,7 +44,9 @@ fun EventListScreen(
     ) { paddingValues ->
         LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxWidth()) {
             item {
-                CalendarGrid(eventOnMonth.value, taskOnMonth.value, onDayClick)
+                CalendarGrid(eventOnMonth.value, taskOnMonth.value, onDayClick, onMonthChange = {
+                    eventViewModel.onMonthChange(it)
+                })
                 MyTitle(title = "Upcoming Events")
             }
 

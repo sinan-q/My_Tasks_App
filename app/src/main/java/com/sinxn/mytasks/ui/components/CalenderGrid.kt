@@ -3,17 +3,27 @@ package com.sinxn.mytasks.ui.components
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,11 +38,16 @@ import java.time.LocalTime
 import kotlin.math.ceil
 
 @Composable
-fun CalendarGrid(events: List<Event>, tasks: List<Task>, onClick: (Long) -> Unit) {
-    val currentDate = LocalDate.now()
+fun CalendarGrid(
+    events: List<Event>,
+    tasks: List<Task>,
+    onClick: (Long) -> Unit,
+    onMonthChange: (LocalDate) -> Unit,
+) {
+    var localDate by remember { mutableStateOf(LocalDate.now())  }
     val WEEK_DAYS = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
-    val firstDayOfMonth = currentDate.withDayOfMonth(1)
+    val firstDayOfMonth = localDate.withDayOfMonth(1)
     val firstDayOfWeek = firstDayOfMonth.minusDays(firstDayOfMonth.dayOfWeek.value.toLong())
     val lastDayOfMonth = firstDayOfMonth.plusMonths(1).minusDays(1)
     val lastDayOfWeek = lastDayOfMonth.plusDays(7 - lastDayOfMonth.dayOfWeek.value.toLong())
@@ -40,6 +55,34 @@ fun CalendarGrid(events: List<Event>, tasks: List<Task>, onClick: (Long) -> Unit
     val totalColumns = ceil(days.size / 7f).toInt()
 
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(contentAlignment = Alignment.Center ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    onClick = {
+                        localDate = localDate.minusMonths(1)
+                        onMonthChange(localDate)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = "Previous Month"
+                    )
+                }
+                Text(text = localDate.month.toString())
+                IconButton(
+                    onClick = {
+                        localDate = localDate.plusMonths(1)
+                        onMonthChange(localDate)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "Next Month"
+                    )
+                }
+            }
+
+        }
         Row {
            for (day in WEEK_DAYS) {
                CalendarDayWeekItem(modifier = Modifier.weight(1f), day = day)

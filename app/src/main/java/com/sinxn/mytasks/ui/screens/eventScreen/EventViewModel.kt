@@ -54,10 +54,11 @@ class EventViewModel @Inject constructor(
     private val _endOfMonth = MutableStateFlow(LocalDateTime.now().withDayOfMonth(LocalDate.now().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59))
     val endOfMonth: StateFlow<LocalDateTime> = _endOfMonth
 
-    fun onMonthChange(month: LocalDateTime) {
-        _startOfMonth.value = month.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0)
-        _endOfMonth.value = month.withDayOfMonth(month.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59)
+    fun onMonthChange(month: LocalDate) {
+        _startOfMonth.value = month.withDayOfMonth(1).atStartOfDay()
+        _endOfMonth.value = startOfMonth.value.plusMonths(1).minusSeconds(1)
         getEventsByMonth()
+        getTasksByMonth()
     }
 
 
