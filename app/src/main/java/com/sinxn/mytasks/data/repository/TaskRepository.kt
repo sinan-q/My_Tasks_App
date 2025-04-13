@@ -3,6 +3,7 @@ package com.sinxn.mytasks.data.repository
 import com.sinxn.mytasks.data.local.dao.TaskDao
 import com.sinxn.mytasks.data.local.entities.Task
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,6 +15,9 @@ class TaskRepository @Inject constructor(
 
     fun getAllTasksSorted(): Flow<List<Task>> = taskDao.getAllTasksSorted()
 
+    fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>> {
+        return taskDao.getTasksByMonth(startOfMonth, endOfMonth)
+    }
     suspend fun insertTask(task: Task): Long {
         return taskDao.insertTask(task)
     }

@@ -3,6 +3,7 @@ package com.sinxn.mytasks.data.local.dao
 import androidx.room.*
 import com.sinxn.mytasks.data.local.entities.Task
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDateTime
 
 @Dao
 interface TaskDao {
@@ -11,6 +12,9 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks ORDER BY isCompleted = true,due DESC")
     fun getAllTasksSorted(): Flow<List<Task>>
+
+    @Query("SELECT * FROM tasks WHERE due BETWEEN :startOfMonth AND :endOfMonth ORDER BY due ASC")
+    fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertTask(task: Task): Long

@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.data.repository.EventRepository
 import com.sinxn.mytasks.data.repository.FolderRepository
+import com.sinxn.mytasks.data.repository.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class EventViewModel @Inject constructor(
     private val repository: EventRepository,
+    private val taskRepository: TaskRepository,
     private val folderRepository: FolderRepository
 ) : ViewModel() {
 
@@ -33,6 +36,9 @@ class EventViewModel @Inject constructor(
 
     private val _eventsOnMonth = MutableStateFlow<List<Event>>(emptyList())
     val eventsOnMonth: StateFlow<List<Event>> = _eventsOnMonth
+
+    private val _tasksOnMonth = MutableStateFlow<List<Task>>(emptyList())
+    val tasksOnMonth: StateFlow<List<Task>> = _tasksOnMonth
 
     private val _event = MutableStateFlow<Event?>(null)
     val event: StateFlow<Event?> = _event
@@ -62,11 +68,17 @@ class EventViewModel @Inject constructor(
             }
         }
         getEventsByMonth()
+        getTasksByMonth()
     }
     private fun getEventsByMonth() = viewModelScope.launch {
             repository.getEventsByMonth(startOfMonth.value, endOfMonth.value ).collectLatest { events ->
                 _eventsOnMonth.value = events
+        }
+    }
 
+    private fun getTasksByMonth() = viewModelScope.launch {
+        taskRepository.getTasksByMonth(startOfMonth.value, endOfMonth.value ).collectLatest { tasks ->
+            _tasksOnMonth.value = tasks
         }
     }
 

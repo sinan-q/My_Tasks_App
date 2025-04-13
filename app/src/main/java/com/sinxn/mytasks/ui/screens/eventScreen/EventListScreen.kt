@@ -28,6 +28,7 @@ fun EventListScreen(
 ) {
     val upcomingEvents = eventViewModel.upcomingEvents.collectAsState()
     val eventOnMonth = eventViewModel.eventsOnMonth.collectAsState()
+    val taskOnMonth = eventViewModel.tasksOnMonth.collectAsState()
 
     Scaffold(
         topBar = {
@@ -43,7 +44,7 @@ fun EventListScreen(
     ) { paddingValues ->
         LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxWidth()) {
             item {
-                CalendarGrid(eventOnMonth.value, onDayClick)
+                CalendarGrid(eventOnMonth.value, taskOnMonth.value, onDayClick)
                 MyTitle(title = "Upcoming Events")
             }
 
