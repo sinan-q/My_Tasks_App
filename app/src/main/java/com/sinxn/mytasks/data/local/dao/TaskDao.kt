@@ -10,7 +10,7 @@ interface TaskDao {
     @Query("SELECT * FROM tasks")
     fun getAllTasks(): Flow<List<Task>>
 
-    @Query("SELECT * FROM tasks ORDER BY isCompleted = true,due DESC")
+    @Query("SELECT * FROM tasks ORDER BY isCompleted = true, timestamp, due DESC")
     fun getAllTasksSorted(): Flow<List<Task>>
 
     @Query("SELECT * FROM tasks WHERE due BETWEEN :startOfMonth AND :endOfMonth ORDER BY due ASC")

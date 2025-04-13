@@ -18,6 +18,9 @@ interface FolderDao {
     @Delete
     suspend fun deleteFolder(folder: Folder)
 
+    @Query("UPDATE folders SET isLocked = NOT isLocked WHERE folderId = :folderId")
+    suspend fun lockFolder(folderId: Long)
+
     @Query("SELECT * FROM folders WHERE parentFolderId = :parentId")
     fun getSubFolders(parentId: Long?): Flow<List<Folder>>
 

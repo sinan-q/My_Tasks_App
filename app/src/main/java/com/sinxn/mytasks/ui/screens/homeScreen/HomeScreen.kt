@@ -128,7 +128,8 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f),
                         folder = folder,
                         onClick = { onFolderClick(folder.folderId) },
-                        onDelete = { homeViewModel.deleteFolder(folder) })
+                        onDelete = { homeViewModel.deleteFolder(folder) },
+                        onLock = { homeViewModel.lockFolder(folder) })
                 }
             }
             items(tasks) { task ->

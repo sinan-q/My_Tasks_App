@@ -22,7 +22,10 @@ class FolderRepository @Inject constructor(
     }
     suspend fun deleteFolder(folder: Folder) {
         folderDao.deleteFolder(folder)
+    }
 
+    suspend fun lockFolder(folder: Folder) {
+        folderDao.lockFolder(folder.folderId)
     }
 
     suspend fun getFolderById(folderId: Long): Folder {

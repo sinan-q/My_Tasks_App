@@ -16,12 +16,12 @@ import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.utils.Converters
 
-const val DB_VERSION = 3
+const val DB_VERSION = 4
 @Database(entities = [Note::class, Task::class, Folder::class, Event::class, Alarm::class],
     version = DB_VERSION,
     exportSchema = true,
     autoMigrations = [
-        AutoMigration(from = 2, to = DB_VERSION)
+        AutoMigration(from = DB_VERSION - 1, to = DB_VERSION)
     ])
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

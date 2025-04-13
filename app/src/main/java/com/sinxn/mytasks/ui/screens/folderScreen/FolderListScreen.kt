@@ -120,7 +120,9 @@ fun FolderListScreen(
                     FolderItem(
                         folder = folder,
                         onClick = { folderViewModel.getSubFolders(folder.folderId) },
-                        onDelete = { folderViewModel.deleteFolder(folder) })
+                        onDelete = { folderViewModel.deleteFolder(folder) },
+                        onLock = { folderViewModel.lockFolder(folder) }
+                        )
                 }
             }
             LazyColumn {

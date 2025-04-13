@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens.folderScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -26,18 +28,43 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.components.RectangleCard
+import showBiometricsAuthentication
 
 @Composable
-fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit, onDelete: () -> Unit) {
+fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit, onDelete: () -> Unit, onLock: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    fun authenticate(function: () -> Unit) {
+        showBiometricsAuthentication(
+            context,
+            onSuccess = function,
+            onError = { errString ->
+                // Authentication error
+                Toast.makeText(context, "Authentication error: $errString", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
 
-    RectangleCard(modifier = modifier.fillMaxHeight().background(color = MaterialTheme.colorScheme.primaryContainer),onClick = onClick) {
+    RectangleCard(
+        modifier = modifier.fillMaxHeight().background(color = MaterialTheme.colorScheme.primaryContainer),
+        onClick = {
+            if (folder.isLocked) authenticate(onClick)
+            else onClick()
+        }) {
         Row(modifier= Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            if (folder.isLocked)
+                Icon(
+                    modifier= Modifier.padding(horizontal = 6.dp),
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = "Locked Icon",
+                    tint = MaterialTheme.colorScheme.primary
+                )
             Column(
                 modifier = Modifier.weight(0.9f).fillMaxWidth(0.9f).padding(2.dp),
                 verticalArrangement = Arrangement.Center,
@@ -64,9 +91,20 @@ fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit
                     RectangleButton(
                         onClick = {
                             expanded = false
+                            authenticate(onLock)
+                             },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow, contentColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                    ) {
+                        Text(text = if (folder.isLocked) "Unlock" else "Lock")
+                    }
+                    RectangleButton(
+                        onClick = {
+                            expanded = false
                             onDelete() },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                        modifier = Modifier.padding(2.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                     ) {
                         Text(text = "Delete", color = Color.Red)

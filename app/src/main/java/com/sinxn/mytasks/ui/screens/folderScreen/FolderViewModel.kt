@@ -87,6 +87,10 @@ class FolderViewModel @Inject constructor(
         }
     }
 
-
+    fun lockFolder(folder: Folder) {
+        viewModelScope.launch {
+            folderRepository.lockFolder(folder)
+        }
+    }
 
 }
