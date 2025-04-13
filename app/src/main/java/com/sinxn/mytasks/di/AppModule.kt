@@ -12,6 +12,7 @@ import com.sinxn.mytasks.data.repository.EventRepository
 import com.sinxn.mytasks.data.repository.FolderRepository
 import com.sinxn.mytasks.data.repository.NoteRepository
 import com.sinxn.mytasks.data.repository.TaskRepository
+import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -90,10 +91,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAlarmRepository(appDatabase: AppDatabase): AlarmRepository {
+    fun provideAlarmRepository(@ApplicationContext context: Context,appDatabase: AppDatabase): AlarmRepository {
         return AlarmRepository(
             appDatabase.alarmDao(),
-            appDatabase.taskDao()
+            appDatabase.taskDao(),
+            AlarmScheduler(context)
         )
     }
 

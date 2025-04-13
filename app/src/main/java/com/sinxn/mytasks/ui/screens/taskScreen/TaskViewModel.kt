@@ -9,7 +9,8 @@ import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.data.repository.AlarmRepository
 import com.sinxn.mytasks.data.repository.FolderRepository
 import com.sinxn.mytasks.data.repository.TaskRepository
-import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
+import com.sinxn.mytasks.utils.differenceSeconds
+import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,14 +20,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
-import kotlin.math.log
 
 @HiltViewModel
 class TaskViewModel @Inject constructor(
     private val repository: TaskRepository,
     private val folderRepository: FolderRepository,
-    private val alarmScheduler: AlarmScheduler,
     private val alarmRepository: AlarmRepository
     ) : ViewModel() {
 
@@ -38,6 +39,9 @@ class TaskViewModel @Inject constructor(
 
     private val _task = MutableStateFlow(Task())
     val task: StateFlow<Task> = _task
+
+    private val _reminders = MutableStateFlow((listOf(Pair(0,ChronoUnit.MINUTES))))
+    val reminders: StateFlow<List<Pair<Int, ChronoUnit>>> = _reminders
 
     private val _folder = MutableStateFlow<Folder?>(null)
     val folder: StateFlow<Folder?> = _folder
@@ -55,28 +59,39 @@ class TaskViewModel @Inject constructor(
 
     fun fetchTaskById(taskId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
+            val alarms = mutableListOf<Pair<Int, ChronoUnit>>()
             val fetchedTask = repository.getTaskById(taskId)!!
             val fetchedFolder = folderRepository.getFolderById(fetchedTask.folderId)
+            alarmRepository.getAlarmsByTaskId(taskId).forEach { alarm ->
+                fetchedTask.due?.differenceSeconds(fromMillis(alarm.time))?.let { it2 ->
+                    val duration = Duration.ofSeconds(it2)
+                    val pair = if (duration.toDaysPart() > 0) Pair(duration.toDaysPart().toInt(), ChronoUnit.DAYS) else if(duration.toHours() > 0) Pair(duration.toHoursPart(), ChronoUnit.HOURS) else if(duration.toMinutesPart() > 0) Pair(duration.toMinutesPart(), ChronoUnit.MINUTES) else Pair(duration.toSecondsPart(), ChronoUnit.SECONDS)
+                    alarms.add(pair)
+                }
+            }
             _task.value = fetchedTask
             _folder.value = fetchedFolder
+            _reminders.value = alarms
         }
     }
 
-    fun insertTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
+    fun insertTask(task: Task, reminders: List<Pair<Int, ChronoUnit>>) = viewModelScope.launch(Dispatchers.IO) {
         var taskId = task.id ?: 0L
         if (taskId != 0L) {
             repository.updateTask(task)
-            alarmScheduler.cancelAlarm(taskId, task.title, task.description, task.due?.toMillis() ?: 0)
+            alarmRepository.cancelAlarmsByTaskId(taskId)
         } else taskId = repository.insertTask(task)
         if (taskId != -1L)
             task.due?.let { due ->
-                alarmRepository.insertAlarm(Alarm(
-                    taskId = taskId,
-                    isTask = true, //TODO Event
-                    time = due.toMillis()
-                ))
-                alarmScheduler.scheduleAlarm(taskId, task.title, task.description, due.toMillis()
-                ) }
+                reminders.forEach { pair ->
+                    val time = due.minus(pair.first.toLong(), pair.second).toMillis()
+                    alarmRepository.insertAlarm(Alarm(
+                        taskId = taskId,
+                        isTask = true, //TODO Event
+                        time = time
+                    ))
+                }
+            }
     }
 
     fun deleteTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
@@ -84,11 +99,19 @@ class TaskViewModel @Inject constructor(
             Log.d("TaskViewModel","Task ID: ${task.id}")
         }
         else {
-            alarmScheduler.cancelAlarm(task.id, task.title, task.description, task.due.toMillis())
             alarmRepository.deleteAlarm(task.id)
-            repository.deleteTask(task)
         }
+        repository.deleteTask(task)
 
+
+    }
+
+    fun addReminder(pair: Pair<Int, ChronoUnit>) {
+        _reminders.value = reminders.value.plus(pair)
+    }
+
+    fun removeReminder(pair: Pair<Int, ChronoUnit>) {
+        _reminders.value = reminders.value.minus(pair)
     }
 
     fun updateStatusTask(taskId: Long, status: Boolean) {

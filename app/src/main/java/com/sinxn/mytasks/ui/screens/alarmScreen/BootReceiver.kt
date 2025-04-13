@@ -15,20 +15,12 @@ import javax.inject.Inject
 class BootReceiver : BroadcastReceiver() {
     @Inject lateinit var alarmScheduler: AlarmScheduler
     @Inject lateinit var alarmRepository: AlarmRepository
-    @Inject lateinit var taskRepository: TaskRepository
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             CoroutineScope(Dispatchers.IO).launch {
                 alarmRepository.getAlarms().forEach { alarm ->
-                    taskRepository.getTaskById(alarm.taskId)?.let { task ->
-                        alarmScheduler.scheduleAlarm(
-                            alarm.alarmId,
-                            task.title,
-                            task.description,
-                            alarm.time
-                        )
-                    }
+                        alarmScheduler.scheduleAlarm(alarm)
                 }
             }
         }

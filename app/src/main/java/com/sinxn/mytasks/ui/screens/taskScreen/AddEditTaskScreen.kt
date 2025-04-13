@@ -1,23 +1,32 @@
 package com.sinxn.mytasks.ui.screens.taskScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -33,12 +42,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
+import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.TimePickerDialog
+import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
+import com.sinxn.mytasks.utils.ReminderTypes
 import com.sinxn.mytasks.utils.addTimerPickerState
 import com.sinxn.mytasks.utils.formatDate
 import com.sinxn.mytasks.utils.fromMillis
@@ -54,7 +67,15 @@ fun AddEditTaskScreen(
     taskViewModel: TaskViewModel,
     onFinish: () -> Unit,
 ) {
+    val context = LocalContext.current
+
     var taskInputState by remember { mutableStateOf(Task()) }
+    val reminders by taskViewModel.reminders.collectAsState()
+    var reminder by remember { mutableStateOf("0") }
+    var expandedDropDown by remember { mutableStateOf(false) }
+    var reminderType by remember { mutableStateOf(ReminderTypes.MINUTE) }
+
+
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var isEditing by remember { mutableStateOf(taskId == -1L) }
@@ -67,6 +88,7 @@ fun AddEditTaskScreen(
         if (taskId != -1L) {
             taskViewModel.fetchTaskById(taskId)
         } else {
+            taskInputState = Task()
             taskViewModel.fetchFolderById(folderId)
         }
     }
@@ -86,10 +108,10 @@ fun AddEditTaskScreen(
                             val taskToSave = taskInputState.copy(
                                 id = if (taskId == -1L) null else taskId,
                             )
-                            taskViewModel.insertTask(taskToSave)
+                            taskViewModel.insertTask(taskToSave, reminders)
                             isEditing = false
                         } else {
-                            //TODO
+                            Toast.makeText(context, "Title or Description cannot be empty", Toast.LENGTH_SHORT).show()
                         }
                     } else {
                         isEditing = true
@@ -174,6 +196,64 @@ fun AddEditTaskScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            if (taskInputState.due != null) {
+                Text(text = "Set Reminders on " )
+                reminders.forEach { option ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { taskViewModel.removeReminder(option) }) {
+                            Icon(Icons.Default.Close, contentDescription = "Delete Reminder")
+                        }
+                        Text(text = "${option.first} ${option.second.name}")
+                    }
+                }
+                Row {
+                    OutlinedTextField(
+                        value = reminder,
+                        onValueChange = { reminder = it},
+                        modifier = Modifier.width(70.dp),
+                        singleLine = true
+                    )
+                    ExposedDropdownMenuBox(
+                        expanded = expandedDropDown,
+                        onExpandedChange = { expandedDropDown = !expandedDropDown },
+                    ) {
+                        OutlinedTextField(
+                            value = reminderType.label,
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDropDown)
+                            },
+                            modifier = Modifier
+                                .menuAnchor(MenuAnchorType.PrimaryEditable, true)
+                                .width(150.dp)
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expandedDropDown,
+                            onDismissRequest = { expandedDropDown = false },
+                        ) {
+                            ReminderTypes.entries.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(option.label) },
+                                    onClick = {
+                                        reminderType = option
+                                        expandedDropDown = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    RectangleButton(
+                        onClick = {
+                            taskViewModel.addReminder(Pair(reminder.toInt(), reminderType.unit))
+                        }
+                    ) {
+                        Icon(Icons.Default.Add, "Add Reminder")
+                    }
+                }
+            }
 
             if (showDatePicker) {
                 val datePickerState = rememberDatePickerState(
