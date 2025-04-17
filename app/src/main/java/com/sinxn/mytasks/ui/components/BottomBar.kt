@@ -2,6 +2,7 @@ package com.sinxn.mytasks.ui.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material3.Icon
@@ -15,6 +16,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
     data object Home : BottomNavItem("home", Icons.Default.Home, "Home")
+    data object Calender : BottomNavItem("event_list", Icons.Default.DateRange, "Calender")
     data object Tasks : BottomNavItem("tasks", Icons.AutoMirrored.Filled.List, "Tasks")
     data object Notes : BottomNavItem("note_list", Icons.Default.MailOutline, "Notes")
 }
@@ -23,6 +25,7 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
 fun BottomBar(navController: NavController) {
     val items = listOf(
         BottomNavItem.Home,
+        BottomNavItem.Calender,
         BottomNavItem.Tasks,
         BottomNavItem.Notes,
     )
