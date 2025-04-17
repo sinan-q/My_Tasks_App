@@ -113,12 +113,9 @@ fun CalendarGrid(
 
 @Composable
 fun CalendarDayItem(modifier: Modifier, day: LocalDate, events: List<String>, onClick: (Long) -> Unit = {}) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(80.dp)
-            .border(1.dp, MaterialTheme.colorScheme.outline, RectangleShape)
-            .clickable { onClick(LocalDateTime.of(day, LocalTime.now()).toMillis()) },
+    RectangleCard(
+        modifier = modifier.height(80.dp),
+        onClick = { onClick(LocalDateTime.of(day, LocalTime.now()).toMillis()) },
         colors = CardDefaults.cardColors(
             containerColor = if (day == LocalDate.now()) Color.Unspecified else Color.Transparent
         )
@@ -140,11 +137,7 @@ fun CalendarDayItem(modifier: Modifier, day: LocalDate, events: List<String>, on
 
 @Composable
 fun CalendarDayWeekItem(modifier: Modifier, day: String) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(1.dp, MaterialTheme.colorScheme.outline, RectangleShape)
-    ) {
+    RectangleCard (modifier = modifier) {
         Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = day)
         }

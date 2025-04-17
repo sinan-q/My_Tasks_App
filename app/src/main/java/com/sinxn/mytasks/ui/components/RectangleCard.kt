@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 fun RectangleCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    colors: CardColors = CardDefaults.cardColors(containerColor = Color.Transparent),
     content: @Composable (ColumnScope.() -> Unit)
 ) {
     Card(
@@ -30,9 +32,7 @@ fun RectangleCard(
                     onClick()
                 }
             }.then(modifier),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        )
+        colors = colors
     ) {
         content()
     }
