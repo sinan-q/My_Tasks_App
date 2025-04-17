@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -124,7 +126,12 @@ fun CalendarDayItem(modifier: Modifier, day: LocalDate, events: List<String>, on
         Column(modifier = Modifier.padding(4.dp).fillMaxSize(), verticalArrangement = if (events.isEmpty()) Arrangement.Center else Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = day.dayOfMonth.toString(), style = if(events.isEmpty()) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.bodySmall)
             events.forEach {
-                Text(text = it, style = MaterialTheme.typography.labelSmall)
+                Text(
+                    text = it,
+                    maxLines = 1,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(0.5.dp).background(MaterialTheme.colorScheme.primaryContainer,RoundedCornerShape(8.dp)).padding(4.dp)
+                )
             }
 
         }
