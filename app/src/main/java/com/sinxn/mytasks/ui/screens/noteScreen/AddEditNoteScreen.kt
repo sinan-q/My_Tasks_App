@@ -55,7 +55,7 @@ fun AddEditNoteScreen(
         if (noteId != -1L) {
             noteViewModel.fetchNoteById(noteId)
         } else {
-            noteViewModel.fetchFolderById(folderId)
+            noteViewModel.newNoteByFolder(folderId)
         }
     }
     LaunchedEffect(noteState) {
