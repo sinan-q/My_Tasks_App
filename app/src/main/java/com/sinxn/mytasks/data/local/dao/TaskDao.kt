@@ -10,7 +10,7 @@ interface TaskDao {
     @Query("SELECT * FROM tasks")
     fun getAllTasks(): Flow<List<Task>>
 
-    @Query("SELECT * FROM tasks ORDER BY isCompleted = true, timestamp, due DESC")
+    @Query("SELECT * FROM tasks ORDER BY isCompleted = true, due ASC, timestamp DESC")
     fun getAllTasksSorted(): Flow<List<Task>>
 
     @Query("SELECT * FROM tasks WHERE due BETWEEN :startOfMonth AND :endOfMonth ORDER BY due ASC")
@@ -31,6 +31,6 @@ interface TaskDao {
     @Query("UPDATE tasks SET isCompleted = :status WHERE id = :taskId")
     suspend fun updateStatusTask(taskId: Long, status: Boolean)
 
-    @Query("SELECT * FROM tasks WHERE folderId = :folderId")
+    @Query("SELECT * FROM tasks WHERE folderId = :folderId ORDER BY isCompleted = true, due ASC, timestamp DESC")
     fun getTasksByFolderId(folderId: Long?): Flow<List<Task>>
 }

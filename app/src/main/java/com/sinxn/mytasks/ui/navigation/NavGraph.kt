@@ -92,6 +92,7 @@ fun NavGraph(
         composable("note_list") {
             NoteListScreen(
                 notes = noteViewModel.notes.collectAsState().value,
+                noteViewModel = noteViewModel,
                 onAddNoteClick = onAddNoteClick,
                 onNoteClick = onNoteClick
             )

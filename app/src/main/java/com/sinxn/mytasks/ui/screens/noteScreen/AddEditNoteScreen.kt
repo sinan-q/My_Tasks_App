@@ -48,7 +48,7 @@ fun AddEditNoteScreen(
     var isEditing by remember { mutableStateOf(noteId == -1L) }
     val noteState by noteViewModel.note.collectAsState()
     val folder by noteViewModel.folder.collectAsState()
-    val folders by noteViewModel.folders.collectAsState(initial = emptyList())
+    val subFolders by noteViewModel.subFolders.collectAsState()
     val toastMessage by noteViewModel.toastMessage.collectAsState()
 
     LaunchedEffect(noteId, folderId) {
@@ -142,7 +142,7 @@ fun AddEditNoteScreen(
                 },
                 isEditing = isEditing,
                 folder = folder,
-                folders = folders
+                folders = subFolders
             )
             OutlinedTextField(
                 value = noteInputState.content,

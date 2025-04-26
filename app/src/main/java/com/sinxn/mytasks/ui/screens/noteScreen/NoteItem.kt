@@ -21,9 +21,10 @@ import com.sinxn.mytasks.utils.formatDate
 
 @Composable
 fun NoteItem(
+    modifier: Modifier = Modifier,
     note: Note,
+    path: String? = null,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
@@ -36,6 +37,8 @@ fun NoteItem(
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            path?.let { Text(text = path, style = MaterialTheme.typography.bodySmall) }
+
             Text(
                 text = note.title,
                 style = MaterialTheme.typography.titleMedium,

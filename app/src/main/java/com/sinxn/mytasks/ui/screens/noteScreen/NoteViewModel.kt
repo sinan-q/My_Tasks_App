@@ -32,6 +32,9 @@ class NoteViewModel @Inject constructor(
     private val _folders = MutableStateFlow<List<Folder>>(emptyList())
     val folders: StateFlow<List<Folder>> = _folders
 
+    private val _subFolders = MutableStateFlow<List<Folder>>(emptyList())
+    val subFolders: StateFlow<List<Folder>> = _subFolders
+
     private val _toastMessage = MutableStateFlow<String?>(null)
     val toastMessage: StateFlow<String?> = _toastMessage
 
@@ -39,6 +42,11 @@ class NoteViewModel @Inject constructor(
         viewModelScope.launch {
             noteRepository.getAllNotes().collect { noteList ->
                 _notes.value = noteList
+            }
+        }
+        viewModelScope.launch {
+            folderRepository.getAllFolders().collect { folders ->
+                _folders.value = folders
             }
         }
     }
@@ -69,12 +77,32 @@ class NoteViewModel @Inject constructor(
         viewModelScope.launch {
             val fetchedFolder = folderRepository.getFolderById(folderId)
             val subFolders = folderRepository.getSubFolders(folderId).first()
-            _folders.value = subFolders
+            _subFolders.value = subFolders
             _folder.value = fetchedFolder
             _note.value = note.value?.copy(
                 folderId = fetchedFolder.folderId,
             )
         }
+    }
+
+    fun newNoteByFolder(folderId: Long) {
+        viewModelScope.launch {
+            _note.value = Note()
+            fetchFolderById(folderId)
+        }
+    }
+
+    fun getPath(folderId: Long, hideLocked: Boolean): String? {
+        val path = StringBuilder()
+        var curr = folderId
+        while (curr != 0L) {
+            val folder = folders.value.find { it.folderId == curr }
+            path.insert(0, "/")
+            path.insert(0, folder?.name)
+            curr = folder?.parentFolderId ?: 0L
+            if (folder?.isLocked == true && hideLocked) return null
+        }
+        return path.toString()
     }
 
     fun toast(message: String) {
