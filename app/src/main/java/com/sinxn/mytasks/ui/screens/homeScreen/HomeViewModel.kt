@@ -7,6 +7,7 @@ import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.ui.components.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
@@ -20,7 +21,7 @@ class HomeViewModel @Inject constructor(
     private val noteRepository: NoteRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
     private val eventRepository: EventRepositoryInterface,
-) : ViewModel() {
+) : BaseViewModel() {
 
 
     val events = eventRepository.getUpcomingEvents(3).stateIn(
@@ -47,6 +48,7 @@ class HomeViewModel @Inject constructor(
     fun addFolder(folder: Folder) {
         viewModelScope.launch {
             folderRepository.insertFolder(folder)
+            showToast("Folder Added")
         }
     }
 
@@ -60,12 +62,14 @@ class HomeViewModel @Inject constructor(
             tasks.forEach { task -> taskRepository.deleteTask(task) }
 
             folderRepository.deleteFolder(folder)
+            showToast("Folder Deleted")
         }
     }
 
     fun lockFolder(folder: Folder) {
         viewModelScope.launch {
             folderRepository.lockFolder(folder)
+            showToast("Folder Locked")
         }
     }
 

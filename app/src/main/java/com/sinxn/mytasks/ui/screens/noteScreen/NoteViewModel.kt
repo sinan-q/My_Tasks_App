@@ -1,11 +1,11 @@
 package com.sinxn.mytasks.ui.screens.noteScreen
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.ui.components.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +18,7 @@ import javax.inject.Inject
 class NoteViewModel @Inject constructor(
     private val noteRepository: NoteRepositoryInterface,
     private val folderRepository: FolderRepositoryInterface
-) : ViewModel() {
+) : BaseViewModel() {
 
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
     val notes: StateFlow<List<Note>> = _notes.asStateFlow()
@@ -35,8 +35,6 @@ class NoteViewModel @Inject constructor(
     private val _subFolders = MutableStateFlow<List<Folder>>(emptyList())
     val subFolders: StateFlow<List<Folder>> = _subFolders
 
-    private val _toastMessage = MutableStateFlow<String?>(null)
-    val toastMessage: StateFlow<String?> = _toastMessage
 
     init {
         viewModelScope.launch {
@@ -54,14 +52,14 @@ class NoteViewModel @Inject constructor(
     fun addNote(note: Note) {
         viewModelScope.launch {
             noteRepository.insertNote(note)
-            toast("Note added successfully")
+            showToast("Note added successfully")
         }
     }
 
     fun deleteNote(note: Note) {
         viewModelScope.launch {
             noteRepository.deleteNote(note)
-            toast("Note Deleted")
+            showToast("Note Deleted")
         }
     }
 
@@ -103,10 +101,5 @@ class NoteViewModel @Inject constructor(
             if (folder?.isLocked == true && hideLocked) return null
         }
         return path.toString()
-    }
-
-    fun toast(message: String) {
-        _toastMessage.value = message
-
     }
 }

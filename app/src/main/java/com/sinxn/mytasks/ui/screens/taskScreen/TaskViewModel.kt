@@ -9,6 +9,7 @@ import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.ui.components.BaseViewModel
 import com.sinxn.mytasks.utils.differenceSeconds
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
@@ -29,7 +30,7 @@ class TaskViewModel @Inject constructor(
     private val repository: TaskRepositoryInterface,
     private val folderRepository: FolderRepositoryInterface,
     private val alarmRepository: AlarmRepositoryInterface
-    ) : ViewModel() {
+    ) : BaseViewModel() {
 
     val tasks = repository.getAllTasksSorted().stateIn(
         viewModelScope,
@@ -92,6 +93,7 @@ class TaskViewModel @Inject constructor(
                     ))
                 }
             }
+        showToast("Task Added")
     }
 
     fun deleteTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
@@ -102,7 +104,7 @@ class TaskViewModel @Inject constructor(
             alarmRepository.cancelAlarmsByTaskId(task.id)
         }
         repository.deleteTask(task)
-
+        showToast("Task Deleted")
 
     }
 

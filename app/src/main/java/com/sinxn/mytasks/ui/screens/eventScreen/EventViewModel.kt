@@ -8,6 +8,7 @@ import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.ui.components.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +27,7 @@ class EventViewModel @Inject constructor(
     private val repository: EventRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
     private val folderRepository: FolderRepositoryInterface
-) : ViewModel() {
+) : BaseViewModel() {
 
     val upcomingEvents = repository.getUpcomingEvents(10).stateIn(
         viewModelScope,
@@ -96,11 +97,15 @@ class EventViewModel @Inject constructor(
         if (event.start != null && event.end !=null)
             if (event.start.isBefore(event.end)) repository.insertEvent(event)
             else return@launch
-        else repository.insertEvent(event)
+        else {
+            repository.insertEvent(event)
+            showToast("Event Created")
+        }
     }
 
     fun deleteEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {
         repository.deleteEvent(event)
+        showToast("Event Deleted")
     }
 
     fun updateEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {

@@ -30,6 +30,7 @@ import com.sinxn.mytasks.ui.components.AddEditTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun AddEditNoteScreen(
@@ -45,7 +46,6 @@ fun AddEditNoteScreen(
     val noteState by noteViewModel.note.collectAsState()
     val folder by noteViewModel.folder.collectAsState()
     val subFolders by noteViewModel.subFolders.collectAsState()
-    val toastMessage by noteViewModel.toastMessage.collectAsState()
 
     val handleBackPressAttempt = rememberPressBackTwiceState(
         enabled = isEditing, // Only require double press if currently editing
@@ -67,12 +67,16 @@ fun AddEditNoteScreen(
             noteInputState = note.copy()
         }
     }
-    LaunchedEffect(toastMessage) {
-        toastMessage?.let { message ->
-            Toast.makeText(context,message,Toast.LENGTH_LONG).show()
-        }
 
+    fun showToast(message : String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
+    LaunchedEffect(key1 = Unit) { // key1 = Unit makes it run once on composition
+        noteViewModel.toastMessage.collectLatest { message -> // or .collect {
+            showToast(message)
+        }
+    }
+
     Scaffold(
         floatingActionButton = {
             RectangleFAB(
@@ -86,7 +90,7 @@ fun AddEditNoteScreen(
                             )
                             onFinish()
                         } else {
-                            noteViewModel.toast("Note cannot be empty")
+                            showToast("Note cannot be empty")
                         }
                     } else {
                         isEditing = true

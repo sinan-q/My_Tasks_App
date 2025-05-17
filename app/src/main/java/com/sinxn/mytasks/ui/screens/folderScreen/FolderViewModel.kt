@@ -8,6 +8,7 @@ import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.ui.components.BaseViewModel
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,7 @@ class FolderViewModel @Inject constructor(
     private val folderRepository: FolderRepositoryInterface,
     private val noteRepository: NoteRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
-) : ViewModel() {
+) : BaseViewModel() {
 
 
     private val _folders = MutableStateFlow<List<Folder>>(emptyList())
@@ -40,6 +41,7 @@ class FolderViewModel @Inject constructor(
     fun addFolder(folder: Folder) {
         viewModelScope.launch {
             folderRepository.insertFolder(folder)
+            showToast("Folder Added")
         }
     }
 
@@ -53,6 +55,7 @@ class FolderViewModel @Inject constructor(
             tasks.forEach { task -> taskRepository.deleteTask(task) }
 
             folderRepository.deleteFolder(folder)
+            showToast("Folder Deleted")
         }
     }
     fun onBack(folder: Folder) {
@@ -91,6 +94,7 @@ class FolderViewModel @Inject constructor(
     fun lockFolder(folder: Folder) {
         viewModelScope.launch {
             folderRepository.lockFolder(folder)
+            showToast("Folder Locked")
         }
     }
 

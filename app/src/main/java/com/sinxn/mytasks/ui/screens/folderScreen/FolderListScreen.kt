@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens.folderScreen
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.padding
@@ -14,12 +15,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.AddEditTopAppBar
 import com.sinxn.mytasks.ui.components.MyGrid
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun FolderListScreen(
@@ -31,8 +34,17 @@ fun FolderListScreen(
     onTaskClick: (Long?) -> Unit,
     onBack: () -> Unit,
 ) {
+    val context = LocalContext.current
     LaunchedEffect(folderId) {
         folderViewModel.getSubFolders(folderId)
+    }
+    fun showToast(message : String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
+    LaunchedEffect(key1 = Unit) { // key1 = Unit makes it run once on composition
+        folderViewModel.toastMessage.collectLatest { message -> // or .collect {
+            showToast(message)
+        }
     }
     val folders by folderViewModel.folders.collectAsState(initial = emptyList())
     val currentFolder by folderViewModel.folder.collectAsState(

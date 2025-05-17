@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens.homeScreen
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
@@ -15,12 +16,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.MyGrid
@@ -32,6 +35,7 @@ import com.sinxn.mytasks.ui.screens.folderScreen.FolderItemEdit
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskViewModel
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +51,7 @@ fun HomeScreen(
     onFolderClick: (Long) -> Unit,
     onBackup: () -> Unit
 ) {
+    val context = LocalContext.current
     val folders by homeViewModel.folders.collectAsState(initial = emptyList())
     val events by homeViewModel.events.collectAsState(initial = emptyList())
 
@@ -55,7 +60,14 @@ fun HomeScreen(
     var folderEditToggle by remember { mutableStateOf(false) }
 
     var expanded by remember { mutableStateOf(false) }
-
+    fun showToast(message : String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
+    LaunchedEffect(key1 = Unit) { // key1 = Unit makes it run once on composition
+        homeViewModel.toastMessage.collectLatest { message -> // or .collect {
+            showToast(message)
+        }
+    }
 
     Scaffold(
         floatingActionButton = {

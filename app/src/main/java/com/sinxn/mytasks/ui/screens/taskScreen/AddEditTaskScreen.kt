@@ -59,6 +59,7 @@ import com.sinxn.mytasks.utils.addTimerPickerState
 import com.sinxn.mytasks.utils.formatDate
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
+import kotlinx.coroutines.flow.collectLatest
 import java.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,6 +89,15 @@ fun AddEditTaskScreen(
     val taskState by taskViewModel.task.collectAsState()
     val folder by taskViewModel.folder.collectAsState()
     val folders by taskViewModel.folders.collectAsState()
+
+    fun showToast(message : String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
+    LaunchedEffect(key1 = Unit) { // key1 = Unit makes it run once on composition
+        taskViewModel.toastMessage.collectLatest { message -> // or .collect {
+            showToast(message)
+        }
+    }
 
     val handleBackPressAttempt = rememberPressBackTwiceState(
         enabled = isEditing, // Only require double press if currently editing

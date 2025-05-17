@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens.eventScreen
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.ui.components.AddEditTopAppBar
@@ -46,6 +48,7 @@ import com.sinxn.mytasks.utils.addTimerPickerState
 import com.sinxn.mytasks.utils.formatDate
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
+import kotlinx.coroutines.flow.collectLatest
 import java.time.Instant
 import java.time.LocalDateTime
 
@@ -59,6 +62,8 @@ fun AddEditEventScreen(
     eventViewModel: EventViewModel,
     onFinish: () -> Unit,
 ) {
+    val context = LocalContext.current
+
     var eventInputState by remember { mutableStateOf(Event()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -75,6 +80,14 @@ fun AddEditEventScreen(
     )
     BackHandler(onBack = handleBackPressAttempt)
 
+    fun showToast(message : String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
+    LaunchedEffect(key1 = Unit) { // key1 = Unit makes it run once on composition
+        eventViewModel.toastMessage.collectLatest { message -> // or .collect {
+            showToast(message)
+        }
+    }
     LaunchedEffect(eventId, folderId, date) {
         if (eventId != -1L) {
             eventViewModel.fetchEventById(eventId)
