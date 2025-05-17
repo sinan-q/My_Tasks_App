@@ -99,7 +99,7 @@ class TaskViewModel @Inject constructor(
             Log.d("TaskViewModel","Task ID: ${task.id}")
         }
         else {
-            alarmRepository.deleteAlarm(task.id)
+            alarmRepository.cancelAlarmsByTaskId(task.id)
         }
         repository.deleteTask(task)
 
