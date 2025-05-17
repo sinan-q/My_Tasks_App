@@ -43,11 +43,7 @@ fun NavGraph(
         navController.navigate("add_edit_task/-1L/$folderId")
     }
     val onTaskClick: (taskId: Long?) -> Unit = { taskId ->
-        navController.navigate("add_edit_task/$taskId/0"){
-            popUpTo(navController.currentBackStackEntry!!.destination.id){
-                inclusive = true
-            }
-        }
+        navController.navigate("add_edit_task/$taskId/0")
     }
 
     val onAddEventClick: (folderId: Long?) -> Unit = { folderId ->
@@ -74,7 +70,8 @@ fun NavGraph(
         startDestination = "home",
         modifier = modifier
     ) {
-        composable("home") {
+        composable("home",) {
+
             HomeScreen(
                 homeViewModel = homeViewModel,
                 taskViewModel = taskViewModel,
@@ -136,7 +133,7 @@ fun NavGraph(
                 taskId = taskId,
                 folderId = folderId,
                 taskViewModel = taskViewModel,
-                onFinish = { navController.popBackStack() },
+                onFinish = onBack,
             )
         }
         composable("event_list") {
