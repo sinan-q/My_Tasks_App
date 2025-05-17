@@ -1,6 +1,7 @@
 package com.sinxn.mytasks.ui.screens.taskScreen
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -85,7 +86,13 @@ fun AddEditTaskScreen(
     val taskState by taskViewModel.task.collectAsState()
     val folder by taskViewModel.folder.collectAsState()
     val folders by taskViewModel.folders.collectAsState()
+    val backHandle = if (!isEditing) onFinish else {
+        {
+            //TODO show dialog to save changes
+        }
+        }
 
+    BackHandler(onBack = backHandle)
     LaunchedEffect(taskId, folderId) {
         if (taskId != -1L) {
             taskViewModel.fetchTaskById(taskId)
@@ -130,7 +137,7 @@ fun AddEditTaskScreen(
             TopAppBar(
                 title = { Text(if (taskId == -1L) "Add Task" else "Edit Task") },
                 navigationIcon = {
-                    IconButton(onClick = onFinish) {
+                    IconButton(onClick = backHandle) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
