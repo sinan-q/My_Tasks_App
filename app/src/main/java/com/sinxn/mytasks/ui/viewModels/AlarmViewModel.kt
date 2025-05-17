@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.screens.alarmScreen
+package com.sinxn.mytasks.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -10,7 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.sinxn.mytasks.ui.screens.backupScreen.BackupScreen
-import com.sinxn.mytasks.ui.screens.backupScreen.BackupViewModel
+import com.sinxn.mytasks.ui.viewModels.BackupViewModel
 import com.sinxn.mytasks.ui.screens.eventScreen.AddEditEventScreen
 import com.sinxn.mytasks.ui.screens.noteScreen.AddEditNoteScreen
 import com.sinxn.mytasks.ui.screens.eventScreen.EventListScreen
@@ -18,11 +18,11 @@ import com.sinxn.mytasks.ui.screens.folderScreen.FolderListScreen
 import com.sinxn.mytasks.ui.screens.homeScreen.HomeScreen
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteListScreen
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskListScreen
-import com.sinxn.mytasks.ui.screens.eventScreen.EventViewModel
-import com.sinxn.mytasks.ui.screens.folderScreen.FolderViewModel
-import com.sinxn.mytasks.ui.screens.homeScreen.HomeViewModel
-import com.sinxn.mytasks.ui.screens.noteScreen.NoteViewModel
-import com.sinxn.mytasks.ui.screens.taskScreen.TaskViewModel
+import com.sinxn.mytasks.ui.viewModels.EventViewModel
+import com.sinxn.mytasks.ui.viewModels.FolderViewModel
+import com.sinxn.mytasks.ui.viewModels.HomeViewModel
+import com.sinxn.mytasks.ui.viewModels.NoteViewModel
+import com.sinxn.mytasks.ui.viewModels.TaskViewModel
 
 @Composable
 fun NavGraph(

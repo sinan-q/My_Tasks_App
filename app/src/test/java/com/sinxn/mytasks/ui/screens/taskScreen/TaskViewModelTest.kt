@@ -5,6 +5,7 @@ import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.data.respository.FakeAlarmRepository
 import com.sinxn.mytasks.data.respository.FakeFolderRepository
 import com.sinxn.mytasks.data.respository.FakeTaskRepository
+import com.sinxn.mytasks.ui.viewModels.TaskViewModel
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

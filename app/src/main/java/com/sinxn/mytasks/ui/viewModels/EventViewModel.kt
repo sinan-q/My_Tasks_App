@@ -1,21 +1,17 @@
-package com.sinxn.mytasks.ui.screens.eventScreen
+package com.sinxn.mytasks.ui.viewModels
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.data.interfaces.EventRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Event
-import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.ui.components.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -26,8 +22,8 @@ import javax.inject.Inject
 class EventViewModel @Inject constructor(
     private val repository: EventRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
-    private val folderRepository: FolderRepositoryInterface
-) : BaseViewModel() {
+    folderRepo: FolderRepositoryInterface
+) : BaseViewModel(folderRepo) {
 
     val upcomingEvents = repository.getUpcomingEvents(10).stateIn(
         viewModelScope,
@@ -44,12 +40,6 @@ class EventViewModel @Inject constructor(
     private val _event = MutableStateFlow<Event?>(null)
     val event: StateFlow<Event?> = _event
 
-    private val _folder = MutableStateFlow<Folder?>(null)
-    val folder: StateFlow<Folder?> = _folder
-
-    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
-    val folders: StateFlow<List<Folder>> = _folders
-
     private val _startOfMonth = MutableStateFlow(LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0))
     val startOfMonth: StateFlow<LocalDateTime> = _startOfMonth
     private val _endOfMonth = MutableStateFlow(LocalDateTime.now().withDayOfMonth(LocalDate.now().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59))
@@ -64,11 +54,7 @@ class EventViewModel @Inject constructor(
 
 
     init {
-        viewModelScope.launch {
-            folderRepository.getAllFolders().collect { folders ->
-                _folders.value = folders
-            }
-        }
+
         getEventsByMonth()
         getTasksByMonth()
     }
@@ -78,6 +64,16 @@ class EventViewModel @Inject constructor(
         }
     }
 
+    fun fetchFolderById(folderId: Long) {
+        fetchFolderById(
+            folderId = folderId,
+            action = {
+                _event.value = event.value?.copy(
+                    folderId = it,
+                )
+            }
+        )
+    }
     private fun getTasksByMonth() = viewModelScope.launch {
         taskRepository.getTasksByMonth(startOfMonth.value, endOfMonth.value ).collectLatest { tasks ->
             _tasksOnMonth.value = tasks
@@ -87,9 +83,8 @@ class EventViewModel @Inject constructor(
     fun fetchEventById(eventId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val fetchedEvent = repository.getEventById(eventId)
-            val fetchedFolder = folderRepository.getFolderById(fetchedEvent?.folderId?: 0)
             _event.value = fetchedEvent
-            _folder.value = fetchedFolder
+            fetchFolderById(fetchedEvent?.folderId?:0L, action = {})
         }
     }
 
@@ -112,29 +107,5 @@ class EventViewModel @Inject constructor(
         repository.updateEvent(event)
     }
 
-    fun fetchFolderById(folderId: Long) {
-        viewModelScope.launch {
-            val fetchedFolder = folderRepository.getFolderById(folderId)
-            val subFolders = folderRepository.getSubFolders(folderId).first()
-            _folders.value = subFolders
-            _folder.value = fetchedFolder
-            _event.value = event.value?.copy(
-                folderId = fetchedFolder.folderId,
-            )
-        }
-    }
 
-    fun getPath(folderId: Long): String {
-        val path = StringBuilder()
-        var curr = folderId
-        while (curr != 0L) {
-            val folder = folders.value.find { it.folderId == curr }
-            path.insert(0, "/")
-            path.insert(0, folder?.name)
-            curr = folder?.parentFolderId ?: 0L
-
-        }
-
-        return path.toString()
-    }
 }

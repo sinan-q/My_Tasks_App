@@ -26,7 +26,7 @@ class NoteRepository @Inject constructor(
         noteDao.updateNote(note)
     }
 
-    override suspend fun getNoteById(noteId: Long): Note? {
+    override suspend fun getNoteById(noteId: Long): Note {
         return noteDao.getNoteById(noteId)
     }
 

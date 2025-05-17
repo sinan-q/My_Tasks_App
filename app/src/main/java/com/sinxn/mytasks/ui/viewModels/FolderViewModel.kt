@@ -1,6 +1,5 @@
-package com.sinxn.mytasks.ui.screens.folderScreen
+package com.sinxn.mytasks.ui.viewModels
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
@@ -8,54 +7,65 @@ import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.ui.components.BaseViewModel
+import com.sinxn.mytasks.data.usecase.folder.AddFolderUseCase
+import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
+import com.sinxn.mytasks.data.usecase.folder.LockFolderUseCase
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class FolderViewModel @Inject constructor(
-    private val folderRepository: FolderRepositoryInterface,
     private val noteRepository: NoteRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
-) : BaseViewModel() {
+    folderRepo: FolderRepositoryInterface,
+    private val addFolderUseCase: AddFolderUseCase,
+    private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
+    private val lockFolderUseCase: LockFolderUseCase
+) : BaseViewModel(folderRepo) {
 
 
-    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
-    val folders: StateFlow<List<Folder>> = _folders.asStateFlow()
+
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
     val notes: StateFlow<List<Note>> = _notes.asStateFlow()
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
 
-    private val _folder = MutableStateFlow<Folder?>(null)
-    val folder: StateFlow<Folder?> = _folder
-
-
     fun addFolder(folder: Folder) {
         viewModelScope.launch {
-            folderRepository.insertFolder(folder)
-            showToast("Folder Added")
+            try {
+                addFolderUseCase(folder) // Or addFolderUseCase.invoke(folder)
+                showToast("Folder Added") // From BaseViewModel
+            } catch (e: Exception) {
+                showToast("Error adding folder: ${e.message}")
+            }
         }
     }
 
     fun deleteFolder(folder: Folder) {
         viewModelScope.launch {
-            val subfolders = folderRepository.getSubFolders(folder.folderId).first { true }
-            subfolders.forEach { subfolder -> deleteFolder(subfolder) }
-            val noteList = noteRepository.getNotesByFolderId(folder.folderId).first { true }
-            noteList.forEach { note -> noteRepository.deleteNote(note) }
-            val tasks = taskRepository.getTasksByFolderId(folder.folderId).first {true}
-            tasks.forEach { task -> taskRepository.deleteTask(task) }
+            try {
+                deleteFolderAndItsContentsUseCase(folder)
+                showToast("Folder Deleted") // From BaseViewModel
+            } catch (e: Exception) {
+                showToast("Error deleting folder: ${e.message}")
+            }
+        }
+    }
 
-            folderRepository.deleteFolder(folder)
-            showToast("Folder Deleted")
+    fun lockFolder(folder: Folder) {
+        viewModelScope.launch {
+            try {
+                lockFolderUseCase(folder, !folder.isLocked) // Assuming use case takes folder and new lock state
+                showToast(if (!folder.isLocked) "Folder Locked" else "Folder Unlocked")
+            } catch (e: Exception) {
+                showToast("Error updating folder lock state: ${e.message}")
+            }
         }
     }
     fun onBack(folder: Folder) {
@@ -91,11 +101,5 @@ class FolderViewModel @Inject constructor(
         }
     }
 
-    fun lockFolder(folder: Folder) {
-        viewModelScope.launch {
-            folderRepository.lockFolder(folder)
-            showToast("Folder Locked")
-        }
-    }
 
 }

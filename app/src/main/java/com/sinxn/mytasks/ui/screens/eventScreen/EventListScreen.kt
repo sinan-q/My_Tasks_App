@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import com.sinxn.mytasks.ui.components.CalendarGrid
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.RectangleFAB
+import com.sinxn.mytasks.ui.viewModels.EventViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
