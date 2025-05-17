@@ -1,6 +1,11 @@
 package com.sinxn.mytasks.data.local.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
 import com.sinxn.mytasks.data.local.entities.Task
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
@@ -10,7 +15,7 @@ interface TaskDao {
     @Query("SELECT * FROM tasks")
     fun getAllTasks(): Flow<List<Task>>
 
-    @Query("SELECT * FROM tasks ORDER BY isCompleted = true, due ASC, timestamp DESC")
+    @Query("SELECT * FROM tasks ORDER BY isCompleted = true, due DESC, timestamp DESC")
     fun getAllTasksSorted(): Flow<List<Task>>
 
     @Query("SELECT * FROM tasks WHERE due BETWEEN :startOfMonth AND :endOfMonth ORDER BY due ASC")
@@ -31,6 +36,6 @@ interface TaskDao {
     @Query("UPDATE tasks SET isCompleted = :status WHERE id = :taskId")
     suspend fun updateStatusTask(taskId: Long, status: Boolean)
 
-    @Query("SELECT * FROM tasks WHERE folderId = :folderId ORDER BY isCompleted = true, due ASC, timestamp DESC")
+    @Query("SELECT * FROM tasks WHERE folderId = :folderId ORDER BY isCompleted = true, due DESC, timestamp DESC")
     fun getTasksByFolderId(folderId: Long?): Flow<List<Task>>
 }
