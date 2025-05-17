@@ -121,7 +121,7 @@ fun AddEditNoteScreen(
 
                 })
         },
-        modifier = Modifier.imePadding()
+
     ) { padding ->
         Column(
             modifier = modifier

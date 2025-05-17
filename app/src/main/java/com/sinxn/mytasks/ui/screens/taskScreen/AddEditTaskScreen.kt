@@ -159,7 +159,6 @@ fun AddEditTaskScreen(
                 }
             )
         },
-        modifier = Modifier.imePadding()
     ) { innerPadding ->
         Column(
             modifier = modifier
