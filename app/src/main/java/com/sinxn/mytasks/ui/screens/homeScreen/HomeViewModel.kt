@@ -2,11 +2,11 @@ package com.sinxn.mytasks.ui.screens.homeScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sinxn.mytasks.data.interfaces.EventRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.data.repository.EventRepository
-import com.sinxn.mytasks.data.repository.FolderRepository
-import com.sinxn.mytasks.data.repository.NoteRepository
-import com.sinxn.mytasks.data.repository.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
@@ -16,10 +16,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val folderRepository: FolderRepository,
-    private val noteRepository: NoteRepository,
-    private val taskRepository: TaskRepository,
-    private val eventRepository: EventRepository,
+    private val folderRepository: FolderRepositoryInterface,
+    private val noteRepository: NoteRepositoryInterface,
+    private val taskRepository: TaskRepositoryInterface,
+    private val eventRepository: EventRepositoryInterface,
 ) : ViewModel() {
 
 

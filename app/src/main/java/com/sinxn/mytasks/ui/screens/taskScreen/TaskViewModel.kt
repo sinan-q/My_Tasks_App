@@ -3,12 +3,12 @@ package com.sinxn.mytasks.ui.screens.taskScreen
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sinxn.mytasks.data.interfaces.AlarmRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.data.repository.AlarmRepository
-import com.sinxn.mytasks.data.repository.FolderRepository
-import com.sinxn.mytasks.data.repository.TaskRepository
 import com.sinxn.mytasks.utils.differenceSeconds
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
@@ -26,9 +26,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TaskViewModel @Inject constructor(
-    private val repository: TaskRepository,
-    private val folderRepository: FolderRepository,
-    private val alarmRepository: AlarmRepository
+    private val repository: TaskRepositoryInterface,
+    private val folderRepository: FolderRepositoryInterface,
+    private val alarmRepository: AlarmRepositoryInterface
     ) : ViewModel() {
 
     val tasks = repository.getAllTasksSorted().stateIn(

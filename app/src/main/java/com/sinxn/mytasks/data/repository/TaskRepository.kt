@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.data.repository
 
+import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.dao.TaskDao
 import com.sinxn.mytasks.data.local.entities.Task
 import kotlinx.coroutines.flow.Flow
@@ -10,35 +11,35 @@ import javax.inject.Singleton
 @Singleton
 class TaskRepository @Inject constructor(
     private val taskDao: TaskDao
-) {
-    fun getAllTasks(): Flow<List<Task>> = taskDao.getAllTasks()
+) : TaskRepositoryInterface {
+    override fun getAllTasks(): Flow<List<Task>> = taskDao.getAllTasks()
 
-    fun getAllTasksSorted(): Flow<List<Task>> = taskDao.getAllTasksSorted()
+    override fun getAllTasksSorted(): Flow<List<Task>> = taskDao.getAllTasksSorted()
 
-    fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>> {
+    override fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>> {
         return taskDao.getTasksByMonth(startOfMonth, endOfMonth)
     }
-    suspend fun insertTask(task: Task): Long {
+    override suspend fun insertTask(task: Task): Long {
         return taskDao.insertTask(task)
     }
 
-    suspend fun deleteTask(task: Task) {
+    override suspend fun deleteTask(task: Task) {
         taskDao.deleteTask(task)
     }
 
-    suspend fun updateTask(task: Task) {
+    override suspend fun updateTask(task: Task) {
         taskDao.updateTask(task)
     }
 
-    suspend fun getTaskById(taskId: Long): Task? {
+    override suspend fun getTaskById(taskId: Long): Task? {
         return taskDao.getTaskById(taskId)
     }
 
-    suspend fun updateStatusTask(taskId: Long, status: Boolean) {
+    override suspend fun updateStatusTask(taskId: Long, status: Boolean) {
         taskDao.updateStatusTask(taskId, status)
     }
 
-    fun getTasksByFolderId(folderId: Long?): Flow<List<Task>> {
+    override fun getTasksByFolderId(folderId: Long?): Flow<List<Task>> {
         return taskDao.getTasksByFolderId(folderId)
     }
 }

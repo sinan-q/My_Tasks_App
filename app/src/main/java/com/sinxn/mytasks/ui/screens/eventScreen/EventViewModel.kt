@@ -2,12 +2,12 @@ package com.sinxn.mytasks.ui.screens.eventScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sinxn.mytasks.data.interfaces.EventRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.data.repository.EventRepository
-import com.sinxn.mytasks.data.repository.FolderRepository
-import com.sinxn.mytasks.data.repository.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,9 +23,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EventViewModel @Inject constructor(
-    private val repository: EventRepository,
-    private val taskRepository: TaskRepository,
-    private val folderRepository: FolderRepository
+    private val repository: EventRepositoryInterface,
+    private val taskRepository: TaskRepositoryInterface,
+    private val folderRepository: FolderRepositoryInterface
 ) : ViewModel() {
 
     val upcomingEvents = repository.getUpcomingEvents(10).stateIn(

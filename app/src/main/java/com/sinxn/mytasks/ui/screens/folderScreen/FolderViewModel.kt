@@ -2,12 +2,13 @@ package com.sinxn.mytasks.ui.screens.folderScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.data.repository.FolderRepository
-import com.sinxn.mytasks.data.repository.NoteRepository
-import com.sinxn.mytasks.data.repository.TaskRepository
+
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,9 +19,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FolderViewModel @Inject constructor(
-    private val folderRepository: FolderRepository,
-    private val noteRepository: NoteRepository,
-    private val taskRepository: TaskRepository,
+    private val folderRepository: FolderRepositoryInterface,
+    private val noteRepository: NoteRepositoryInterface,
+    private val taskRepository: TaskRepositoryInterface,
 ) : ViewModel() {
 
 

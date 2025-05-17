@@ -2,9 +2,9 @@ package com.sinxn.mytasks.ui.screens.alarmScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sinxn.mytasks.data.interfaces.AlarmRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.data.repository.AlarmRepository
-import com.sinxn.mytasks.data.repository.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,8 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AlarmViewModel @Inject constructor(
-    private val alarmRepository: AlarmRepository,
-    private val taskRepository: TaskRepository,
+    private val alarmRepository: AlarmRepositoryInterface,
+    private val taskRepository: TaskRepositoryInterface,
 ) : ViewModel() {
 
     private val _task = MutableStateFlow(Task())

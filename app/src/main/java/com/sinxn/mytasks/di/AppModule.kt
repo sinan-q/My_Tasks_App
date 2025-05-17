@@ -42,63 +42,42 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideNoteRepository(appDatabase: AppDatabase): NoteRepository {
-        return NoteRepository(appDatabase.noteDao())
-    }
+    fun provideNoteRepository(appDatabase: AppDatabase): NoteRepository = NoteRepository(appDatabase.noteDao())
 
     @Provides
     @Singleton
-    fun provideTaskDao(database: AppDatabase): TaskDao {
-        return database.taskDao()
-    }
+    fun provideTaskDao(database: AppDatabase): TaskDao = database.taskDao()
+
 
     @Provides
     @Singleton
-    fun provideTaskRepository(appDatabase: AppDatabase): TaskRepository {
-        return TaskRepository(appDatabase.taskDao())
-    }
+    fun provideTaskRepository(appDatabase: AppDatabase): TaskRepository = TaskRepository(appDatabase.taskDao())
 
     @Provides
     @Singleton
-    fun provideFolderDao(database: AppDatabase): FolderDao {
-        return database.folderDao()
-
-    }
+    fun provideFolderDao(database: AppDatabase): FolderDao = database.folderDao()
 
     @Provides
     @Singleton
-    fun provideFolderRepository(appDatabase: AppDatabase): FolderRepository {
-        return FolderRepository(appDatabase.folderDao())
-    }
+    fun provideFolderRepository(appDatabase: AppDatabase): FolderRepository = FolderRepository(appDatabase.folderDao())
 
     @Provides
     @Singleton
-    fun provideEventDao(database: AppDatabase): EventDao {
-        return database.eventDao()
-    }
+    fun provideEventDao(database: AppDatabase): EventDao = database.eventDao()
 
     @Provides
     @Singleton
-    fun provideEventRepository(appDatabase: AppDatabase): EventRepository {
-        return EventRepository(appDatabase.eventDao())
-    }
+    fun provideEventRepository(appDatabase: AppDatabase): EventRepository = EventRepository(appDatabase.eventDao())
 
     @Provides
     @Singleton
-    fun provideAlarmDao(database: AppDatabase): AlarmDao {
-        return database.alarmDao()
-    }
+    fun provideAlarmDao(database: AppDatabase): AlarmDao = database.alarmDao()
 
     @Provides
     @Singleton
-    fun provideAlarmRepository(@ApplicationContext context: Context,appDatabase: AppDatabase): AlarmRepository {
-        return AlarmRepository(
+    fun provideAlarmRepository(@ApplicationContext context: Context,appDatabase: AppDatabase): AlarmRepository =
+        AlarmRepository(
             appDatabase.alarmDao(),
             AlarmScheduler(context)
         )
-    }
-
-
-
-
 }
