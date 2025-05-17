@@ -48,9 +48,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.ui.components.AddEditTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.TimePickerDialog
+import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
 import com.sinxn.mytasks.utils.ReminderTypes
 import com.sinxn.mytasks.utils.addTimerPickerState
@@ -86,13 +88,13 @@ fun AddEditTaskScreen(
     val taskState by taskViewModel.task.collectAsState()
     val folder by taskViewModel.folder.collectAsState()
     val folders by taskViewModel.folders.collectAsState()
-    val backHandle = if (!isEditing) onFinish else {
-        {
-            //TODO show dialog to save changes
-        }
-        }
 
-    BackHandler(onBack = backHandle)
+    val handleBackPressAttempt = rememberPressBackTwiceState(
+        enabled = isEditing, // Only require double press if currently editing
+        onExit = onFinish,
+    )
+    BackHandler(onBack = handleBackPressAttempt)
+
     LaunchedEffect(taskId, folderId) {
         if (taskId != -1L) {
             taskViewModel.fetchTaskById(taskId)
@@ -134,28 +136,13 @@ fun AddEditTaskScreen(
             }
         },
         topBar = {
-            TopAppBar(
-                title = { Text(if (taskId == -1L) "Add Task" else "Edit Task") },
-                navigationIcon = {
-                    IconButton(onClick = backHandle) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    if (taskId != -1L) {
-                        IconButton(onClick = {
-                            taskViewModel.deleteTask(taskState)
-                            onFinish()
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete"
-                            )
-                        }
-                    }
+            AddEditTopAppBar(
+                title = if (taskId == -1L) "Add Task" else "Edit Task",
+                onNavigateUp = handleBackPressAttempt,
+                showDeleteAction = taskId != -1L,
+                onDelete = {
+                    taskViewModel.deleteTask(taskState)
+                    onFinish()
                 }
             )
         },

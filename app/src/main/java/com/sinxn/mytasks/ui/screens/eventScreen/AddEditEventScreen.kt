@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens.eventScreen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,9 +37,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
+import com.sinxn.mytasks.ui.components.AddEditTopAppBar
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.TimePickerDialog
+import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.utils.addTimerPickerState
 import com.sinxn.mytasks.utils.formatDate
 import com.sinxn.mytasks.utils.fromMillis
@@ -65,6 +68,12 @@ fun AddEditEventScreen(
     val eventState by eventViewModel.event.collectAsState()
     val folder by eventViewModel.folder.collectAsState()
     val folders by eventViewModel.folders.collectAsState()
+
+    val handleBackPressAttempt = rememberPressBackTwiceState(
+        enabled = isEditing,
+        onExit = onFinish,
+    )
+    BackHandler(onBack = handleBackPressAttempt)
 
     LaunchedEffect(eventId, folderId, date) {
         if (eventId != -1L) {
@@ -111,28 +120,13 @@ fun AddEditEventScreen(
             }
         },
         topBar = {
-            TopAppBar(
-                title = { Text(if (eventId == -1L) "Add Event" else "Edit Event") },
-                navigationIcon = {
-                    IconButton(onClick = onFinish) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    if (eventId != -1L) {
-                        IconButton(onClick = {
-                            eventState?.let { eventViewModel.deleteEvent(it) }
-                            onFinish()
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete"
-                            )
-                        }
-                    }
+            AddEditTopAppBar(
+                title = if (eventId == -1L) "Add Event" else "Edit Event",
+                onNavigateUp = handleBackPressAttempt,
+                showDeleteAction = eventId != -1L,
+                onDelete = {
+                    eventState?.let { eventViewModel.deleteEvent(it) }
+                    onFinish()
                 }
             )
         },

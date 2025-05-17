@@ -1,25 +1,20 @@
 package com.sinxn.mytasks.ui.screens.noteScreen
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,10 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
+import com.sinxn.mytasks.ui.components.AddEditTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
+import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
+import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditNoteScreen(
     modifier: Modifier = Modifier,
@@ -50,6 +46,14 @@ fun AddEditNoteScreen(
     val folder by noteViewModel.folder.collectAsState()
     val subFolders by noteViewModel.subFolders.collectAsState()
     val toastMessage by noteViewModel.toastMessage.collectAsState()
+
+    val handleBackPressAttempt = rememberPressBackTwiceState(
+        enabled = isEditing, // Only require double press if currently editing
+        onExit = onFinish,
+        message = "Press Back Again to cancel changes"
+    )
+    BackHandler(onBack = handleBackPressAttempt)
+
 
     LaunchedEffect(noteId, folderId) {
         if (noteId != -1L) {
@@ -98,28 +102,15 @@ fun AddEditNoteScreen(
             }
         },
         topBar = {
-            TopAppBar(
-                title = { Text(if (noteId == -1L) "Add Note" else "Edit Note") },
-                navigationIcon = {
-                    IconButton(onClick = onFinish) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    if (noteId != -1L) IconButton(onClick = {
-                        noteState?.let { noteViewModel.deleteNote(it) }
-                        onFinish()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete"
-                        )
-                    }
-
-                })
+            AddEditTopAppBar(
+                title = if (noteId == -1L) "Add Note" else "Edit Note",
+                onNavigateUp = handleBackPressAttempt,
+                showDeleteAction = noteId != -1L,
+                onDelete = {
+                    noteState?.let { noteViewModel.deleteNote(it) }
+                    onFinish()
+                }
+            )
         },
 
     ) { padding ->
