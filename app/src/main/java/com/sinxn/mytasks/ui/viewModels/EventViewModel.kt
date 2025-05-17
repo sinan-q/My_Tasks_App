@@ -40,27 +40,26 @@ class EventViewModel @Inject constructor(
     private val _event = MutableStateFlow<Event?>(null)
     val event: StateFlow<Event?> = _event
 
-    private val _startOfMonth = MutableStateFlow(LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0))
-    val startOfMonth: StateFlow<LocalDateTime> = _startOfMonth
-    private val _endOfMonth = MutableStateFlow(LocalDateTime.now().withDayOfMonth(LocalDate.now().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59))
-    val endOfMonth: StateFlow<LocalDateTime> = _endOfMonth
-
     fun onMonthChange(month: LocalDate) {
-        _startOfMonth.value = month.withDayOfMonth(1).atStartOfDay()
-        _endOfMonth.value = startOfMonth.value.plusMonths(1).minusSeconds(1)
-        getEventsByMonth()
-        getTasksByMonth()
+        getEventsAndTasksByMonth(month)
     }
-
 
     init {
-
-        getEventsByMonth()
-        getTasksByMonth()
+        getEventsAndTasksByMonth(LocalDate.now())
     }
-    private fun getEventsByMonth() = viewModelScope.launch {
-            repository.getEventsByMonth(startOfMonth.value, endOfMonth.value ).collectLatest { events ->
-                _eventsOnMonth.value = events
+    private fun getEventsAndTasksByMonth(date: LocalDate) {
+        val startOfMonth = date.withDayOfMonth(1).atStartOfDay()
+        val endOfMonth = startOfMonth.plusMonths(1).minusSeconds(1)
+        viewModelScope.launch {
+            repository.getEventsByMonth(startOfMonth, endOfMonth)
+                .collectLatest { events ->
+                    _eventsOnMonth.value = events
+                }
+        }
+        viewModelScope.launch {
+            taskRepository.getTasksByMonth(startOfMonth, endOfMonth ).collectLatest { tasks ->
+                _tasksOnMonth.value = tasks
+            }
         }
     }
 
@@ -73,11 +72,6 @@ class EventViewModel @Inject constructor(
                 )
             }
         )
-    }
-    private fun getTasksByMonth() = viewModelScope.launch {
-        taskRepository.getTasksByMonth(startOfMonth.value, endOfMonth.value ).collectLatest { tasks ->
-            _tasksOnMonth.value = tasks
-        }
     }
 
     fun fetchEventById(eventId: Long) {

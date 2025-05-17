@@ -28,8 +28,6 @@ class FolderViewModel @Inject constructor(
     private val lockFolderUseCase: LockFolderUseCase
 ) : BaseViewModel(folderRepo) {
 
-
-
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
     val notes: StateFlow<List<Note>> = _notes.asStateFlow()
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
@@ -68,11 +66,8 @@ class FolderViewModel @Inject constructor(
             }
         }
     }
-    fun onBack(folder: Folder) {
-        viewModelScope.launch {
-            getSubFolders(folder.parentFolderId?: 0L)
-        }
-    }
+    fun onBack(folder: Folder) = getSubFolders(folder.parentFolderId?: 0L)
+
 
     fun updateTaskStatus(taskId: Long, status: Boolean) {
         viewModelScope.launch {
