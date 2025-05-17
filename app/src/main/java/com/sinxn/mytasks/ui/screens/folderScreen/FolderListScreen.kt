@@ -16,8 +16,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.AddEditTopAppBar
+import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyGrid
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
@@ -34,6 +37,8 @@ fun FolderListScreen(
     onTaskClick: (Long?) -> Unit,
     onBack: () -> Unit,
 ) {
+    var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
+
     val context = LocalContext.current
     LaunchedEffect(folderId) {
         folderViewModel.getSubFolders(folderId)
@@ -82,8 +87,7 @@ fun FolderListScreen(
                     onNavigateUp = { if (folder.parentFolderId == 0L) onBack() else folderViewModel.onBack(folder) },
                     showDeleteAction = true,
                     onDelete = {
-                        folderViewModel.deleteFolder(folder)
-                        folderViewModel.onBack(folder)
+                        showDeleteConfirmationDialog = true
                     }
                 )
 
@@ -131,4 +135,18 @@ fun FolderListScreen(
             }
         }
     }
+    currentFolder?.let { folder ->
+        ConfirmationDialog(
+            showDialog = showDeleteConfirmationDialog,
+            onDismiss = { showDeleteConfirmationDialog = false },
+            onConfirm = {
+                folderViewModel.deleteFolder(folder)
+                folderViewModel.onBack(folder) 
+                showDeleteConfirmationDialog = false
+            },
+            title = stringResource(R.string.delete_confirmation_title),
+            message = stringResource(R.string.delete_folder_message)
+        )
+    }
+
 }

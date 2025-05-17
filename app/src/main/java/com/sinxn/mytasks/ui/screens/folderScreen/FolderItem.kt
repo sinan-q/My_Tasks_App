@@ -29,9 +29,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.components.RectangleCard
 import showBiometricsAuthentication
@@ -40,6 +43,8 @@ import showBiometricsAuthentication
 fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit, onDelete: () -> Unit, onLock: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
+
     fun authenticate(function: () -> Unit) {
         showBiometricsAuthentication(
             context,
@@ -52,7 +57,9 @@ fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit
     }
 
     RectangleCard(
-        modifier = modifier.fillMaxHeight().background(color = MaterialTheme.colorScheme.primaryContainer),
+        modifier = modifier
+            .fillMaxHeight()
+            .background(color = MaterialTheme.colorScheme.primaryContainer),
         onClick = {
             if (folder.isLocked) authenticate(onClick)
             else onClick()
@@ -66,7 +73,10 @@ fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit
                     tint = MaterialTheme.colorScheme.primary
                 )
             Column(
-                modifier = Modifier.weight(0.9f).fillMaxWidth(0.9f).padding(2.dp),
+                modifier = Modifier
+                    .weight(0.9f)
+                    .fillMaxWidth(0.9f)
+                    .padding(2.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -75,7 +85,9 @@ fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            Column (horizontalAlignment = Alignment.End, modifier = Modifier.fillMaxWidth().weight(0.2f)) {
+            Column (horizontalAlignment = Alignment.End, modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.2f)) {
                 IconButton(
                     onClick = { expanded = true }
                 ) {
@@ -102,12 +114,12 @@ fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit
                     RectangleButton(
                         onClick = {
                             expanded = false
-                            onDelete() },
+                            showDeleteConfirmationDialog = true },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                         modifier = Modifier.padding(horizontal = 8.dp),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                     ) {
-                        Text(text = "Delete", color = Color.Red)
+                        Text(text = stringResource(R.string.delete), color = Color.Red)
                     }
                 }
 
@@ -115,6 +127,16 @@ fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit
         }
 
     }
+    ConfirmationDialog(
+        showDialog = showDeleteConfirmationDialog,
+        onDismiss = { showDeleteConfirmationDialog = false },
+        onConfirm = {
+            onDelete()
+            showDeleteConfirmationDialog = false
+        },
+        title = stringResource(R.string.delete_confirmation_title),
+        message = stringResource(R.string.delete_folder_message)
+    )
 
 }
 
@@ -130,7 +152,9 @@ fun FolderItemEdit(folder: Folder, onDismiss: () -> Unit, onSubmit: (Folder) -> 
             TextField(
                 value = text.value,
                 onValueChange = { text.value = it },
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
             )
             Row {
                 RectangleButton(
@@ -160,7 +184,7 @@ fun FolderDropDown(
     onClick: (folderDd: Long) -> Unit,
     isEditing: Boolean,
     folder: Folder?,
-    folders: List<Folder>
+    folders: List<Folder>,
 ) {
     var folderChangeExpanded by remember { mutableStateOf(false) }
 

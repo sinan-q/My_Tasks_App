@@ -24,9 +24,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.ui.components.AddEditTopAppBar
+import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
@@ -40,6 +43,8 @@ fun AddEditNoteScreen(
     noteViewModel: NoteViewModel,
     onFinish: () -> Unit,
 ) {
+    var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
+
     val context = LocalContext.current
     var noteInputState by remember { mutableStateOf(Note()) }
     var isEditing by remember { mutableStateOf(noteId == -1L) }
@@ -111,8 +116,7 @@ fun AddEditNoteScreen(
                 onNavigateUp = handleBackPressAttempt,
                 showDeleteAction = noteId != -1L,
                 onDelete = {
-                    noteState?.let { noteViewModel.deleteNote(it) }
-                    onFinish()
+                    showDeleteConfirmationDialog = true
                 }
             )
         },
@@ -148,4 +152,15 @@ fun AddEditNoteScreen(
             )
         }
     }
+    ConfirmationDialog(
+        showDialog = showDeleteConfirmationDialog,
+        onDismiss = { showDeleteConfirmationDialog = false },
+        onConfirm = {
+            noteState?.let { noteViewModel.deleteNote(it) }
+            showDeleteConfirmationDialog = false
+            onFinish()
+        },
+        title = stringResource(R.string.delete_confirmation_title),
+        message = stringResource(R.string.delete_item_message)
+    )
 }
