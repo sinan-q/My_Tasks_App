@@ -1,6 +1,5 @@
 package com.sinxn.mytasks.ui.navigation
 
-import com.sinxn.mytasks.ui.screens.taskScreen.AddEditTaskScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
@@ -9,19 +8,21 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.sinxn.mytasks.ui.screens.backupScreen.BackupScreen
 import com.sinxn.mytasks.ui.screens.backupScreen.BackupViewModel
 import com.sinxn.mytasks.ui.screens.eventScreen.AddEditEventScreen
-import com.sinxn.mytasks.ui.screens.noteScreen.AddEditNoteScreen
 import com.sinxn.mytasks.ui.screens.eventScreen.EventListScreen
-import com.sinxn.mytasks.ui.screens.folderScreen.FolderListScreen
-import com.sinxn.mytasks.ui.screens.homeScreen.HomeScreen
-import com.sinxn.mytasks.ui.screens.noteScreen.NoteListScreen
-import com.sinxn.mytasks.ui.screens.taskScreen.TaskListScreen
 import com.sinxn.mytasks.ui.screens.eventScreen.EventViewModel
+import com.sinxn.mytasks.ui.screens.folderScreen.FolderListScreen
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderViewModel
+import com.sinxn.mytasks.ui.screens.homeScreen.HomeScreen
 import com.sinxn.mytasks.ui.screens.homeScreen.HomeViewModel
+import com.sinxn.mytasks.ui.screens.noteScreen.AddEditNoteScreen
+import com.sinxn.mytasks.ui.screens.noteScreen.NoteListScreen
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteViewModel
+import com.sinxn.mytasks.ui.screens.taskScreen.AddEditTaskScreen
+import com.sinxn.mytasks.ui.screens.taskScreen.TaskListScreen
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskViewModel
 
 @Composable
@@ -92,6 +93,18 @@ fun NavGraph(
                 noteViewModel = noteViewModel,
                 onAddNoteClick = onAddNoteClick,
                 onNoteClick = onNoteClick
+            )
+        }
+        composable(
+            route = "add_note_widget",
+            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://add_note" })
+        ) {
+            AddEditNoteScreen(
+                noteId = -1L,
+                folderId = 0,
+                onFinish = { navController.popBackStack() },
+                noteViewModel = noteViewModel,
+                modifier = Modifier
             )
         }
         composable(

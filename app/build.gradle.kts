@@ -86,4 +86,7 @@ dependencies {
     //Biometric Auth
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.appcompat)
+
+    //Widget
+    implementation("androidx.glance:glance-appwidget:1.1.0")
 }
