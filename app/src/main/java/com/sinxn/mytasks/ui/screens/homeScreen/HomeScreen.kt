@@ -63,8 +63,8 @@ fun HomeScreen(
     fun showToast(message : String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
-    LaunchedEffect(key1 = Unit) { // key1 = Unit makes it run once on composition
-        homeViewModel.toastMessage.collectLatest { message -> // or .collect {
+    LaunchedEffect(key1 = Unit) {
+        homeViewModel.toastMessage.collectLatest { message ->
             showToast(message)
         }
     }
@@ -116,12 +116,13 @@ fun HomeScreen(
                 MyTitle(modifier = Modifier.clickable {
                     onEventClick()
                 }, title = "Upcoming Events")
+                if (events.isEmpty()) Text(modifier = Modifier.padding(bottom = 12.dp), text = "Nothing to show here")
             }
+
             items(events) { event ->
                 EventSmallItem(event)
             }
             item {
-                MyTitle(title = "Root")
                 AnimatedVisibility(
                     visible = folderEditToggle
                 ) {

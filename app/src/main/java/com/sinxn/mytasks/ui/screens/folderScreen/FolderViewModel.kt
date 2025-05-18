@@ -1,6 +1,5 @@
 package com.sinxn.mytasks.ui.screens.folderScreen
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
@@ -9,11 +8,11 @@ import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.components.BaseViewModel
-
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -75,17 +74,17 @@ class FolderViewModel @Inject constructor(
             _folder.value = folderRepository.getFolderById(folderId)
         }
         viewModelScope.launch {
-            taskRepository.getTasksByFolderId(folderId).collect { taskList ->
+            taskRepository.getTasksByFolderId(folderId).collectLatest { taskList ->
                 _tasks.value = taskList
             }
         }
         viewModelScope.launch {
-            folderRepository.getSubFolders(folderId).collect { folderList ->
+            folderRepository.getSubFolders(folderId).collectLatest { folderList ->
                 _folders.value = folderList
             }
         }
         viewModelScope.launch {
-            noteRepository.getNotesByFolderId(folderId).collect { noteList ->
+            noteRepository.getNotesByFolderId(folderId).collectLatest { noteList ->
                 _notes.value = noteList
             }
         }
