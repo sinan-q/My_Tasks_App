@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
@@ -7,9 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,7 +18,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Folder
 
 
@@ -42,9 +42,9 @@ fun ShowOptionsFAB(
             visible = isOptionsVisible,
         ) {
             OptionsColumn(
-                onAddTaskClick = { onAddTaskClick(currentFolder?.folderId) },
-                onAddNoteClick = { onAddNoteClick(currentFolder?.folderId) },
-                onAddEventClick = { onAddEventClick(currentFolder?.folderId) },
+                onAddTaskClick = { onAddTaskClick(currentFolder.folderId) },
+                onAddNoteClick = { onAddNoteClick(currentFolder.folderId) },
+                onAddEventClick = { onAddEventClick(currentFolder.folderId) },
                 onAddFolderClick = onAddFolderClick,
                 onCloseOptions = { isOptionsVisible = false }
             )
@@ -76,25 +76,25 @@ fun OptionsColumn(
     ) {
         OptionButton(
             onClick = { onCloseOptions(); onAddEventClick() },
-            icon = Icons.Filled.Notifications,
+            icon = R.drawable.event_ic_add,
             contentDescription = "Add Event",
             text = "Add Event"
         )
         OptionButton(
             onClick = { onCloseOptions(); onAddTaskClick() },
-            icon = Icons.Filled.Person,
+            icon = R.drawable.task_ic_add,
             contentDescription = "Add Task",
             text = "Add Task"
         )
         OptionButton(
             onClick = { onCloseOptions(); onAddFolderClick() },
-            icon = Icons.Filled.Add,
+            icon = R.drawable.folder_ic_add,
             contentDescription = "Add Folder",
             text = "Add Folder"
         )
         OptionButton(
             onClick = { onCloseOptions(); onAddNoteClick() },
-            icon = Icons.Filled.Check,
+            icon = R.drawable.note_ic_add,
             contentDescription = "Add Note",
             text = "Add Note"
         )
@@ -104,13 +104,13 @@ fun OptionsColumn(
 @Composable
 fun OptionButton(
     onClick: () -> Unit,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    @DrawableRes icon: Int,
     contentDescription: String,
     text: String
 ) {
     ExtendedRectangleFAB(
         onClick = onClick,
-        icon = { Icon(icon, contentDescription = contentDescription) },
+        icon = { Icon(painterResource(icon), contentDescription = contentDescription) },
         text = { Text(text = text) }
     )
 }

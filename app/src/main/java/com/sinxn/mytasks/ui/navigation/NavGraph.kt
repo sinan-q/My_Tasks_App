@@ -1,6 +1,5 @@
 package com.sinxn.mytasks.ui.navigation
 
-import com.sinxn.mytasks.ui.screens.taskScreen.AddEditTaskScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
@@ -9,19 +8,21 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.sinxn.mytasks.ui.screens.backupScreen.BackupScreen
 import com.sinxn.mytasks.ui.screens.backupScreen.BackupViewModel
 import com.sinxn.mytasks.ui.screens.eventScreen.AddEditEventScreen
-import com.sinxn.mytasks.ui.screens.noteScreen.AddEditNoteScreen
 import com.sinxn.mytasks.ui.screens.eventScreen.EventListScreen
-import com.sinxn.mytasks.ui.screens.folderScreen.FolderListScreen
-import com.sinxn.mytasks.ui.screens.homeScreen.HomeScreen
-import com.sinxn.mytasks.ui.screens.noteScreen.NoteListScreen
-import com.sinxn.mytasks.ui.screens.taskScreen.TaskListScreen
 import com.sinxn.mytasks.ui.screens.eventScreen.EventViewModel
+import com.sinxn.mytasks.ui.screens.folderScreen.FolderListScreen
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderViewModel
+import com.sinxn.mytasks.ui.screens.homeScreen.HomeScreen
 import com.sinxn.mytasks.ui.screens.homeScreen.HomeViewModel
+import com.sinxn.mytasks.ui.screens.noteScreen.AddEditNoteScreen
+import com.sinxn.mytasks.ui.screens.noteScreen.NoteListScreen
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteViewModel
+import com.sinxn.mytasks.ui.screens.taskScreen.AddEditTaskScreen
+import com.sinxn.mytasks.ui.screens.taskScreen.TaskListScreen
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskViewModel
 
 @Composable
@@ -70,7 +71,10 @@ fun NavGraph(
         startDestination = "home",
         modifier = modifier
     ) {
-        composable("home",) {
+        composable(
+            route = "home",
+            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://home" })
+        ) {
 
             HomeScreen(
                 homeViewModel = homeViewModel,
@@ -94,8 +98,10 @@ fun NavGraph(
                 onNoteClick = onNoteClick
             )
         }
+
         composable(
             route = "add_edit_note/{noteId}/{folderId}",
+            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://add_note" }),
             arguments = listOf(
                 navArgument("noteId") { type = NavType.LongType; defaultValue = -1L },
                 navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
@@ -122,6 +128,7 @@ fun NavGraph(
         }
         composable(
             route = "add_edit_task/{taskId}/{folderId}",
+            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://add_task" }),
             arguments = listOf(
                 navArgument("taskId") { type = NavType.LongType; defaultValue = -1L },
                 navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
@@ -149,6 +156,7 @@ fun NavGraph(
 
         composable(
             route = "add_edit_event/{eventId}/{folderId}/{date}",
+            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://add_event" }),
             arguments = listOf(
                 navArgument("eventId") { type = NavType.LongType; defaultValue = -1L },
                 navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
