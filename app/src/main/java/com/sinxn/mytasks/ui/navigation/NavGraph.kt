@@ -71,7 +71,10 @@ fun NavGraph(
         startDestination = "home",
         modifier = modifier
     ) {
-        composable("home",) {
+        composable(
+            route = "home",
+            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://home" })
+        ) {
 
             HomeScreen(
                 homeViewModel = homeViewModel,
@@ -95,20 +98,10 @@ fun NavGraph(
                 onNoteClick = onNoteClick
             )
         }
-        composable(
-            route = "add_note_widget",
-            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://add_note" })
-        ) {
-            AddEditNoteScreen(
-                noteId = -1L,
-                folderId = 0,
-                onFinish = { navController.popBackStack() },
-                noteViewModel = noteViewModel,
-                modifier = Modifier
-            )
-        }
+
         composable(
             route = "add_edit_note/{noteId}/{folderId}",
+            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://add_note" }),
             arguments = listOf(
                 navArgument("noteId") { type = NavType.LongType; defaultValue = -1L },
                 navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
@@ -135,6 +128,7 @@ fun NavGraph(
         }
         composable(
             route = "add_edit_task/{taskId}/{folderId}",
+            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://add_task" }),
             arguments = listOf(
                 navArgument("taskId") { type = NavType.LongType; defaultValue = -1L },
                 navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
@@ -162,6 +156,7 @@ fun NavGraph(
 
         composable(
             route = "add_edit_event/{eventId}/{folderId}/{date}",
+            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://add_event" }),
             arguments = listOf(
                 navArgument("eventId") { type = NavType.LongType; defaultValue = -1L },
                 navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },

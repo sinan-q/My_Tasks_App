@@ -88,5 +88,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
 
     //Widget
-    implementation("androidx.glance:glance-appwidget:1.1.0")
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+
 }

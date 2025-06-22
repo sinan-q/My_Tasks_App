@@ -1,10 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="70dp"
-    android:minHeight="70dp"
-    android:targetCellHeight="2"
-    android:targetCellWidth="2"
-    android:updatePeriodMillis="86400000"
-    android:initialLayout="@xml/glance_provider"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:previewImage="@drawable/widget_preview"
+    android:maxResizeHeight="@dimen/widget_max_resize_height"
+    android:maxResizeWidth="@dimen/widget_max_resize_width"
+    android:minHeight="@dimen/widget_min_height"
+    android:minResizeHeight="@dimen/widget_min_resize_height"
+    android:minResizeWidth="@dimen/widget_min_resize_width"
+    android:minWidth="@dimen/widget_min_width"
     android:resizeMode="horizontal|vertical"
-    android:widgetCategory="home_screen" />
+    android:targetCellHeight="@integer/target_cell_height"
+    android:targetCellWidth="@integer/target_cell_width"
+    android:widgetCategory="home_screen|keyguard" />
