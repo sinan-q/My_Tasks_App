@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.ui.components.RectangleCard
 import com.sinxn.mytasks.utils.formatDate
+import java.time.format.TextStyle
+import java.util.Locale
 
 @Composable
 fun EventItem(
@@ -63,7 +65,7 @@ fun EventSmallItem(event: Event) {
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = event.start?.month?.toString()?:"Error",
+                    text = event.start?.month?.getDisplayName(TextStyle.SHORT, Locale.getDefault())?:"Error",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
