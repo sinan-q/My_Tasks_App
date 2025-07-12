@@ -3,9 +3,13 @@ package com.sinxn.mytasks.ui.screens.homeScreen
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
@@ -26,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.ui.components.MyGrid
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.screens.eventScreen.EventSmallItem
@@ -112,18 +115,27 @@ fun HomeScreen(
             )
         },
     ) { padding ->
-        LazyColumn(modifier = Modifier.padding(padding)) {
-            item {
-                MyTitle(modifier = Modifier.clickable {
-                    onEventClick()
-                }, title = "Upcoming Events")
-                if (events.isEmpty()) Text(modifier = Modifier.padding(bottom = 12.dp), text = "Nothing to show here")
+        LazyVerticalStaggeredGrid(
+            modifier = Modifier.padding(padding),
+            columns = StaggeredGridCells.Fixed(2) //TODO Adaptive
+        ) {
+            item(span = StaggeredGridItemSpan.FullLine) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    MyTitle(onClick = { onEventClick() }, text = "Upcoming Events")
+                    if (events.isEmpty()) Text(text = "Nothing to show here")
+                }
             }
 
             items(events) { event ->
                 EventSmallItem(event)
             }
-            item {
+            item(span = StaggeredGridItemSpan.FullLine) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    MyTitle(text = "Home")
+                    if (folders.isEmpty() && tasks.isEmpty() && notes.isEmpty()) Text(text = "Nothing to show here")
+                }
+            }
+            item(span = StaggeredGridItemSpan.FullLine) {
                 AnimatedVisibility(
                     visible = folderEditToggle
                 ) {
@@ -134,36 +146,31 @@ fun HomeScreen(
                         onDismiss = { folderEditToggle = false }
                     ) { homeViewModel.addFolder(it) }
                 }
-                MyGrid(
-                    list = folders,
-                    columns = 2
-                ) { folder ->
-                    FolderItem(
-                        modifier = Modifier.weight(1f),
-                        folder = folder,
-                        onClick = { onFolderClick(folder.folderId) },
-                        onDelete = { homeViewModel.deleteFolder(folder) },
-                        onLock = { homeViewModel.lockFolder(folder) })
-                }
             }
-            items(tasks) { task ->
+            items(folders) { folder ->
+                FolderItem(
+                    folder = folder,
+                    onClick = { onFolderClick(folder.folderId) },
+                    onDelete = { homeViewModel.deleteFolder(folder) },
+                    onLock = { homeViewModel.lockFolder(folder) })
+            }
+            items (
+                key = { it.id!! },
+                span = { StaggeredGridItemSpan.FullLine },
+                items = tasks,
+            ) { task ->
                 TaskItem(
                     task = task, onClick = { onTaskClick(task.id) },
                     onUpdate = { status -> taskViewModel.updateStatusTask(task.id!!, status) },
                     path = null,
                 )
             }
-            item {
-                MyGrid(
-                    list = notes,
-                    columns = 2
-                ) { note ->
+            items(notes) { note ->
                     NoteItem(
-                        modifier = Modifier.weight(1f),
                         note = note,
                         onClick = { onNoteClick(note.id) }
                     )
-                }
+
             }
         }
     }

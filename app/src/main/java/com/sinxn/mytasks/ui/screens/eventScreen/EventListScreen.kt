@@ -13,16 +13,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.sinxn.mytasks.ui.components.CalendarGrid
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.viewModels.EventViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import java.time.LocalDate
-import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +48,7 @@ fun EventListScreen(
                 CalendarGrid(eventOnMonth.value, taskOnMonth.value, onDayClick, onMonthChange = {
                     eventViewModel.onMonthChange(it)
                 })
-                MyTitle(title = "Upcoming Events")
+                MyTitle(text = "Upcoming Events")
             }
 
             items(upcomingEvents.value) { event ->

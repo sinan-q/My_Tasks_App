@@ -4,8 +4,10 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,7 +23,6 @@ import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.AddEditTopAppBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
-import com.sinxn.mytasks.ui.components.MyGrid
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
@@ -95,8 +96,11 @@ fun FolderListScreen(
             }
         },
     ) { padding ->
-        LazyColumn(modifier = Modifier.padding(padding)) {
-            item {
+        LazyVerticalStaggeredGrid(
+            modifier = Modifier.padding(padding),
+            columns = StaggeredGridCells.Fixed(2), //TODO Adaptive
+        ) {
+            item(span = StaggeredGridItemSpan.FullLine) {
                 AnimatedVisibility(
                     visible = folderEditToggle
                 ) {
@@ -104,37 +108,37 @@ fun FolderListScreen(
                         folder = Folder(
                             name = "New Folder",
                             parentFolderId = currentFolder?.folderId?: 0L
-                        ), onDismiss = { folderEditToggle = false }) { folderViewModel.addFolder(it) }
-                }
-                MyGrid(
-                    list = folders,
-                    columns = 2
-                ) { folder ->
-                    FolderItem(
-                        modifier = Modifier.weight(1f),
-                        folder = folder,
-                        onClick = { folderViewModel.getSubFolders(folder.folderId) },
-                        onDelete = { folderViewModel.deleteFolder(folder) },
-                        onLock = { folderViewModel.lockFolder(folder) }
-                    )
+                        ),
+                        onDismiss = { folderEditToggle = false }
+                    ) { folderViewModel.addFolder(it) }
                 }
             }
-            items(tasks) { task ->
+            items(folders) { folder ->
+                FolderItem(
+                    folder = folder,
+                    onClick = { folderViewModel.getSubFolders(folder.folderId) },
+                    onDelete = { folderViewModel.deleteFolder(folder) },
+                    onLock = { folderViewModel.lockFolder(folder) })
+            }
+            items (
+                key = { it.id!! },
+                span = { StaggeredGridItemSpan.FullLine },
+                items = tasks,
+            ) { task ->
                 TaskItem(
                     task = task, onClick = { onTaskClick(task.id) },
                     onUpdate = { status -> folderViewModel.updateTaskStatus(task.id!!, status) },
                     path = null,
+                 )
+            }
+            items(notes) { note ->
+                NoteItem(
+                    note = note,
+                    onClick = { onNoteClick(note.id) }
                 )
             }
-            item {
-                MyGrid(
-                    list = notes,
-                    columns = 2
-                ) { note ->
-                    NoteItem(modifier = Modifier.weight(1f),note = note, onClick = { onNoteClick(note.id) })
-                }
-            }
         }
+
     }
     currentFolder?.let { folder ->
         ConfirmationDialog(
