@@ -34,7 +34,8 @@ import com.sinxn.mytasks.ui.screens.folderScreen.FolderItem
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderItemEdit
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
-import com.sinxn.mytasks.ui.screens.taskScreen.TaskViewModel
+import com.sinxn.mytasks.ui.viewModels.HomeViewModel
+import com.sinxn.mytasks.ui.viewModels.TaskViewModel
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,7 +53,7 @@ fun HomeScreen(
     onBackup: () -> Unit
 ) {
     val context = LocalContext.current
-    val folders by homeViewModel.folders.collectAsState(initial = emptyList())
+    val folders by homeViewModel.mainFolders.collectAsState(initial = emptyList())
     val events by homeViewModel.events.collectAsState(initial = emptyList())
 
     val tasks by homeViewModel.tasks.collectAsState(initial = emptyList())

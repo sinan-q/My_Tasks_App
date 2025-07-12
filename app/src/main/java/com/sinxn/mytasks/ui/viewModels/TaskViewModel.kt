@@ -1,26 +1,22 @@
-package com.sinxn.mytasks.ui.screens.taskScreen
+package com.sinxn.mytasks.ui.viewModels
 
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.data.interfaces.AlarmRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Alarm
-import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.ui.components.BaseViewModel
 import com.sinxn.mytasks.utils.differenceSeconds
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
@@ -28,9 +24,9 @@ import javax.inject.Inject
 @HiltViewModel
 class TaskViewModel @Inject constructor(
     private val repository: TaskRepositoryInterface,
-    private val folderRepository: FolderRepositoryInterface,
-    private val alarmRepository: AlarmRepositoryInterface
-    ) : BaseViewModel() {
+    private val alarmRepository: AlarmRepositoryInterface,
+    folderRepo: FolderRepositoryInterface
+    ) : BaseViewModel(folderRepo) {
 
     val tasks = repository.getAllTasksSorted().stateIn(
         viewModelScope,
@@ -44,25 +40,12 @@ class TaskViewModel @Inject constructor(
     private val _reminders = MutableStateFlow(emptyList<Pair<Int, ChronoUnit>>())
     val reminders: StateFlow<List<Pair<Int, ChronoUnit>>> = _reminders
 
-    private val _folder = MutableStateFlow<Folder?>(null)
-    val folder: StateFlow<Folder?> = _folder
-
-    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
-    val folders: StateFlow<List<Folder>> = _folders
-
-    init {
-        viewModelScope.launch {
-            folderRepository.getAllFolders().collect { folders ->
-                _folders.value = folders
-            }
-        }
-    }
 
     fun fetchTaskById(taskId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val alarms = mutableListOf<Pair<Int, ChronoUnit>>()
             val fetchedTask = repository.getTaskById(taskId)!!
-            val fetchedFolder = folderRepository.getFolderById(fetchedTask.folderId)
+            fetchFolderById(fetchedTask.folderId) {}
             alarmRepository.getAlarmsByTaskId(taskId).forEach { alarm ->
                 fetchedTask.due?.differenceSeconds(fromMillis(alarm.time))?.let { it2 ->
                     val duration = Duration.ofSeconds(it2)
@@ -71,7 +54,6 @@ class TaskViewModel @Inject constructor(
                 }
             }
             _task.value = fetchedTask
-            _folder.value = fetchedFolder
             _reminders.value = alarms
         }
     }
@@ -124,28 +106,9 @@ class TaskViewModel @Inject constructor(
     }
 
     fun fetchFolderById(folderId: Long) {
-        viewModelScope.launch {
-            val fetchedFolder = folderRepository.getFolderById(folderId)
-            val subFolders = folderRepository.getSubFolders(folderId).first()
-            _folders.value = subFolders
-            _folder.value = fetchedFolder
+        fetchFolderById(folderId, action = {
             _task.value = task.value.copy(
-                folderId = fetchedFolder.folderId,
-            )
-        }
-    }
-
-    fun getPath(folderId: Long): String {
-        val path = StringBuilder()
-        var curr = folderId
-        while (curr != 0L) {
-            val folder = folders.value.find { it.folderId == curr }
-            path.insert(0, "/")
-            path.insert(0, folder?.name)
-            curr = folder?.parentFolderId ?: 0L
-
-        }
-
-        return path.toString()
+                folderId = it
+            )})
     }
 }

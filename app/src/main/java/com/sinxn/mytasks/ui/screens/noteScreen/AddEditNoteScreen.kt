@@ -33,6 +33,7 @@ import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
+import com.sinxn.mytasks.ui.viewModels.NoteViewModel
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -50,7 +51,7 @@ fun AddEditNoteScreen(
     var isEditing by remember { mutableStateOf(noteId == -1L) }
     val noteState by noteViewModel.note.collectAsState()
     val folder by noteViewModel.folder.collectAsState()
-    val subFolders by noteViewModel.subFolders.collectAsState()
+    val subFolders by noteViewModel.folders.collectAsState()
 
     val handleBackPressAttempt = rememberPressBackTwiceState(
         enabled = isEditing, // Only require double press if currently editing
