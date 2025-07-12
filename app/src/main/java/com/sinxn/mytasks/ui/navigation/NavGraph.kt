@@ -1,6 +1,5 @@
 package com.sinxn.mytasks.ui.navigation
 
-import com.sinxn.mytasks.ui.screens.taskScreen.AddEditTaskScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
@@ -9,15 +8,17 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.sinxn.mytasks.ui.screens.backupScreen.BackupScreen
-import com.sinxn.mytasks.ui.screens.backupScreen.BackupViewModel
 import com.sinxn.mytasks.ui.screens.eventScreen.AddEditEventScreen
-import com.sinxn.mytasks.ui.screens.noteScreen.AddEditNoteScreen
 import com.sinxn.mytasks.ui.screens.eventScreen.EventListScreen
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderListScreen
 import com.sinxn.mytasks.ui.screens.homeScreen.HomeScreen
+import com.sinxn.mytasks.ui.screens.noteScreen.AddEditNoteScreen
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteListScreen
+import com.sinxn.mytasks.ui.screens.taskScreen.AddEditTaskScreen
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskListScreen
+import com.sinxn.mytasks.ui.viewModels.BackupViewModel
 import com.sinxn.mytasks.ui.viewModels.EventViewModel
 import com.sinxn.mytasks.ui.viewModels.FolderViewModel
 import com.sinxn.mytasks.ui.viewModels.HomeViewModel
