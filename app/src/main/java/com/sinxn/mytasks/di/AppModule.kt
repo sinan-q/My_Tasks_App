@@ -13,6 +13,8 @@ import com.sinxn.mytasks.data.repository.FolderRepository
 import com.sinxn.mytasks.data.repository.NoteRepository
 import com.sinxn.mytasks.data.repository.TaskRepository
 import com.sinxn.mytasks.data.store.SelectionStore
+import com.sinxn.mytasks.data.usecase.folder.CopyFolderAndItsContentsUseCase
+import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
 import dagger.Module
 import dagger.Provides
@@ -84,7 +86,15 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSelectionStore(): SelectionStore {
-        return SelectionStore()
+    fun provideSelectionStore(
+        taskRepository: TaskRepository,
+        noteRepository: NoteRepository,
+        folderRepository: FolderRepository,
+        copyFolderAndItsContentsUseCase: CopyFolderAndItsContentsUseCase,
+        deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase
+    ): SelectionStore {
+        return SelectionStore(
+            taskRepository, noteRepository, folderRepository, copyFolderAndItsContentsUseCase, deleteFolderAndItsContentsUseCase
+        )
     }
 }

@@ -10,7 +10,6 @@ import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.data.store.SelectionActions
 import com.sinxn.mytasks.data.store.SelectionStore
 import com.sinxn.mytasks.data.usecase.folder.AddFolderUseCase
-import com.sinxn.mytasks.data.usecase.folder.CopyFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.LockFolderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +28,6 @@ class FolderViewModel @Inject constructor(
     private val addFolderUseCase: AddFolderUseCase,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
-    private val copyFolderAndItsContentsUseCase: CopyFolderAndItsContentsUseCase,
     private val selectionStore: SelectionStore,
 
     ) : BaseViewModel(folderRepo) {
@@ -115,48 +113,18 @@ class FolderViewModel @Inject constructor(
     fun pasteSelection() {
         viewModelScope.launch {
             val folderId = folder.value?.folderId?:0L
-            if (selectedAction.value == SelectionActions.COPY){
-                selectedFolders.value.forEach {
-                    copyFolderAndItsContentsUseCase(it, parentId = folderId)
-                }
-                selectedTasks.value.forEach {
-                    taskRepository.insertTask(it.copy(id = null, folderId = folderId ))
-                }
-                selectedNotes.value.forEach {
-                    noteRepository.insertNote(it.copy(id = null, folderId = folderId))
-                }
-
-            } else if (selectedAction.value == SelectionActions.CUT) {
-                selectedTasks.value.forEach {
-                    taskRepository.updateTask(it.copy(folderId = folderId))
-                }
-                selectedNotes.value.forEach {
-                    noteRepository.updateNote(it.copy(folderId = folderId))
-                }
-                selectedFolders.value.forEach {
-                    folderRepository.updateFolder(it.copy(parentFolderId = folderId))
-                }
-            }
-            clearSelection()
-            showToast("Tasks Pasted")
+            selectionStore.pasteSelection(folderId)
         }
 
     }
 
     fun clearSelection() {
-        selectionStore.clear()
-        selectionStore.setAction(SelectionActions.NONE)
+        selectionStore.clearSelection()
     }
 
     fun deleteSelection() {
         viewModelScope.launch {
-            taskRepository.deleteTasks(selectedTasks.value.toList())
-            noteRepository.deleteNotes(selectedNotes.value.toList())
-            selectedFolders.value.forEach {
-                deleteFolderAndItsContentsUseCase(it)
-            }
-            clearSelection()
-            showToast("Tasks Deleted")
+            selectionStore.deleteSelection()
         }
     }
 

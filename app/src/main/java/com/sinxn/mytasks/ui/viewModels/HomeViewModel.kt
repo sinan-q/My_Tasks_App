@@ -42,6 +42,18 @@ class HomeViewModel @Inject constructor(
     fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
     fun onSelectionFolder(folder: Folder) = selectionStore.toggleFolder(folder)
 
+    fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
+    fun clearSelection() = selectionStore.clearSelection()
+    fun pasteSelection() {
+        viewModelScope.launch {
+            if (selectedAction.value == SelectionActions.COPY)
+                selectionStore.pasteSelection(folderId = 0L)
+        }
+    }
+    fun deleteSelection() { viewModelScope.launch {
+        selectionStore.deleteSelection()
+    }}
+
     val events = eventRepository.getUpcomingEvents(3).stateIn(
         viewModelScope,
         SharingStarted.Lazily,
@@ -62,44 +74,6 @@ class HomeViewModel @Inject constructor(
         SharingStarted.Lazily,
         emptyList()
     )
-
-    fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
-
-    fun pasteSelection() {
-        viewModelScope.launch {
-             if (selectedAction.value == SelectionActions.COPY){
-                selectedTasks.value.forEach {
-                    taskRepository.insertTask(it.copy(id = null, folderId = 0L))
-                }
-                selectedNotes.value.forEach {
-                    noteRepository.insertNote(it.copy(id = null, folderId = 0L))
-                }
-                selectedFolders.value.forEach {
-                    copyFolderAndItsContentsUseCase(it)
-                }
-            }
-            clearSelection()
-            showToast("Tasks Pasted")
-        }
-
-    }
-
-    fun clearSelection() {
-        selectionStore.clear()
-        selectionStore.setAction(SelectionActions.NONE)
-    }
-
-    fun deleteSelection() {
-        viewModelScope.launch {
-            taskRepository.deleteTasks(selectedTasks.value.toList())
-            noteRepository.deleteNotes(selectedNotes.value.toList())
-            selectedFolders.value.forEach {
-                deleteFolderAndItsContentsUseCase(it)
-            }
-            clearSelection()
-            showToast("Tasks Deleted")
-        }
-    }
 
     fun addFolder(folder: Folder) {
         viewModelScope.launch {
@@ -133,6 +107,4 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-
-
 }
