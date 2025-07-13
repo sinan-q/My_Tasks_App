@@ -33,6 +33,7 @@ class TaskViewModel @Inject constructor(
 
     val selectedTasks = selectionStore.selectedTasks
     val selectedAction = selectionStore.action
+    val selectionCount = selectionStore.selectionCount
 
     fun onSelectionTask(task: Task) = selectionStore.toggleTask(task)
 

@@ -37,14 +37,14 @@ fun NoteListScreen(
 
     val selectionAction by noteViewModel.selectedAction.collectAsState()
     val selectedNotes by noteViewModel.selectedNotes.collectAsState()
-    val isSelectionMode = selectedNotes.isNotEmpty()
+    val selectionCount = noteViewModel.selectionCount.collectAsState()
 
     var hideLocked by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
     Scaffold(
         floatingActionButton = {
             Column {
-                if (isSelectionMode) {
+                if (selectionCount.value != 0) {
                     ShowActionsFAB(
                         onPaste = {},
                         action = selectionAction,
@@ -91,12 +91,14 @@ fun NoteListScreen(
         }
         ConfirmationDialog(
             showDialog = selectionAction == SelectionActions.DELETE,
-            onDismiss = {},
+            onDismiss = {
+                noteViewModel.setSelectionAction(SelectionActions.NONE)
+            },
             onConfirm = {
                 noteViewModel.deleteSelection()
             },
             title = stringResource(R.string.delete_confirmation_title),
-            message = "" //TODO
+            message = "Sure want to delete ${selectionCount.value} items?"
         )
     }
 }

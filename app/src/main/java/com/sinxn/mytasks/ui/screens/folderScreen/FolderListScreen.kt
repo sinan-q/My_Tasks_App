@@ -48,8 +48,7 @@ fun FolderListScreen(
     val selectedFolders by folderViewModel.selectedFolders.collectAsState()
     val selectedNotes by folderViewModel.selectedNotes.collectAsState()
     val selectionAction by folderViewModel.selectedAction.collectAsState()
-
-    val isSelectionMode = selectedTasks.isNotEmpty() || selectedNotes.isNotEmpty() || selectedFolders.isNotEmpty()
+    val selectionCount = folderViewModel.selectionCount.collectAsState()
 
     val context = LocalContext.current
     LaunchedEffect(folderId) {
@@ -82,7 +81,7 @@ fun FolderListScreen(
     Scaffold(
         floatingActionButton = {
             Column {
-                if (isSelectionMode) {
+                if (selectionCount.value != 0) {
                     ShowActionsFAB(
                         onPaste = {
                             folderViewModel.pasteSelection()
@@ -190,12 +189,14 @@ fun FolderListScreen(
     }
     ConfirmationDialog(
         showDialog = selectionAction == SelectionActions.DELETE,
-        onDismiss = {},
+        onDismiss = {
+            folderViewModel.setSelectionAction(SelectionActions.NONE)
+        },
         onConfirm = {
             folderViewModel.deleteSelection()
         },
         title = stringResource(R.string.delete_confirmation_title),
-        message = "" //TODO
+        message = "Sure want to delete ${selectionCount.value} items?" //TODO
     )
 
 }

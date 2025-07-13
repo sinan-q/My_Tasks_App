@@ -37,7 +37,7 @@ fun TaskListScreen(
 ) {
     val selectionAction by taskViewModel.selectedAction.collectAsState()
     val selectedTasks by taskViewModel.selectedTasks.collectAsState()
-    val isSelectionMode = selectedTasks.isNotEmpty()
+    val selectionCount = taskViewModel.selectionCount.collectAsState()
 
     var hideLocked by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
@@ -45,7 +45,7 @@ fun TaskListScreen(
     Scaffold(
         floatingActionButton = {
             Column {
-                if (isSelectionMode) {
+                if (selectionCount.value != 0) {
                     ShowActionsFAB(
                         onPaste = {},
                         action = selectionAction,
@@ -91,12 +91,14 @@ fun TaskListScreen(
         }
         ConfirmationDialog(
             showDialog = selectionAction == SelectionActions.DELETE,
-            onDismiss = {},
+            onDismiss = {
+                taskViewModel.setSelectionAction(SelectionActions.NONE)
+            },
             onConfirm = {
                 taskViewModel.deleteSelection()
             },
             title = stringResource(R.string.delete_confirmation_title),
-            message = "" //TODO
+            message = "Sure want to delete ${selectionCount.value} items?"
         )
     }
 }

@@ -72,8 +72,7 @@ fun HomeScreen(
     val selectedNotes by homeViewModel.selectedNotes.collectAsState()
     val selectedFolders by homeViewModel.selectedFolders.collectAsState()
     val selectionAction by homeViewModel.selectedAction.collectAsState()
-
-    val isSelectionMode = selectedTasks.isNotEmpty() || selectedNotes.isNotEmpty() || selectedFolders.isNotEmpty()
+    val selectionCount = homeViewModel.selectionCount.collectAsState()
 
     var expanded by remember { mutableStateOf(false) }
     fun showToast(message : String) {
@@ -88,7 +87,7 @@ fun HomeScreen(
     Scaffold(
         floatingActionButton = {
             Column {
-                if (isSelectionMode) {
+                if (selectionCount.value != 0) {
                     ShowActionsFAB(
                         onPaste = {
                             homeViewModel.pasteSelection()
@@ -213,12 +212,14 @@ fun HomeScreen(
         }
         ConfirmationDialog(
             showDialog = selectionAction == SelectionActions.DELETE,
-            onDismiss = {},
+            onDismiss = {
+                homeViewModel.setSelectionAction(SelectionActions.NONE)
+            },
             onConfirm = {
                 homeViewModel.deleteSelection()
             },
             title = stringResource(R.string.delete_confirmation_title),
-            message = "" //TODO
+            message = "Sure want to delete ${selectionCount.value} items?"
         )
     }
 }

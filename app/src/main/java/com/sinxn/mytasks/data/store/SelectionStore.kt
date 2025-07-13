@@ -35,20 +35,24 @@ class SelectionStore @Inject constructor(
     private val _action = MutableStateFlow<SelectionActions>(SelectionActions.NONE)
     val action: StateFlow<SelectionActions> = _action
 
+    private val _selectionCount = MutableStateFlow(0)
+    val selectionCount: StateFlow<Int> = _selectionCount
+
     // Specific toggle function for Task
     fun toggleTask(task: Task) = _selectedTasks.update { current ->
         if (task in current) current - task else current + task
-    }
+
+    }.also { updateSelectionCount() }
 
     // Specific toggle function for Note
     fun toggleNote(note: Note) = _selectedNotes.update { current ->
         if (note in current) current - note else current + note
-    }
+    }.also { updateSelectionCount() }
 
     // Specific toggle function for Folder
     fun toggleFolder(folder: Folder) = _selectedFolders.update { current ->
         if (folder in current) current - folder else current + folder
-    }
+    }.also { updateSelectionCount() }
 
     fun setAction(action: SelectionActions) {
         _action.update { action }
@@ -80,12 +84,17 @@ class SelectionStore @Inject constructor(
         clearSelection()
     }
 
+    private fun updateSelectionCount() {
+        _selectionCount.value = _selectedTasks.value.size + _selectedNotes.value.size + _selectedFolders.value.size
+    }
+
     fun clearSelection() {
         _selectedTasks.update { emptySet() }
         _selectedNotes.update { emptySet() }
         _selectedFolders.update { emptySet() }
         _action.update { SelectionActions.NONE }
         setAction(SelectionActions.NONE)
+        updateSelectionCount()
     }
 
     suspend fun deleteSelection() {

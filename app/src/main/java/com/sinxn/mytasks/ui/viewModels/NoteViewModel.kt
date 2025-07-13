@@ -23,6 +23,8 @@ class NoteViewModel @Inject constructor(
 
     val selectedNotes = selectionStore.selectedNotes
     val selectedAction = selectionStore.action
+    val selectionCount = selectionStore.selectionCount
+
 
     fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
 

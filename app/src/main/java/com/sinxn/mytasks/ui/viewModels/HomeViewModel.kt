@@ -37,6 +37,7 @@ class HomeViewModel @Inject constructor(
     val selectedNotes = selectionStore.selectedNotes
     val selectedFolders = selectionStore.selectedFolders
     val selectedAction = selectionStore.action
+    val selectionCount = selectionStore.selectionCount
 
     fun onSelectionTask(task: Task) = selectionStore.toggleTask(task)
     fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
