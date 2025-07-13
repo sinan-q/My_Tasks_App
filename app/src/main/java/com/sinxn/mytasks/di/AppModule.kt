@@ -12,6 +12,7 @@ import com.sinxn.mytasks.data.repository.EventRepository
 import com.sinxn.mytasks.data.repository.FolderRepository
 import com.sinxn.mytasks.data.repository.NoteRepository
 import com.sinxn.mytasks.data.repository.TaskRepository
+import com.sinxn.mytasks.data.store.SelectionStore
 import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
 import dagger.Module
 import dagger.Provides
@@ -80,4 +81,10 @@ object AppModule {
             appDatabase.alarmDao(),
             AlarmScheduler(context)
         )
+
+    @Provides
+    @Singleton
+    fun provideSelectionStore(): SelectionStore {
+        return SelectionStore()
+    }
 }

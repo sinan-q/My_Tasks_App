@@ -28,9 +28,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.data.store.SelectionActions
+import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTitle
+import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.screens.eventScreen.EventSmallItem
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderItem
@@ -63,6 +68,10 @@ fun HomeScreen(
     val notes by homeViewModel.notes.collectAsState(initial = emptyList())
     var folderEditToggle by remember { mutableStateOf(false) }
 
+    val selectedTasks by homeViewModel.selectedTasks.collectAsState()
+    val selectionAction by homeViewModel.selectedAction.collectAsState()
+
+
     var expanded by remember { mutableStateOf(false) }
     fun showToast(message : String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
@@ -75,16 +84,33 @@ fun HomeScreen(
 
     Scaffold(
         floatingActionButton = {
-            ShowOptionsFAB(
-                onAddTaskClick = onAddTaskClick,
-                onAddNoteClick = onAddNoteClick,
-                onAddEventClick = onAddEventClick,
-                onAddFolderClick = { folderEditToggle = true },
-                currentFolder = Folder(
-                    folderId = 0L,
-                    name = "Root"
-                ),
-            )
+            Column {
+                if (selectedTasks.isNotEmpty()) {
+                    ShowActionsFAB(
+                        onPaste = {
+                            homeViewModel.pasteSelection()
+                        },
+                        action = selectionAction,
+                        setActions = {
+                            homeViewModel.setSelectionAction(it)
+                        },
+                        onClearSelection = {
+                            homeViewModel.clearSelection()
+                        }
+                    )
+                }
+                ShowOptionsFAB(
+                    onAddTaskClick = onAddTaskClick,
+                    onAddNoteClick = onAddNoteClick,
+                    onAddEventClick = onAddEventClick,
+                    onAddFolderClick = { folderEditToggle = true },
+                    currentFolder = Folder(
+                        folderId = 0L,
+                        name = "Root"
+                    ),
+                )
+            }
+
         },
 
         topBar = {
@@ -103,10 +129,12 @@ fun HomeScreen(
                         onDismissRequest = { expanded = false }
                     ) {
                         Text(
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp).clickable {
-                                expanded = false
-                                onBackup()
-                            },
+                            modifier = Modifier
+                                .padding(horizontal = 20.dp, vertical = 10.dp)
+                                .clickable {
+                                    expanded = false
+                                    onBackup()
+                                },
                             text = "Backup"
                         ) 
                     }
@@ -160,9 +188,13 @@ fun HomeScreen(
                 items = tasks,
             ) { task ->
                 TaskItem(
-                    task = task, onClick = { onTaskClick(task.id) },
+                    task = task, onClick = { if (selectedTasks.isEmpty()) onTaskClick(task.id) else if (selectionAction != SelectionActions.COPY && selectionAction != SelectionActions.CUT) homeViewModel.onSelectionTask(task) },
                     onUpdate = { status -> taskViewModel.updateStatusTask(task.id!!, status) },
+                    onHold = {
+                        if (selectionAction != SelectionActions.COPY && selectionAction != SelectionActions.CUT) homeViewModel.onSelectionTask(task)
+                    },
                     path = null,
+                    selected = task in selectedTasks
                 )
             }
             items(notes) { note ->
@@ -173,6 +205,15 @@ fun HomeScreen(
 
             }
         }
+        ConfirmationDialog(
+            showDialog = selectionAction == SelectionActions.DELETE,
+            onDismiss = { homeViewModel.clearSelection() },
+            onConfirm = {
+                homeViewModel.deleteTasks()
+            },
+            title = stringResource(R.string.delete_confirmation_title),
+            message = "" //TODO
+        )
     }
 }
 

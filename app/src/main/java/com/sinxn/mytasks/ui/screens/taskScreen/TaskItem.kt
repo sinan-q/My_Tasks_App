@@ -1,6 +1,7 @@
 package com.sinxn.mytasks.ui.screens.taskScreen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,9 +26,15 @@ fun TaskItem(
     task: Task,
     path: String?,
     onClick: () -> Unit,
+    onHold: () -> Unit = {},
     onUpdate: (Boolean) -> Unit,
+    selected: Boolean = false
 ) {
-    RectangleCard(onClick = onClick, modifier = Modifier.fillMaxHeight().background(color = if (task.isCompleted) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Unspecified)) {
+    RectangleCard(onClick = {}, modifier = Modifier
+        .fillMaxHeight()
+        .background(color = if (selected) MaterialTheme.colorScheme.tertiaryContainer else if (task.isCompleted) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Unspecified)
+        .combinedClickable(onLongClick = onHold, onClick = onClick)
+    ) {
 
         Row (verticalAlignment = Alignment.CenterVertically) {
 

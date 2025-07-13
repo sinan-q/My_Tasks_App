@@ -3,6 +3,7 @@ package com.sinxn.mytasks.ui.screens.folderScreen
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -21,8 +22,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.data.store.SelectionActions
 import com.sinxn.mytasks.ui.components.AddEditTopAppBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
+import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
@@ -40,6 +43,9 @@ fun FolderListScreen(
     onBack: () -> Unit,
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
+
+    val selectedTasks by folderViewModel.selectedTasks.collectAsState()
+    val selectionAction by folderViewModel.selectedAction.collectAsState()
 
     val context = LocalContext.current
     LaunchedEffect(folderId) {
@@ -71,14 +77,31 @@ fun FolderListScreen(
     }
     Scaffold(
         floatingActionButton = {
-            currentFolder?.let {
-                ShowOptionsFAB(
-                    onAddTaskClick = onAddTaskClick,
-                    onAddNoteClick = onAddNoteClick,
-                    onAddFolderClick = { folderEditToggle = true },
-                    currentFolder = it
-                )
+            Column {
+                if (selectedTasks.isNotEmpty()) {
+                    ShowActionsFAB(
+                        onPaste = {
+                            folderViewModel.pasteSelection()
+                        },
+                        action = selectionAction,
+                        setActions = {
+                            folderViewModel.setSelectionAction(it)
+                        },
+                        onClearSelection = {
+                            folderViewModel.clearSelection()
+                        }
+                    )
+                }
+                currentFolder?.let {
+                    ShowOptionsFAB(
+                        onAddTaskClick = onAddTaskClick,
+                        onAddNoteClick = onAddNoteClick,
+                        onAddFolderClick = { folderEditToggle = true },
+                        currentFolder = it
+                    )
+                }
             }
+
         },
 
         topBar = {
@@ -126,10 +149,15 @@ fun FolderListScreen(
                 items = tasks,
             ) { task ->
                 TaskItem(
-                    task = task, onClick = { onTaskClick(task.id) },
+                    task = task,
+                    onClick = { if (selectedTasks.isEmpty()) onTaskClick(task.id) else if (selectionAction != SelectionActions.COPY && selectionAction != SelectionActions.CUT) folderViewModel.onSelectionTask(task) },
+                    onHold = {
+                        if (selectionAction != SelectionActions.COPY && selectionAction != SelectionActions.CUT) folderViewModel.onSelectionTask(task)
+                    },
                     onUpdate = { status -> folderViewModel.updateTaskStatus(task.id!!, status) },
                     path = null,
-                 )
+                    selected = task in selectedTasks
+                )
             }
             items(notes) { note ->
                 NoteItem(
@@ -153,5 +181,14 @@ fun FolderListScreen(
             message = stringResource(R.string.delete_folder_message)
         )
     }
+    ConfirmationDialog(
+        showDialog = selectionAction == SelectionActions.DELETE,
+        onDismiss = { folderViewModel.clearSelection() },
+        onConfirm = {
+            folderViewModel.deleteTasks()
+        },
+        title = stringResource(R.string.delete_confirmation_title),
+        message = "" //TODO
+    )
 
 }
