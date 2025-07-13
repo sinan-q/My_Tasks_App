@@ -7,6 +7,8 @@ import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.data.store.SelectionActions
+import com.sinxn.mytasks.data.store.SelectionStore
 import com.sinxn.mytasks.utils.differenceSeconds
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
@@ -25,8 +27,26 @@ import javax.inject.Inject
 class TaskViewModel @Inject constructor(
     private val repository: TaskRepositoryInterface,
     private val alarmRepository: AlarmRepositoryInterface,
+    private val selectionStore: SelectionStore,
     folderRepo: FolderRepositoryInterface
     ) : BaseViewModel(folderRepo) {
+
+    val selectedTasks = selectionStore.selectedTasks
+    val selectedAction = selectionStore.action
+
+    fun onSelectionTask(task: Task) = selectionStore.toggleTask(task)
+
+    fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
+
+    fun clearSelection() {
+        selectionStore.clearSelection()
+    }
+
+    fun deleteSelection() {
+        viewModelScope.launch {
+            selectionStore.deleteSelection()
+        }
+    }
 
     val tasks = repository.getAllTasksSorted().stateIn(
         viewModelScope,

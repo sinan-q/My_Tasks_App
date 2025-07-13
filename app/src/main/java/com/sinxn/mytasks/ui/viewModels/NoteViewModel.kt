@@ -3,13 +3,13 @@ package com.sinxn.mytasks.ui.viewModels
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
-import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.data.store.SelectionActions
+import com.sinxn.mytasks.data.store.SelectionStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,8 +17,26 @@ import javax.inject.Inject
 @HiltViewModel
 class NoteViewModel @Inject constructor(
     private val noteRepository: NoteRepositoryInterface,
-    folderRepository: FolderRepositoryInterface
+    folderRepository: FolderRepositoryInterface,
+    private val selectionStore: SelectionStore
 ) : BaseViewModel(folderRepository) {
+
+    val selectedNotes = selectionStore.selectedNotes
+    val selectedAction = selectionStore.action
+
+    fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
+
+    fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
+
+    fun clearSelection() {
+        selectionStore.clearSelection()
+    }
+
+    fun deleteSelection() {
+        viewModelScope.launch {
+            selectionStore.deleteSelection()
+        }
+    }
 
     val notes = noteRepository.getAllNotes().stateIn(
         viewModelScope,
