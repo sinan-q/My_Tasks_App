@@ -26,11 +26,11 @@ fun TaskItem(
     task: Task,
     path: String?,
     onClick: () -> Unit,
-    onHold: () -> Unit = {},
+    onHold: () -> Unit,
     onUpdate: (Boolean) -> Unit,
-    selected: Boolean = false
+    selected: Boolean
 ) {
-    RectangleCard(onClick = {}, modifier = Modifier
+    RectangleCard(modifier = Modifier
         .fillMaxHeight()
         .background(color = if (selected) MaterialTheme.colorScheme.tertiaryContainer else if (task.isCompleted) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Unspecified)
         .combinedClickable(onLongClick = onHold, onClick = onClick)

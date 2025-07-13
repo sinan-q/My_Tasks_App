@@ -6,10 +6,12 @@ import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.data.store.SelectionActions
 import com.sinxn.mytasks.data.store.SelectionStore
 import com.sinxn.mytasks.data.usecase.folder.AddFolderUseCase
+import com.sinxn.mytasks.data.usecase.folder.CopyFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.LockFolderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,20 +22,25 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    noteRepository: NoteRepositoryInterface,
+    private val noteRepository: NoteRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
     eventRepository: EventRepositoryInterface,
     folderRepo: FolderRepositoryInterface,
     private val addFolderUseCase: AddFolderUseCase,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
+    private val copyFolderAndItsContentsUseCase: CopyFolderAndItsContentsUseCase,
     private val selectionStore: SelectionStore,
     ) : BaseViewModel(folderRepo) {
 
     val selectedTasks = selectionStore.selectedTasks
+    val selectedNotes = selectionStore.selectedNotes
+    val selectedFolders = selectionStore.selectedFolders
     val selectedAction = selectionStore.action
 
     fun onSelectionTask(task: Task) = selectionStore.toggleTask(task)
+    fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
+    fun onSelectionFolder(folder: Folder) = selectionStore.toggleFolder(folder)
 
     val events = eventRepository.getUpcomingEvents(3).stateIn(
         viewModelScope,
@@ -60,11 +67,16 @@ class HomeViewModel @Inject constructor(
 
     fun pasteSelection() {
         viewModelScope.launch {
-            selectedTasks.value.forEach {
-                taskRepository.insertTask(it.copy(id = null, folderId = 0L))
-            }
-            if (selectedAction.value == SelectionActions.CUT) {
-                deleteTasks()
+             if (selectedAction.value == SelectionActions.COPY){
+                selectedTasks.value.forEach {
+                    taskRepository.insertTask(it.copy(id = null, folderId = 0L))
+                }
+                selectedNotes.value.forEach {
+                    noteRepository.insertNote(it.copy(id = null, folderId = 0L))
+                }
+                selectedFolders.value.forEach {
+                    copyFolderAndItsContentsUseCase(it)
+                }
             }
             clearSelection()
             showToast("Tasks Pasted")
@@ -77,17 +89,15 @@ class HomeViewModel @Inject constructor(
         selectionStore.setAction(SelectionActions.NONE)
     }
 
-    fun deleteTasks() {
+    fun deleteSelection() {
         viewModelScope.launch {
-            try {
-                selectedTasks.value.forEach {
-                    taskRepository.deleteTask(it)
-                }
-                selectionStore.clear()
-                showToast("Tasks Deleted")
-            } catch (e: Exception) {
-                showToast("Error deleting tasks: ${e.message}")
+            taskRepository.deleteTasks(selectedTasks.value.toList())
+            noteRepository.deleteNotes(selectedNotes.value.toList())
+            selectedFolders.value.forEach {
+                deleteFolderAndItsContentsUseCase(it)
             }
+            clearSelection()
+            showToast("Tasks Deleted")
         }
     }
 

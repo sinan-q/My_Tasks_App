@@ -69,8 +69,11 @@ fun HomeScreen(
     var folderEditToggle by remember { mutableStateOf(false) }
 
     val selectedTasks by homeViewModel.selectedTasks.collectAsState()
+    val selectedNotes by homeViewModel.selectedNotes.collectAsState()
+    val selectedFolders by homeViewModel.selectedFolders.collectAsState()
     val selectionAction by homeViewModel.selectedAction.collectAsState()
 
+    val isSelectionMode = selectedTasks.isNotEmpty() || selectedNotes.isNotEmpty() || selectedFolders.isNotEmpty()
 
     var expanded by remember { mutableStateOf(false) }
     fun showToast(message : String) {
@@ -85,7 +88,7 @@ fun HomeScreen(
     Scaffold(
         floatingActionButton = {
             Column {
-                if (selectedTasks.isNotEmpty()) {
+                if (isSelectionMode) {
                     ShowActionsFAB(
                         onPaste = {
                             homeViewModel.pasteSelection()
@@ -178,9 +181,12 @@ fun HomeScreen(
             items(folders) { folder ->
                 FolderItem(
                     folder = folder,
-                    onClick = { onFolderClick(folder.folderId) },
+                    onClick = { onFolderClick(folder.folderId)},
                     onDelete = { homeViewModel.deleteFolder(folder) },
-                    onLock = { homeViewModel.lockFolder(folder) })
+                    onLock = { homeViewModel.lockFolder(folder) },
+                    onHold = { homeViewModel.onSelectionFolder(folder) },
+                    selected = folder in selectedFolders
+                )
             }
             items (
                 key = { it.id!! },
@@ -188,11 +194,9 @@ fun HomeScreen(
                 items = tasks,
             ) { task ->
                 TaskItem(
-                    task = task, onClick = { if (selectedTasks.isEmpty()) onTaskClick(task.id) else if (selectionAction != SelectionActions.COPY && selectionAction != SelectionActions.CUT) homeViewModel.onSelectionTask(task) },
+                    task = task, onClick = { onTaskClick(task.id)},
                     onUpdate = { status -> taskViewModel.updateStatusTask(task.id!!, status) },
-                    onHold = {
-                        if (selectionAction != SelectionActions.COPY && selectionAction != SelectionActions.CUT) homeViewModel.onSelectionTask(task)
-                    },
+                    onHold = { homeViewModel.onSelectionTask(task) },
                     path = null,
                     selected = task in selectedTasks
                 )
@@ -200,16 +204,18 @@ fun HomeScreen(
             items(notes) { note ->
                     NoteItem(
                         note = note,
-                        onClick = { onNoteClick(note.id) }
+                        onClick = { onNoteClick(note.id) },
+                        onHold = { homeViewModel.onSelectionNote(note) },
+                        selected = note in selectedNotes
                     )
 
             }
         }
         ConfirmationDialog(
             showDialog = selectionAction == SelectionActions.DELETE,
-            onDismiss = { homeViewModel.clearSelection() },
+            onDismiss = {},
             onConfirm = {
-                homeViewModel.deleteTasks()
+                homeViewModel.deleteSelection()
             },
             title = stringResource(R.string.delete_confirmation_title),
             message = "" //TODO

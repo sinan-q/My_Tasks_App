@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.sinxn.mytasks.data.local.entities.Folder
 import kotlinx.coroutines.flow.Flow
 
@@ -14,6 +15,9 @@ interface FolderDao {
 
     @Insert
     suspend fun insertFolder(folder: Folder): Long
+
+    @Update
+    suspend fun updateFolder(folder: Folder)
 
     @Delete
     suspend fun deleteFolder(folder: Folder)

@@ -19,13 +19,11 @@ class TaskRepository @Inject constructor(
     override fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>> {
         return taskDao.getTasksByMonth(startOfMonth, endOfMonth)
     }
-    override suspend fun insertTask(task: Task): Long {
-        return taskDao.insertTask(task)
-    }
+    override suspend fun insertTask(task: Task): Long = taskDao.insertTask(task)
+    override suspend fun insertTasks(tasks: List<Task>) = taskDao.insertTasks(tasks)
 
-    override suspend fun deleteTask(task: Task) {
-        taskDao.deleteTask(task)
-    }
+    override suspend fun deleteTask(task: Task) = taskDao.deleteTask(task)
+    override suspend fun deleteTasks(tasks: List<Task>) = taskDao.deleteTasks(tasks)
 
     override suspend fun updateTask(task: Task) {
         taskDao.updateTask(task)

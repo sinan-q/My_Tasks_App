@@ -3,6 +3,7 @@ package com.sinxn.mytasks.ui.screens.folderScreen
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,7 +41,15 @@ import com.sinxn.mytasks.ui.components.RectangleCard
 import showBiometricsAuthentication
 
 @Composable
-fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit, onDelete: () -> Unit, onLock: () -> Unit) {
+fun FolderItem(
+    modifier: Modifier = Modifier,
+    folder: Folder,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    onLock: () -> Unit,
+    onHold: () -> Unit,
+    selected: Boolean
+) {
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
@@ -59,11 +68,12 @@ fun FolderItem(modifier: Modifier = Modifier,folder: Folder, onClick: () -> Unit
     RectangleCard(
         modifier = modifier
             .fillMaxHeight()
-            .background(color = MaterialTheme.colorScheme.primaryContainer),
-        onClick = {
-            if (folder.isLocked) authenticate(onClick)
-            else onClick()
-        }) {
+            .background(color = if (selected) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.primaryContainer)
+            .combinedClickable(onLongClick = onHold, onClick = {
+                if (folder.isLocked) authenticate(onClick)
+                else onClick()
+            }),
+        ) {
         Row(modifier= Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             if (folder.isLocked)
                 Icon(

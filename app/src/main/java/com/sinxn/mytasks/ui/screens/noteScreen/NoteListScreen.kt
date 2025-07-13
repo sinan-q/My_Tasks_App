@@ -57,7 +57,9 @@ fun NoteListScreen(
                     NoteItem(
                         note = note,
                         path = path,
-                        onClick = { onNoteClick(note.id) }
+                        onClick = { onNoteClick(note.id) },
+                        onHold = {}, //TODO
+                        selected = false, //TODO
                     )
                 }
             }

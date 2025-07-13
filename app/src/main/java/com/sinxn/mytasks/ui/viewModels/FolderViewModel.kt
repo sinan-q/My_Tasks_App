@@ -10,6 +10,7 @@ import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.data.store.SelectionActions
 import com.sinxn.mytasks.data.store.SelectionStore
 import com.sinxn.mytasks.data.usecase.folder.AddFolderUseCase
+import com.sinxn.mytasks.data.usecase.folder.CopyFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.LockFolderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,13 +29,19 @@ class FolderViewModel @Inject constructor(
     private val addFolderUseCase: AddFolderUseCase,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
+    private val copyFolderAndItsContentsUseCase: CopyFolderAndItsContentsUseCase,
     private val selectionStore: SelectionStore,
+
     ) : BaseViewModel(folderRepo) {
 
     val selectedTasks = selectionStore.selectedTasks
+    val selectedNotes = selectionStore.selectedNotes
+    val selectedFolders = selectionStore.selectedFolders
     val selectedAction = selectionStore.action
 
     fun onSelectionTask(task: Task) = selectionStore.toggleTask(task)
+    fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
+    fun onSelectionFolder(folder: Folder) = selectionStore.toggleFolder(folder)
 
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
     val notes: StateFlow<List<Note>> = _notes.asStateFlow()
@@ -107,11 +114,28 @@ class FolderViewModel @Inject constructor(
 
     fun pasteSelection() {
         viewModelScope.launch {
-            selectedTasks.value.forEach {
-                taskRepository.insertTask(it.copy(id = null, folderId = folder.value?.folderId?: 0L))
-            }
-            if (selectedAction.value == SelectionActions.CUT) {
-                deleteTasks()
+            val folderId = folder.value?.folderId?:0L
+            if (selectedAction.value == SelectionActions.COPY){
+                selectedFolders.value.forEach {
+                    copyFolderAndItsContentsUseCase(it, parentId = folderId)
+                }
+                selectedTasks.value.forEach {
+                    taskRepository.insertTask(it.copy(id = null, folderId = folderId ))
+                }
+                selectedNotes.value.forEach {
+                    noteRepository.insertNote(it.copy(id = null, folderId = folderId))
+                }
+
+            } else if (selectedAction.value == SelectionActions.CUT) {
+                selectedTasks.value.forEach {
+                    taskRepository.updateTask(it.copy(folderId = folderId))
+                }
+                selectedNotes.value.forEach {
+                    noteRepository.updateNote(it.copy(folderId = folderId))
+                }
+                selectedFolders.value.forEach {
+                    folderRepository.updateFolder(it.copy(parentFolderId = folderId))
+                }
             }
             clearSelection()
             showToast("Tasks Pasted")
@@ -124,17 +148,15 @@ class FolderViewModel @Inject constructor(
         selectionStore.setAction(SelectionActions.NONE)
     }
 
-    fun deleteTasks() {
+    fun deleteSelection() {
         viewModelScope.launch {
-            try {
-                selectedTasks.value.forEach {
-                    taskRepository.deleteTask(it)
-                }
-                selectionStore.clear()
-                showToast("Tasks Deleted")
-            } catch (e: Exception) {
-                showToast("Error deleting tasks: ${e.message}")
+            taskRepository.deleteTasks(selectedTasks.value.toList())
+            noteRepository.deleteNotes(selectedNotes.value.toList())
+            selectedFolders.value.forEach {
+                deleteFolderAndItsContentsUseCase(it)
             }
+            clearSelection()
+            showToast("Tasks Deleted")
         }
     }
 

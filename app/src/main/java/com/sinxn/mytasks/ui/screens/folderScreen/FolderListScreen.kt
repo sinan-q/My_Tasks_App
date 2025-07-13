@@ -45,7 +45,11 @@ fun FolderListScreen(
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
 
     val selectedTasks by folderViewModel.selectedTasks.collectAsState()
+    val selectedFolders by folderViewModel.selectedFolders.collectAsState()
+    val selectedNotes by folderViewModel.selectedNotes.collectAsState()
     val selectionAction by folderViewModel.selectedAction.collectAsState()
+
+    val isSelectionMode = selectedTasks.isNotEmpty() || selectedNotes.isNotEmpty() || selectedFolders.isNotEmpty()
 
     val context = LocalContext.current
     LaunchedEffect(folderId) {
@@ -78,7 +82,7 @@ fun FolderListScreen(
     Scaffold(
         floatingActionButton = {
             Column {
-                if (selectedTasks.isNotEmpty()) {
+                if (isSelectionMode) {
                     ShowActionsFAB(
                         onPaste = {
                             folderViewModel.pasteSelection()
@@ -141,7 +145,10 @@ fun FolderListScreen(
                     folder = folder,
                     onClick = { folderViewModel.getSubFolders(folder.folderId) },
                     onDelete = { folderViewModel.deleteFolder(folder) },
-                    onLock = { folderViewModel.lockFolder(folder) })
+                    onLock = { folderViewModel.lockFolder(folder) },
+                    onHold = { folderViewModel.onSelectionFolder(folder) },
+                    selected = folder in selectedFolders
+                )
             }
             items (
                 key = { it.id!! },
@@ -150,10 +157,8 @@ fun FolderListScreen(
             ) { task ->
                 TaskItem(
                     task = task,
-                    onClick = { if (selectedTasks.isEmpty()) onTaskClick(task.id) else if (selectionAction != SelectionActions.COPY && selectionAction != SelectionActions.CUT) folderViewModel.onSelectionTask(task) },
-                    onHold = {
-                        if (selectionAction != SelectionActions.COPY && selectionAction != SelectionActions.CUT) folderViewModel.onSelectionTask(task)
-                    },
+                    onClick = { onTaskClick(task.id) },
+                    onHold = { folderViewModel.onSelectionTask(task) },
                     onUpdate = { status -> folderViewModel.updateTaskStatus(task.id!!, status) },
                     path = null,
                     selected = task in selectedTasks
@@ -162,7 +167,9 @@ fun FolderListScreen(
             items(notes) { note ->
                 NoteItem(
                     note = note,
-                    onClick = { onNoteClick(note.id) }
+                    onClick = { onNoteClick(note.id) },
+                    onHold = { folderViewModel.onSelectionNote(note) },
+                    selected = note in selectedNotes
                 )
             }
         }
@@ -183,9 +190,9 @@ fun FolderListScreen(
     }
     ConfirmationDialog(
         showDialog = selectionAction == SelectionActions.DELETE,
-        onDismiss = { folderViewModel.clearSelection() },
+        onDismiss = {},
         onConfirm = {
-            folderViewModel.deleteTasks()
+            folderViewModel.deleteSelection()
         },
         title = stringResource(R.string.delete_confirmation_title),
         message = "" //TODO

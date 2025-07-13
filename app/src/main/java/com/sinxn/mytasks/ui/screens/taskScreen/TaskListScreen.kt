@@ -58,7 +58,10 @@ fun TaskListScreen(
                     task = task,
                     path = path,
                     onClick = { onTaskClick(task.id) },
-                    onUpdate = { task.id?.let { it1 -> taskViewModel.updateStatusTask(it1,it) } })
+                    onUpdate = { task.id?.let { it1 -> taskViewModel.updateStatusTask(it1, it) } },
+                    onHold = {}, //TODO
+                    selected = false //TODO
+                )
             }
         }
     }
