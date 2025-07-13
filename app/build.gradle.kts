@@ -14,7 +14,7 @@ room {
 }
 android {
     namespace = "com.sinxn.mytasks"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.sinxn.mytasks"
