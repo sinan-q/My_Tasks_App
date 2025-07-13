@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -80,7 +81,7 @@ fun FolderListScreen(
     }
     Scaffold(
         floatingActionButton = {
-            Column {
+            Column(horizontalAlignment = Alignment.End) {
                 if (selectionCount.value != 0) {
                     ShowActionsFAB(
                         onPaste = {
