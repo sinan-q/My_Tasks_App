@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.store.SelectionActions
@@ -44,14 +45,12 @@ import com.sinxn.mytasks.ui.screens.folderScreen.FolderItemEdit
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
 import com.sinxn.mytasks.ui.viewModels.HomeViewModel
-import com.sinxn.mytasks.ui.viewModels.TaskViewModel
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    homeViewModel: HomeViewModel,
-    taskViewModel: TaskViewModel,
+    viewModel: HomeViewModel = hiltViewModel(),
     onAddNoteClick: (Long?) -> Unit,
     onNoteClick: (Long?) -> Unit,
     onAddTaskClick: (Long?) -> Unit,
@@ -62,25 +61,25 @@ fun HomeScreen(
     onBackup: () -> Unit
 ) {
     val context = LocalContext.current
-    val folders by homeViewModel.mainFolders.collectAsState(initial = emptyList())
-    val events by homeViewModel.events.collectAsState(initial = emptyList())
+    val folders by viewModel.mainFolders.collectAsState(initial = emptyList())
+    val events by viewModel.events.collectAsState(initial = emptyList())
 
-    val tasks by homeViewModel.tasks.collectAsState(initial = emptyList())
-    val notes by homeViewModel.notes.collectAsState(initial = emptyList())
+    val tasks by viewModel.tasks.collectAsState(initial = emptyList())
+    val notes by viewModel.notes.collectAsState(initial = emptyList())
     var folderEditToggle by remember { mutableStateOf(false) }
 
-    val selectedTasks by homeViewModel.selectedTasks.collectAsState()
-    val selectedNotes by homeViewModel.selectedNotes.collectAsState()
-    val selectedFolders by homeViewModel.selectedFolders.collectAsState()
-    val selectionAction by homeViewModel.selectedAction.collectAsState()
-    val selectionCount = homeViewModel.selectionCount.collectAsState()
+    val selectedTasks by viewModel.selectedTasks.collectAsState()
+    val selectedNotes by viewModel.selectedNotes.collectAsState()
+    val selectedFolders by viewModel.selectedFolders.collectAsState()
+    val selectionAction by viewModel.selectedAction.collectAsState()
+    val selectionCount = viewModel.selectionCount.collectAsState()
 
     var expanded by remember { mutableStateOf(false) }
     fun showToast(message : String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
     LaunchedEffect(key1 = Unit) {
-        homeViewModel.toastMessage.collectLatest { message ->
+        viewModel.toastMessage.collectLatest { message ->
             showToast(message)
         }
     }
@@ -91,14 +90,14 @@ fun HomeScreen(
                 if (selectionCount.value != 0) {
                     ShowActionsFAB(
                         onPaste = {
-                            homeViewModel.pasteSelection()
+                            viewModel.pasteSelection()
                         },
                         action = selectionAction,
                         setActions = {
-                            homeViewModel.setSelectionAction(it)
+                            viewModel.setSelectionAction(it)
                         },
                         onClearSelection = {
-                            homeViewModel.clearSelection()
+                            viewModel.clearSelection()
                         }
                     )
                 }
@@ -175,16 +174,16 @@ fun HomeScreen(
                             name = "New Folder",
                         ),
                         onDismiss = { folderEditToggle = false }
-                    ) { homeViewModel.addFolder(it) }
+                    ) { viewModel.addFolder(it) }
                 }
             }
             items(folders) { folder ->
                 FolderItem(
                     folder = folder,
                     onClick = { onFolderClick(folder.folderId)},
-                    onDelete = { homeViewModel.deleteFolder(folder) },
-                    onLock = { homeViewModel.lockFolder(folder) },
-                    onHold = { homeViewModel.onSelectionFolder(folder) },
+                    onDelete = { viewModel.deleteFolder(folder) },
+                    onLock = { viewModel.lockFolder(folder) },
+                    onHold = { viewModel.onSelectionFolder(folder) },
                     selected = folder in selectedFolders
                 )
             }
@@ -195,8 +194,8 @@ fun HomeScreen(
             ) { task ->
                 TaskItem(
                     task = task, onClick = { onTaskClick(task.id)},
-                    onUpdate = { status -> taskViewModel.updateStatusTask(task.id!!, status) },
-                    onHold = { homeViewModel.onSelectionTask(task) },
+                    onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
+                    onHold = { viewModel.onSelectionTask(task) },
                     path = null,
                     selected = task in selectedTasks
                 )
@@ -205,7 +204,7 @@ fun HomeScreen(
                     NoteItem(
                         note = note,
                         onClick = { onNoteClick(note.id) },
-                        onHold = { homeViewModel.onSelectionNote(note) },
+                        onHold = { viewModel.onSelectionNote(note) },
                         selected = note in selectedNotes
                     )
 
@@ -214,10 +213,10 @@ fun HomeScreen(
         ConfirmationDialog(
             showDialog = selectionAction == SelectionActions.DELETE,
             onDismiss = {
-                homeViewModel.setSelectionAction(SelectionActions.NONE)
+                viewModel.setSelectionAction(SelectionActions.NONE)
             },
             onConfirm = {
-                homeViewModel.deleteSelection()
+                viewModel.deleteSelection()
             },
             title = stringResource(R.string.delete_confirmation_title),
             message = "Sure want to delete ${selectionCount.value} items?"

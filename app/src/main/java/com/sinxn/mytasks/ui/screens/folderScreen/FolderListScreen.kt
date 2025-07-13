@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.store.SelectionActions
@@ -35,7 +36,7 @@ import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun FolderListScreen(
-    folderViewModel: FolderViewModel,
+    folderViewModel: FolderViewModel = hiltViewModel(),
     folderId: Long = 0L,
     onAddNoteClick: (Long?) -> Unit,
     onNoteClick: (Long?) -> Unit,

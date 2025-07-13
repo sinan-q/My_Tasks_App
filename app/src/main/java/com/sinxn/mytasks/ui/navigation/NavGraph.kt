@@ -1,7 +1,6 @@
 package com.sinxn.mytasks.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -9,6 +8,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.sinxn.mytasks.ui.navigation.Routes.Backup
+import com.sinxn.mytasks.ui.navigation.Routes.Event
+import com.sinxn.mytasks.ui.navigation.Routes.Folder
+import com.sinxn.mytasks.ui.navigation.Routes.Home
+import com.sinxn.mytasks.ui.navigation.Routes.Note
+import com.sinxn.mytasks.ui.navigation.Routes.Task
 import com.sinxn.mytasks.ui.screens.backupScreen.BackupScreen
 import com.sinxn.mytasks.ui.screens.eventScreen.AddEditEventScreen
 import com.sinxn.mytasks.ui.screens.eventScreen.EventListScreen
@@ -18,187 +23,152 @@ import com.sinxn.mytasks.ui.screens.noteScreen.AddEditNoteScreen
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteListScreen
 import com.sinxn.mytasks.ui.screens.taskScreen.AddEditTaskScreen
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskListScreen
-import com.sinxn.mytasks.ui.viewModels.BackupViewModel
-import com.sinxn.mytasks.ui.viewModels.EventViewModel
-import com.sinxn.mytasks.ui.viewModels.FolderViewModel
-import com.sinxn.mytasks.ui.viewModels.HomeViewModel
-import com.sinxn.mytasks.ui.viewModels.NoteViewModel
-import com.sinxn.mytasks.ui.viewModels.TaskViewModel
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    noteViewModel: NoteViewModel,
-    taskViewModel: TaskViewModel,
-    homeViewModel: HomeViewModel,
-    eventViewModel: EventViewModel,
-    folderViewModel: FolderViewModel,
-    backupViewModel: BackupViewModel,
     modifier: Modifier = Modifier
 ) {
-    val onAddNoteClick: (folderId: Long?) -> Unit = { folderId -> navController.navigate("add_edit_note/-1L/$folderId") }
+    val onAddNoteClick: (folderId: Long?) -> Unit = { folderId -> navController.navigate(Note.add(folderId)) }
     val onNoteClick: (noteId: Long?) -> Unit = { noteId ->
-        navController.navigate("add_edit_note/$noteId/0")
+        navController.navigate(Note.get(noteId))
     }
     val onAddTaskClick: (folderId: Long?) -> Unit = { folderId->
-        navController.navigate("add_edit_task/-1L/$folderId")
+        navController.navigate(Task.add(folderId))
     }
     val onTaskClick: (taskId: Long?) -> Unit = { taskId ->
-        navController.navigate("add_edit_task/$taskId/0")
+        navController.navigate(Task.get(taskId))
     }
 
     val onAddEventClick: (folderId: Long?) -> Unit = { folderId ->
-        navController.navigate("add_edit_event/-1L/$folderId/-1L")
-    }
-
-    val onEventClick: () -> Unit = {
-        navController.navigate("event_list")
-    }
-    val onFolderClick: (folderId: Long) -> Unit = { folderId ->
-        navController.navigate("folder_list/$folderId")
+        navController.navigate(Event.Add.byFolder(folderId))
     }
 
     val onBack: () -> Unit = {
         navController.popBackStack()
     }
 
-    val onBackup: () -> Unit = {
-        navController.navigate("backup")
-    }
-
     NavHost(
         navController = navController,
-        startDestination = "home",
+        startDestination = Home.route,
         modifier = modifier
     ) {
         composable(
-            route = "home",
-            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://home" })
+            route = Home.route,
+            deepLinks = listOf(navDeepLink { uriPattern = Home.deepLink })
         ) {
 
             HomeScreen(
-                homeViewModel = homeViewModel,
-                taskViewModel = taskViewModel,
                 onAddNoteClick = onAddNoteClick,
                 onNoteClick = onNoteClick,
                 onAddTaskClick = onAddTaskClick,
                 onTaskClick = onTaskClick,
                 onAddEventClick = onAddEventClick,
-                onEventClick = onEventClick,
-                onFolderClick = onFolderClick,
-                onBackup = onBackup
+                onEventClick = {
+                    navController.navigate(Event.route)
+                },
+                onFolderClick = { folderId ->
+                    navController.navigate(Folder.byId(folderId))
+                },
+                onBackup = {
+                    navController.navigate(Backup.route)
+                }
             )
         }
 
-        composable("note_list") {
+        composable(Note.route) {
             NoteListScreen(
-                notes = noteViewModel.notes.collectAsState().value,
-                noteViewModel = noteViewModel,
                 onAddNoteClick = onAddNoteClick,
                 onNoteClick = onNoteClick
             )
         }
 
         composable(
-            route = "add_edit_note/{noteId}/{folderId}",
-            deepLinks = listOf(navDeepLink { uriPattern = "mytasks://add_note" }),
+            route = Note.Add.route,
+            deepLinks = listOf(navDeepLink { uriPattern = Note.Add.deepLink }),
             arguments = listOf(
-                navArgument("noteId") { type = NavType.LongType; defaultValue = -1L },
-                navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
+                navArgument(Note.noteIdArg) { type = NavType.LongType; defaultValue = -1L },
+                navArgument(Note.folderIdArg) { type = NavType.LongType; defaultValue = 0 },
                 )
         ) { backStackEntry ->
-            val noteId = backStackEntry.arguments?.getLong("noteId") ?: -1L
-            val folderId = backStackEntry.arguments?.getLong("folderId") ?: 0
+            val noteId = backStackEntry.arguments?.getLong(Note.noteIdArg) ?: -1L
+            val folderId = backStackEntry.arguments?.getLong(Note.folderIdArg) ?: 0
             AddEditNoteScreen(
                 noteId = noteId,
                 folderId = folderId,
                 onFinish = { navController.popBackStack() },
-                noteViewModel = noteViewModel,
-                modifier = Modifier
             )
         }
 
-        composable("tasks") {
+        composable(Task.route) {
             TaskListScreen(
-                tasks = taskViewModel.tasks.collectAsState().value,
                 onAddTaskClick = onAddTaskClick,
                 onTaskClick = onTaskClick,
-                taskViewModel = taskViewModel
             )
         }
         composable(
-            route = "add_edit_task/{taskId}/{folderId}",
+            route = Task.Add.route,
+            deepLinks = listOf(navDeepLink { uriPattern = Task.Add.deepLink }),
             arguments = listOf(
-                navArgument("taskId") { type = NavType.LongType; defaultValue = -1L },
-                navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
+                navArgument(Task.taskIdArg) { type = NavType.LongType; defaultValue = -1L },
+                navArgument(Task.folderIdArg) { type = NavType.LongType; defaultValue = 0 },
             )
         ) { backStackEntry ->
-            val taskId = backStackEntry.arguments?.getLong("taskId") ?: -1L
-            val folderId = backStackEntry.arguments?.getLong("folderId") ?: 0
+            val taskId = backStackEntry.arguments?.getLong(Task.taskIdArg) ?: -1L
+            val folderId = backStackEntry.arguments?.getLong(Task.folderIdArg) ?: 0
             AddEditTaskScreen(
                 taskId = taskId,
                 folderId = folderId,
-                taskViewModel = taskViewModel,
                 onFinish = onBack,
             )
         }
-        composable("event_list") {
+        composable(Event.route) {
             EventListScreen(
-                eventViewModel = eventViewModel,
                 onAddEventClick = onAddEventClick,
                 onEventClick = onAddEventClick,
                 onDayClick = { epochDay ->
-                    navController.navigate("add_edit_event/-1L/0/$epochDay")
+                    navController.navigate(Event.Add.byDate(epochDay))
                 }
             )
         }
 
         composable(
-            route = "add_edit_event/{eventId}/{folderId}/{date}",
+            route = Event.Add.route,
+            deepLinks = listOf(navDeepLink { uriPattern = Event.Add.deepLink }),
             arguments = listOf(
-                navArgument("eventId") { type = NavType.LongType; defaultValue = -1L },
-                navArgument("folderId") { type = NavType.LongType; defaultValue = 0 },
-                navArgument("date") { type = NavType.LongType; defaultValue = -1L }
+                navArgument(Event.eventIdArg) { type = NavType.LongType; defaultValue = -1L },
+                navArgument(Event.folderIdArg) { type = NavType.LongType; defaultValue = 0 },
+                navArgument(Event.dateArg) { type = NavType.LongType; defaultValue = -1L }
             )
         ){ backStackEntry ->
-            val eventId = backStackEntry.arguments?.getLong("eventId") ?: -1L
-            val folderId = backStackEntry.arguments?.getLong("folderId") ?: 0
-            val date = backStackEntry.arguments?.getLong("date") ?: -1L
+            val eventId = backStackEntry.arguments?.getLong(Event.eventIdArg) ?: -1L
+            val folderId = backStackEntry.arguments?.getLong(Event.folderIdArg) ?: 0
+            val date = backStackEntry.arguments?.getLong(Event.dateArg) ?: -1L
             AddEditEventScreen(
                 eventId = eventId,
                 folderId = folderId,
                 date = date,
-                eventViewModel = eventViewModel,
                 onFinish = onBack
             )
-
-
         }
 
         composable(
-            route = "folder_list/{folderId}",
+            route = Folder.route,
             arguments = listOf(
-                navArgument("folderId") {type = NavType.LongType; defaultValue = 0},
+                navArgument(Folder.folerIdArg) {type = NavType.LongType; defaultValue = 0},
             )
         ) { backStackEntry ->
-            val folderId = backStackEntry.arguments?.getLong("folderId") ?: 0
+            val folderId = backStackEntry.arguments?.getLong(Folder.folerIdArg) ?: 0
             FolderListScreen(
                 folderId = folderId,
-                folderViewModel = folderViewModel,
                 onAddNoteClick = onAddNoteClick,
                 onNoteClick = onNoteClick,
                 onAddTaskClick = onAddTaskClick,
                 onTaskClick = onTaskClick,
                 onBack = onBack
-
             )
         }
 
-        composable(
-            route = "backup",
-
-        ) {
-            BackupScreen(viewModel = backupViewModel)
-        }
+        composable(route = Backup.route) { BackupScreen() }
     }
 }

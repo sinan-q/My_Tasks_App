@@ -18,8 +18,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.store.SelectionActions
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.ListTopAppBar
@@ -29,16 +29,14 @@ import com.sinxn.mytasks.ui.viewModels.NoteViewModel
 
 @Composable
 fun NoteListScreen(
-    notes: List<Note>,
-    noteViewModel: NoteViewModel,
+    viewModel: NoteViewModel = hiltViewModel(),
     onAddNoteClick: (folder: Long?) -> Unit,
     onNoteClick: (Long?) -> Unit,
-    modifier: Modifier = Modifier
 ) {
-
-    val selectionAction by noteViewModel.selectedAction.collectAsState()
-    val selectedNotes by noteViewModel.selectedNotes.collectAsState()
-    val selectionCount = noteViewModel.selectionCount.collectAsState()
+    val notes = viewModel.notes.collectAsState().value
+    val selectionAction by viewModel.selectedAction.collectAsState()
+    val selectedNotes by viewModel.selectedNotes.collectAsState()
+    val selectionCount = viewModel.selectionCount.collectAsState()
 
     var hideLocked by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
@@ -50,10 +48,10 @@ fun NoteListScreen(
                         onPaste = {},
                         action = selectionAction,
                         setActions = {
-                            noteViewModel.setSelectionAction(it)
+                            viewModel.setSelectionAction(it)
                         },
                         onClearSelection = {
-                            noteViewModel.clearSelection()
+                            viewModel.clearSelection()
                         }
                     )
                 }
@@ -70,7 +68,7 @@ fun NoteListScreen(
                 setHideLocked = { hideLocked = it }
             )
         },
-        modifier = modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
         LazyVerticalStaggeredGrid (
             columns = StaggeredGridCells.Fixed(2),
@@ -78,13 +76,13 @@ fun NoteListScreen(
             modifier = Modifier
         ) {
             items(notes) { note ->
-                val path = noteViewModel.getPath(note.folderId, hideLocked)
+                val path = viewModel.getPath(note.folderId, hideLocked)
                 if (path != null) {
                     NoteItem(
                         note = note,
                         path = path,
                         onClick = { onNoteClick(note.id) },
-                        onHold = { noteViewModel.onSelectionNote(note) },
+                        onHold = { viewModel.onSelectionNote(note) },
                         selected = note in selectedNotes,
                     )
                 }
@@ -93,10 +91,10 @@ fun NoteListScreen(
         ConfirmationDialog(
             showDialog = selectionAction == SelectionActions.DELETE,
             onDismiss = {
-                noteViewModel.setSelectionAction(SelectionActions.NONE)
+                viewModel.setSelectionAction(SelectionActions.NONE)
             },
             onConfirm = {
-                noteViewModel.deleteSelection()
+                viewModel.deleteSelection()
             },
             title = stringResource(R.string.delete_confirmation_title),
             message = "Sure want to delete ${selectionCount.value} items?"

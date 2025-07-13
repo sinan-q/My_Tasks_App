@@ -15,6 +15,7 @@ import com.sinxn.mytasks.data.usecase.folder.CopyFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.LockFolderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -106,6 +107,11 @@ class HomeViewModel @Inject constructor(
             } catch (e: Exception) {
                 showToast("Error updating folder lock state: ${e.message}")
             }
+        }
+    }
+    fun updateStatusTask(taskId: Long, status: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            taskRepository.updateStatusTask(taskId, status)
         }
     }
 }

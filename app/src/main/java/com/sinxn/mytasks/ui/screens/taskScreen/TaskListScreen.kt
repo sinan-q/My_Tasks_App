@@ -19,8 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.data.store.SelectionActions
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.ListTopAppBar
@@ -30,12 +30,11 @@ import com.sinxn.mytasks.ui.viewModels.TaskViewModel
 
 @Composable
 fun TaskListScreen(
-    tasks: List<Task>,
-    taskViewModel: TaskViewModel,
+    taskViewModel: TaskViewModel = hiltViewModel(),
     onAddTaskClick: (Long?) -> Unit,
     onTaskClick: (Long?) -> Unit,
-    modifier: Modifier = Modifier
 ) {
+    val tasks = taskViewModel.tasks.collectAsState().value
     val selectionAction by taskViewModel.selectedAction.collectAsState()
     val selectedTasks by taskViewModel.selectedTasks.collectAsState()
     val selectionCount = taskViewModel.selectionCount.collectAsState()
@@ -71,7 +70,7 @@ fun TaskListScreen(
                 setHideLocked = { hideLocked = it }
             )
         },
-        modifier = modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
         LazyColumn(
             contentPadding = paddingValues,

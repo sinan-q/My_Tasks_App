@@ -14,6 +14,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.ui.components.CalendarGrid
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.RectangleFAB
@@ -22,7 +23,7 @@ import com.sinxn.mytasks.ui.viewModels.EventViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventListScreen(
-    eventViewModel: EventViewModel,
+    eventViewModel: EventViewModel = hiltViewModel(),
     onAddEventClick: (folderId: Long) -> Unit,
     onEventClick: (Long) -> Unit,
     onDayClick: (Long) -> Unit

@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.components.AddEditTopAppBar
@@ -68,7 +69,7 @@ fun AddEditTaskScreen(
     modifier: Modifier = Modifier,
     taskId: Long = -1L,
     folderId: Long = 0,
-    taskViewModel: TaskViewModel,
+    taskViewModel: TaskViewModel = hiltViewModel(),
     onFinish: () -> Unit,
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog

@@ -122,7 +122,6 @@ class TaskViewModel @Inject constructor(
     fun updateStatusTask(taskId: Long, status: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
            repository.updateStatusTask(taskId, status)
-
         }
     }
 

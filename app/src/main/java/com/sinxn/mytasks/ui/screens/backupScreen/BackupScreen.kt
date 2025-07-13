@@ -9,12 +9,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.viewModels.BackupViewModel
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun BackupScreen(viewModel: BackupViewModel) {
+fun BackupScreen(
+    viewModel: BackupViewModel = hiltViewModel()
+) {
+
     val context = LocalContext.current
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()

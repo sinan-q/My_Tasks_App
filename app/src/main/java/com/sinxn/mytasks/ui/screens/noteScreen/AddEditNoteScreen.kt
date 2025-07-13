@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.ui.components.AddEditTopAppBar
@@ -38,10 +39,9 @@ import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun AddEditNoteScreen(
-    modifier: Modifier = Modifier,
     noteId: Long = -1L,
     folderId: Long = 0,
-    noteViewModel: NoteViewModel,
+    noteViewModel: NoteViewModel = hiltViewModel(),
     onFinish: () -> Unit,
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
@@ -69,7 +69,7 @@ fun AddEditNoteScreen(
         }
     }
     LaunchedEffect(noteState) {
-        noteState?.let { note ->
+        noteState.let { note ->
             noteInputState = note.copy()
         }
     }
@@ -124,7 +124,7 @@ fun AddEditNoteScreen(
 
     ) { padding ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {

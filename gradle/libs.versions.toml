@@ -14,6 +14,7 @@ composeBom = "2025.05.01"
 mockk = "1.13.5"
 roomRuntime = "2.7.1"
 hilt = "2.55"
+hiltCompiler = "1.2.0"
 ksp = "2.0.21-1.0.27"
 navigationCompose = "2.9.0"
 turbine = "0.13.0"
@@ -47,6 +48,7 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 androidx-glance-appwidget = {group = "androidx.glance", name = "glance-appwidget", version.ref = "glance"}
 androidx-glance-material3 = {group = "androidx.glance", name = "glance-material3", version.ref = "glance"}
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltCompiler" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

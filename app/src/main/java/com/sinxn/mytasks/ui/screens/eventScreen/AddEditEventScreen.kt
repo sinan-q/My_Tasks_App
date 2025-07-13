@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.ui.components.AddEditTopAppBar
@@ -56,11 +57,10 @@ import java.time.LocalDateTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditEventScreen(
-    modifier: Modifier = Modifier,
     eventId: Long = -1L,
     folderId: Long = 0,
     date: Long = -1L,
-    eventViewModel: EventViewModel,
+    eventViewModel: EventViewModel = hiltViewModel(),
     onFinish: () -> Unit,
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
@@ -146,7 +146,7 @@ fun AddEditEventScreen(
         modifier = Modifier.imePadding()
     ) { innerPadding ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
