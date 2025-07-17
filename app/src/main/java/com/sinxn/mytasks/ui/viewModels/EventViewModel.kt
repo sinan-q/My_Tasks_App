@@ -1,35 +1,40 @@
 package com.sinxn.mytasks.ui.viewModels
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sinxn.mytasks.core.FolderStore
 import com.sinxn.mytasks.data.interfaces.EventRepositoryInterface
-import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.data.local.entities.Task
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
 class EventViewModel @Inject constructor(
     private val repository: EventRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
-    folderRepo: FolderRepositoryInterface
-) : BaseViewModel(folderRepo) {
+    private val folderStore: FolderStore,
+) : ViewModel() {
 
     val upcomingEvents = repository.getUpcomingEvents(10).stateIn(
         viewModelScope,
         SharingStarted.Lazily,
         emptyList()
     )
+
+    val folders = folderStore.folders
+    val folder = folderStore.parentFolder
 
     private val _eventsOnMonth = MutableStateFlow<List<Event>>(emptyList())
     val eventsOnMonth: StateFlow<List<Event>> = _eventsOnMonth
@@ -39,6 +44,15 @@ class EventViewModel @Inject constructor(
 
     private val _event = MutableStateFlow<Event?>(null)
     val event: StateFlow<Event?> = _event
+
+    private val _toastMessage = MutableSharedFlow<String>()
+    val toastMessage = _toastMessage.asSharedFlow()
+
+    fun showToast(message: String) {
+        viewModelScope.launch {
+            _toastMessage.emit(message)
+        }
+    }
 
     fun onMonthChange(month: LocalDate) {
         getEventsAndTasksByMonth(month)
@@ -64,21 +78,20 @@ class EventViewModel @Inject constructor(
     }
 
     fun fetchFolderById(folderId: Long) {
-        fetchFolderById(
-            folderId = folderId,
-            action = {
-                _event.value = event.value?.copy(
-                    folderId = it,
-                )
-            }
-        )
+        viewModelScope.launch {
+            folderStore.fetchFolderById(folderId = folderId)
+            _event.value = event.value?.copy(
+                folderId = folderId,
+            )
+        }
+
     }
 
     fun fetchEventById(eventId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val fetchedEvent = repository.getEventById(eventId)
             _event.value = fetchedEvent
-            fetchFolderById(fetchedEvent?.folderId?:0L, action = {})
+            fetchFolderById(fetchedEvent?.folderId?:0L)
         }
     }
 

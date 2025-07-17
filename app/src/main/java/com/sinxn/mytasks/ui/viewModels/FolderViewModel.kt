@@ -1,20 +1,23 @@
 package com.sinxn.mytasks.ui.viewModels
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
+import com.sinxn.mytasks.core.FolderStore
+import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.data.store.SelectionActions
-import com.sinxn.mytasks.data.store.SelectionStore
 import com.sinxn.mytasks.data.usecase.folder.AddFolderUseCase
 import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.LockFolderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -24,13 +27,13 @@ import javax.inject.Inject
 class FolderViewModel @Inject constructor(
     private val noteRepository: NoteRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
-    folderRepo: FolderRepositoryInterface,
     private val addFolderUseCase: AddFolderUseCase,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
     private val selectionStore: SelectionStore,
+    private val folderStore: FolderStore
 
-    ) : BaseViewModel(folderRepo) {
+    ) : ViewModel() {
 
     val selectedTasks = selectionStore.selectedTasks
     val selectedNotes = selectionStore.selectedNotes
@@ -43,10 +46,21 @@ class FolderViewModel @Inject constructor(
     fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
     fun onSelectionFolder(folder: Folder) = selectionStore.toggleFolder(folder)
 
+    val folder = folderStore.parentFolder
+    val folders = folderStore.folders
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
     val notes: StateFlow<List<Note>> = _notes.asStateFlow()
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
+
+    private val _toastMessage = MutableSharedFlow<String>()
+    val toastMessage = _toastMessage.asSharedFlow()
+
+    fun showToast(message: String) {
+        viewModelScope.launch {
+            _toastMessage.emit(message)
+        }
+    }
 
     fun addFolder(folder: Folder) {
         viewModelScope.launch {
@@ -91,16 +105,11 @@ class FolderViewModel @Inject constructor(
 
     fun getSubFolders(folderId: Long) {
         viewModelScope.launch {
-            _folder.value = folderRepository.getFolderById(folderId)
+            folderStore.fetchFolderById(folderId)
         }
         viewModelScope.launch {
             taskRepository.getTasksByFolderId(folderId).collectLatest { taskList ->
                 _tasks.value = taskList
-            }
-        }
-        viewModelScope.launch {
-            folderRepository.getSubFolders(folderId).collectLatest { folderList ->
-                _folders.value = folderList
             }
         }
         viewModelScope.launch {
@@ -114,7 +123,7 @@ class FolderViewModel @Inject constructor(
 
     fun pasteSelection() {
         viewModelScope.launch {
-            val folderId = folder.value?.folderId?:0L
+            val folderId = folderStore.parentFolder.value?.folderId?:0L
             selectionStore.pasteSelection(folderId)
         }
 

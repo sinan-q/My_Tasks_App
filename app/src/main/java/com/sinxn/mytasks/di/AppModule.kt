@@ -2,6 +2,8 @@ package com.sinxn.mytasks.di
 
 import android.content.Context
 import androidx.room.Room
+import com.sinxn.mytasks.core.FolderStore
+import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.local.dao.AlarmDao
 import com.sinxn.mytasks.data.local.dao.EventDao
 import com.sinxn.mytasks.data.local.dao.FolderDao
@@ -12,7 +14,6 @@ import com.sinxn.mytasks.data.repository.EventRepository
 import com.sinxn.mytasks.data.repository.FolderRepository
 import com.sinxn.mytasks.data.repository.NoteRepository
 import com.sinxn.mytasks.data.repository.TaskRepository
-import com.sinxn.mytasks.data.store.SelectionStore
 import com.sinxn.mytasks.data.usecase.folder.CopyFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
@@ -95,6 +96,16 @@ object AppModule {
     ): SelectionStore {
         return SelectionStore(
             taskRepository, noteRepository, folderRepository, copyFolderAndItsContentsUseCase, deleteFolderAndItsContentsUseCase
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideFolderStore(
+        folderRepository: FolderRepository
+    ): FolderStore {
+        return FolderStore(
+            folderRepository
         )
     }
 }

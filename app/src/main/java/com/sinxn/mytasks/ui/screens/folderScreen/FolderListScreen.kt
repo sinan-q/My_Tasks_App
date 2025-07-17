@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.data.store.SelectionActions
+import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.ui.components.AddEditTopAppBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.ShowActionsFAB

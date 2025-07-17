@@ -61,7 +61,7 @@ import com.sinxn.mytasks.utils.formatDate
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
 import kotlinx.coroutines.flow.collectLatest
-import java.time.Instant
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -262,7 +262,7 @@ fun AddEditTaskScreen(
 
             if (showDatePicker) {
                 val datePickerState = rememberDatePickerState(
-                    initialSelectedDateMillis = taskInputState.due?.toMillis() ?: Instant.now().toEpochMilli()
+                    initialSelectedDateMillis = taskInputState.due?.toMillis() ?: LocalDateTime.now().plusDays(1).toMillis()
                 )
 
                 DatePickerDialog(

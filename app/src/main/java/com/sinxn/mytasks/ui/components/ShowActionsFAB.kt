@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.data.store.SelectionActions
+import com.sinxn.mytasks.core.SelectionActions
 
 
 @Composable

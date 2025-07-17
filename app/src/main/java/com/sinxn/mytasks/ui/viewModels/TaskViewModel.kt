@@ -1,22 +1,25 @@
 package com.sinxn.mytasks.ui.viewModels
 
 import android.util.Log
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sinxn.mytasks.core.FolderStore
+import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.interfaces.AlarmRepositoryInterface
-import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.data.store.SelectionActions
-import com.sinxn.mytasks.data.store.SelectionStore
 import com.sinxn.mytasks.utils.differenceSeconds
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Duration
@@ -28,12 +31,19 @@ class TaskViewModel @Inject constructor(
     private val repository: TaskRepositoryInterface,
     private val alarmRepository: AlarmRepositoryInterface,
     private val selectionStore: SelectionStore,
-    folderRepo: FolderRepositoryInterface
-    ) : BaseViewModel(folderRepo) {
+    private val folderStore: FolderStore
+    ) : ViewModel() {
 
     val selectedTasks = selectionStore.selectedTasks
     val selectedAction = selectionStore.action
     val selectionCount = selectionStore.selectionCount
+
+    val folders = folderStore.folders
+    val folder = folderStore.parentFolder
+
+    fun getPath(folderId: Long, hideLocked: Boolean): String? {
+         return folderStore.getPath(folderId, hideLocked)
+    }
 
     fun onSelectionTask(task: Task) = selectionStore.toggleTask(task)
 
@@ -48,6 +58,15 @@ class TaskViewModel @Inject constructor(
             selectionStore.deleteSelection()
         }
     }
+    private val _toastMessage = MutableSharedFlow<String>()
+    val toastMessage = _toastMessage.asSharedFlow()
+
+    fun showToast(message: String) {
+        viewModelScope.launch {
+            _toastMessage.emit(message)
+        }
+    }
+
 
     val tasks = repository.getAllTasksSorted().stateIn(
         viewModelScope,
@@ -66,7 +85,7 @@ class TaskViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val alarms = mutableListOf<Pair<Int, ChronoUnit>>()
             val fetchedTask = repository.getTaskById(taskId)!!
-            fetchFolderById(fetchedTask.folderId) {}
+            folderStore.fetchFolderById(fetchedTask.folderId)
             alarmRepository.getAlarmsByTaskId(taskId).forEach { alarm ->
                 fetchedTask.due?.differenceSeconds(fromMillis(alarm.time))?.let { it2 ->
                     val duration = Duration.ofSeconds(it2)
@@ -126,9 +145,12 @@ class TaskViewModel @Inject constructor(
     }
 
     fun fetchFolderById(folderId: Long) {
-        fetchFolderById(folderId, action = {
+        viewModelScope.launch {
+            folderStore.fetchFolderById(folderId)
             _task.value = task.value.copy(
-                folderId = it
-            )})
+                folderId = folderId
+            )
+        }
+
     }
 }

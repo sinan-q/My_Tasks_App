@@ -1,15 +1,18 @@
 package com.sinxn.mytasks.ui.viewModels
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
+import com.sinxn.mytasks.core.FolderStore
+import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.data.store.SelectionActions
-import com.sinxn.mytasks.data.store.SelectionStore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,15 +20,20 @@ import javax.inject.Inject
 @HiltViewModel
 class NoteViewModel @Inject constructor(
     private val noteRepository: NoteRepositoryInterface,
-    folderRepository: FolderRepositoryInterface,
+    private val folderStore: FolderStore,
     private val selectionStore: SelectionStore
-) : BaseViewModel(folderRepository) {
+) : ViewModel() {
 
     val selectedNotes = selectionStore.selectedNotes
     val selectedAction = selectionStore.action
     val selectionCount = selectionStore.selectionCount
 
+    val folders = folderStore.folders
+    val folder = folderStore.parentFolder
 
+    fun getPath(folderId: Long, hideLocked: Boolean): String? {
+            return folderStore.getPath(folderId, hideLocked)
+    }
     fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
 
     fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
@@ -37,6 +45,15 @@ class NoteViewModel @Inject constructor(
     fun deleteSelection() {
         viewModelScope.launch {
             selectionStore.deleteSelection()
+        }
+    }
+
+    private val _toastMessage = MutableSharedFlow<String>()
+    val toastMessage = _toastMessage.asSharedFlow()
+
+    fun showToast(message: String) {
+        viewModelScope.launch {
+            _toastMessage.emit(message)
         }
     }
 
@@ -66,17 +83,18 @@ class NoteViewModel @Inject constructor(
     fun fetchNoteById(noteId: Long) {
         viewModelScope.launch {
             val fetchedNote = noteRepository.getNoteById(noteId)
-            fetchFolderById(fetchedNote.folderId) {}
+            fetchFolderById(fetchedNote.folderId)
             _note.value = fetchedNote
         }
     }
 
     fun fetchFolderById(folderId: Long) {
-            fetchFolderById(folderId, action = {
-                _note.value = note.value.copy(
-                folderId = it,
-            )})
-
+        viewModelScope.launch {
+            folderStore.fetchFolderById(folderId)
+            _note.value = note.value.copy(
+                folderId = folderId,
+            )
+        }
     }
 
     fun newNoteByFolder(folderId: Long) {

@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.data.store
+package com.sinxn.mytasks.core
 
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
