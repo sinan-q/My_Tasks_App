@@ -72,39 +72,39 @@ fun OptionsColumn2(
     ) {
         OptionButton(
             onClick = { onCloseOptions(); onClearSelection() },
-            icon = R.drawable.event_ic_add,
+            icon = R.drawable.ic_cancel,
             contentDescription = "Clear",
             text = "Clear"
         )
         if (action == SelectionActions.NONE) {
             OptionButton(
                 onClick = { onCloseOptions(); setActions(SelectionActions.DELETE) },
-                icon = R.drawable.event_ic_add,
+                icon = R.drawable.ic_delete,
                 contentDescription = "Delete",
                 text = "Delete"
             )
             OptionButton(
                 onClick = { onCloseOptions(); setActions(SelectionActions.COPY) },
-                icon = R.drawable.task_ic_add,
+                icon = R.drawable.ic_copy,
                 contentDescription = "Copy",
                 text = "Copy"
             )
             OptionButton(
                 onClick = { onCloseOptions(); setActions(SelectionActions.CUT) },
-                icon = R.drawable.folder_ic_add,
+                icon = R.drawable.ic_move,
                 contentDescription = "Move",
                 text = "Move"
             )
-// TODO           OptionButton(
-//                onClick = { onCloseOptions(); setActions(SelectionActions.COPY) },
-//                icon = R.drawable.note_ic_add,
+//            OptionButton( //TODO add lock to notes, tasks db
+//                onClick = { onCloseOptions(); setActions(SelectionActions.LOCK) },
+//                icon = R.drawable.ic_lock,
 //                contentDescription = "Lock",
 //                text = "Lock"
 //            )
         } else if (action == SelectionActions.COPY || action == SelectionActions.CUT) {
             OptionButton(
                 onClick = { onCloseOptions(); onPaste() },
-                icon = R.drawable.event_ic_add,
+                icon = R.drawable.ic_paste,
                 contentDescription = "Paste",
                 text = "Paste"
             )
