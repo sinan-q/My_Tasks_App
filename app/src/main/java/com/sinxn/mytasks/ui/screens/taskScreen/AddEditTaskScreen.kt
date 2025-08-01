@@ -18,13 +18,9 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
@@ -51,6 +48,7 @@ import com.sinxn.mytasks.ui.components.AddEditTopAppBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.components.RectangleFAB
+import com.sinxn.mytasks.ui.components.ScrollablePicker
 import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
@@ -212,51 +210,71 @@ fun AddEditTaskScreen(
                         Text(text = "${option.first} ${option.second.name}")
                     }
                 }
-                Row {
-                    OutlinedTextField(
-                        value = reminder,
-                        onValueChange = { reminder = it},
-                        modifier = Modifier.width(70.dp),
-                        singleLine = true
-                    )
-                    ExposedDropdownMenuBox(
-                        expanded = expandedDropDown,
-                        onExpandedChange = { expandedDropDown = !expandedDropDown },
-                    ) {
-                        OutlinedTextField(
-                            value = reminderType.label,
-                            onValueChange = {},
-                            readOnly = true,
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDropDown)
-                            },
-                            modifier = Modifier
-                                .menuAnchor(MenuAnchorType.PrimaryEditable, true)
-                                .width(150.dp)
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = expandedDropDown,
-                            onDismissRequest = { expandedDropDown = false },
-                        ) {
-                            ReminderTypes.entries.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option.label) },
-                                    onClick = {
-                                        reminderType = option
-                                        expandedDropDown = false
-                                    }
-                                )
-                            }
-                        }
-                    }
+                Row  {
+                    val itemHeight = 50.dp
                     RectangleButton(
+                        modifier = Modifier.height(itemHeight),
                         onClick = {
                             taskViewModel.addReminder(Pair(reminder.toInt(), reminderType.unit))
                         }
                     ) {
                         Icon(Icons.Default.Add, "Add Reminder")
                     }
+                    ScrollablePicker (
+                        values = (0..60).toList(),
+                        defaultValue = 0,
+                        height = itemHeight,
+                        modifier = Modifier.width(70.dp).height(itemHeight)
+                    ) {
+                        reminder = it.toString()
+                    }
+//                    OutlinedTextField(
+//                        value = reminder,
+//                        onValueChange = { reminder = it},
+//                        modifier = Modifier.width(70.dp).height(itemHeight),
+//                        singleLine = true
+//                    )
+                    ScrollablePicker (
+                        values = ReminderTypes.entries,
+                        defaultValue = ReminderTypes.MINUTE,
+                        height = itemHeight,
+                        modifier = Modifier.width(100.dp).height(itemHeight)
+                    ) {
+                        reminderType = it
+                    }
+//                    ExposedDropdownMenuBox(
+//                        expanded = expandedDropDown,
+//                        onExpandedChange = { expandedDropDown = !expandedDropDown },
+//                    ) {
+//                        OutlinedTextField(
+//                            value = reminderType.label,
+//                            onValueChange = {},
+//                            readOnly = true,
+//                            trailingIcon = {
+//                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDropDown)
+//                            },
+//                            modifier = Modifier
+//                                .menuAnchor(MenuAnchorType.PrimaryEditable, true)
+//                                .width(150.dp)
+//                        )
+////                        ExposedDropdownMenu(
+////                            expanded = expandedDropDown,
+////                            onDismissRequest = { expandedDropDown = false },
+////                        ) {
+//
+////                            ReminderTypes.entries.forEach { option ->
+////
+////                                DropdownMenuItem(
+////                                    text = { Text(option.label) },
+////                                    onClick = {
+////                                        reminderType = option
+////                                        expandedDropDown = false
+////                                    }
+////                                )
+////                            }
+//                       // }
+//                    }
+
                 }
             }
 
@@ -318,5 +336,13 @@ fun AddEditTaskScreen(
         },
         title = stringResource(R.string.delete_confirmation_title),
         message = stringResource(R.string.delete_item_message)
+    )
+}
+
+@Preview
+@Composable
+fun PreviewEditTaskScreen() {
+    AddEditTaskScreen(
+        onFinish = {}
     )
 }

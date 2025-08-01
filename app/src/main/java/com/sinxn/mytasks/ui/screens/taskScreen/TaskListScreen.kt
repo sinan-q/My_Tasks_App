@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens.taskScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +11,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.glance.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
@@ -30,30 +33,35 @@ import com.sinxn.mytasks.ui.viewModels.TaskViewModel
 
 @Composable
 fun TaskListScreen(
-    taskViewModel: TaskViewModel = hiltViewModel(),
+    viewModel: TaskViewModel = hiltViewModel(),
     onAddTaskClick: (Long?) -> Unit,
     onTaskClick: (Long?) -> Unit,
 ) {
-    val tasks = taskViewModel.tasks.collectAsState().value
-    val selectionAction by taskViewModel.selectedAction.collectAsState()
-    val selectedTasks by taskViewModel.selectedTasks.collectAsState()
-    val selectionCount = taskViewModel.selectionCount.collectAsState()
+    val tasks = viewModel.tasks.collectAsState().value
+    val selectionAction by viewModel.selectedAction.collectAsState()
+    val selectedTasks by viewModel.selectedTasks.collectAsState()
+    val selectionCount = viewModel.selectionCount.collectAsState()
+    val toast = viewModel.toastMessage.collectAsState(null)
+    val context = LocalContext.current
 
     var hideLocked by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
 
+    LaunchedEffect(toast) {
+        Toast.makeText(context, toast.value, Toast.LENGTH_SHORT).show()
+    }
     Scaffold(
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
                 if (selectionCount.value != 0) {
                     ShowActionsFAB(
-                        onPaste = {},
+                        onPaste = { viewModel.showToast("cannot paste here") },
                         action = selectionAction,
                         setActions = {
-                            taskViewModel.setSelectionAction(it)
+                            viewModel.setSelectionAction(it)
                         },
                         onClearSelection = {
-                            taskViewModel.clearSelection()
+                            viewModel.clearSelection()
                         }
                     )
                 }
@@ -78,13 +86,13 @@ fun TaskListScreen(
             modifier = Modifier
         ) {
             items(tasks) { task ->
-                val path = taskViewModel.getPath(task.folderId, hideLocked)
+                val path = viewModel.getPath(task.folderId, hideLocked)
                 if (path != null) TaskItem(
                     task = task,
                     path = path,
                     onClick = { onTaskClick(task.id) },
-                    onUpdate = { task.id?.let { it1 -> taskViewModel.updateStatusTask(it1, it) } },
-                    onHold = { taskViewModel.onSelectionTask(task) },
+                    onUpdate = { task.id?.let { it1 -> viewModel.updateStatusTask(it1, it) } },
+                    onHold = { viewModel.onSelectionTask(task) },
                     selected = task in selectedTasks
                 )
             }
@@ -92,10 +100,10 @@ fun TaskListScreen(
         ConfirmationDialog(
             showDialog = selectionAction == SelectionActions.DELETE,
             onDismiss = {
-                taskViewModel.setSelectionAction(SelectionActions.NONE)
+                viewModel.setSelectionAction(SelectionActions.NONE)
             },
             onConfirm = {
-                taskViewModel.deleteSelection()
+                viewModel.deleteSelection()
             },
             title = stringResource(R.string.delete_confirmation_title),
             message = "Sure want to delete ${selectionCount.value} items?"

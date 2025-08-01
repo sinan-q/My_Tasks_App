@@ -3,7 +3,6 @@ package com.sinxn.mytasks.ui.components
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
@@ -24,7 +23,7 @@ fun RectangleCard(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
+           // .fillMaxWidth()
             .padding(1.dp)
             .border(1.dp, MaterialTheme.colorScheme.outline, RectangleShape)
             .clickable {
