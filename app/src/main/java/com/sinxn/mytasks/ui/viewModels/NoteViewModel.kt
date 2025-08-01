@@ -31,7 +31,7 @@ class NoteViewModel @Inject constructor(
     val folders = folderStore.folders
     val folder = folderStore.parentFolder
 
-    fun getPath(folderId: Long, hideLocked: Boolean): String? {
+    suspend fun getPath(folderId: Long, hideLocked: Boolean): String? {
             return folderStore.getPath(folderId, hideLocked)
     }
     fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)

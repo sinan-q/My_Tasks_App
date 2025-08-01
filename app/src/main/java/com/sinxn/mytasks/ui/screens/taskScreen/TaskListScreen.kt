@@ -82,19 +82,30 @@ fun TaskListScreen(
     ) { paddingValues ->
         LazyColumn(
             contentPadding = paddingValues,
-            verticalArrangement = Arrangement.spacedBy(1.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier
         ) {
             items(tasks) { task ->
-                val path = viewModel.getPath(task.folderId, hideLocked)
-                if (path != null) TaskItem(
-                    task = task,
-                    path = path,
-                    onClick = { onTaskClick(task.id) },
-                    onUpdate = { task.id?.let { it1 -> viewModel.updateStatusTask(it1, it) } },
-                    onHold = { viewModel.onSelectionTask(task) },
-                    selected = task in selectedTasks
-                )
+                var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state
+                var isLoadingPath by remember { mutableStateOf(true) }
+
+                // Launch a coroutine for each item to get its path
+                LaunchedEffect(key1 = task.folderId, key2 = hideLocked) {
+                    isLoadingPath = true
+                    path = viewModel.getPath(task.folderId, hideLocked)
+                    isLoadingPath = false
+                }
+
+                if (!isLoadingPath) { // Only compose TaskItem if path is loaded
+                    if (path != null) TaskItem(
+                        task = task,
+                        path = path,
+                        onClick = { onTaskClick(task.id) },
+                        onUpdate = { task.id?.let { it1 -> viewModel.updateStatusTask(it1, it) } },
+                        onHold = { viewModel.onSelectionTask(task) },
+                        selected = task in selectedTasks
+                    )
+                }
             }
         }
         ConfirmationDialog(

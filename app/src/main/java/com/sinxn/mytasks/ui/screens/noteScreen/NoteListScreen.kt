@@ -1,6 +1,7 @@
 package com.sinxn.mytasks.ui.screens.noteScreen
 
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -21,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
@@ -80,12 +82,25 @@ fun NoteListScreen(
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
         LazyVerticalStaggeredGrid (
+            verticalItemSpacing = 4.dp,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             columns = StaggeredGridCells.Fixed(2),
             contentPadding = paddingValues,
             modifier = Modifier
         ) {
             items(notes) { note ->
-                val path = viewModel.getPath(note.folderId, hideLocked)
+                var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state
+                var isLoadingPath by remember { mutableStateOf(true) }
+
+                // Launch a coroutine for each item to get its path
+                LaunchedEffect(key1 = note.folderId, key2 = hideLocked) {
+                    isLoadingPath = true
+                    path = viewModel.getPath(note.folderId, hideLocked)
+                    isLoadingPath = false
+                }
+
+                if (!isLoadingPath)  // Only compose TaskItem if path is loaded
+
                 if (path != null) {
                     NoteItem(
                         note = note,

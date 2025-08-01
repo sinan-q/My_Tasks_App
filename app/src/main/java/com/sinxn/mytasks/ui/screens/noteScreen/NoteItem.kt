@@ -1,21 +1,21 @@
 package com.sinxn.mytasks.ui.screens.noteScreen
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.ui.components.RectangleCard
 import com.sinxn.mytasks.utils.formatDate
 
 @Composable
@@ -27,16 +27,18 @@ fun NoteItem(
     onHold: () -> Unit,
     selected: Boolean
 ) {
-    RectangleCard(
+    Card (
         modifier = modifier
-            .background(color = if (selected) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.primaryContainer)
             .combinedClickable(onLongClick = onHold, onClick = onClick ),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        )
+            containerColor = if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondaryContainer
+        ),
+        shape = RectangleShape
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            path?.let { Text(text = path, style = MaterialTheme.typography.bodySmall) }
+        Column(modifier = Modifier.padding(8.dp)) {
+            path?.let { Text(text = path,
+                color = LocalContentColor.current.copy(alpha = 0.4f),
+                style = MaterialTheme.typography.labelSmall)}
 
             Text(
                 text = note.title,
@@ -44,18 +46,18 @@ fun NoteItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = note.content,
                 style = MaterialTheme.typography.bodySmall,
+                color = LocalContentColor.current.copy(alpha = 0.7f),
                 maxLines = 4,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = note.timestamp.formatDate(),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = MaterialTheme.typography.labelSmall,
+                color = LocalContentColor.current.copy(alpha = 0.4f)
             )
         }
     }

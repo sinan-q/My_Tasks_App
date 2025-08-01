@@ -11,7 +11,7 @@ import javax.inject.Singleton
 class FolderRepository @Inject constructor(
     private val folderDao: FolderDao
 ) : FolderRepositoryInterface {
-    override fun getAllFolders(): Flow<List<Folder>> = folderDao.getAllFolders()
+    override suspend fun getAllFolders(): Flow<List<Folder>> = folderDao.getAllFolders()
 
     override fun getSubFolders(parentId: Long?): Flow<List<Folder>> = folderDao.getSubFolders(parentId)
 

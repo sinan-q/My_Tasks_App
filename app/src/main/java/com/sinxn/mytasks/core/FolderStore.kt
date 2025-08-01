@@ -1,28 +1,22 @@
 package com.sinxn.mytasks.core
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.stateIn
 
 @Singleton
 class FolderStore @Inject constructor(
     val folderRepository: FolderRepositoryInterface
 ) {
-    val allFolders: StateFlow<List<Folder>> = folderRepository.getAllFolders().stateIn(
-        scope = CoroutineScope(Dispatchers.IO),
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
+    val allFolders = mutableListOf<Folder>()
 
     private val _parentFolder = MutableStateFlow<Folder?>(null)
     val parentFolder: StateFlow<Folder?> = _parentFolder
@@ -41,15 +35,17 @@ class FolderStore @Inject constructor(
         val subFolders = folderRepository.getSubFolders(folderId).first()
         _folders.value = subFolders
         _parentFolder.value = fetchedFolder
+        subFolders.plus(fetchedFolder).forEach { if (!allFolders.contains(it)) allFolders.add(it) }
         return fetchedFolder
     }
-    fun getPath(folderId: Long, hideLocked: Boolean): String? {
-        val path = StringBuilder()
+    suspend fun getPath(folderId: Long, hideLocked: Boolean): String? {
+        val path = StringBuilder("/")
         var curr = folderId
         while (curr != 0L) {
-            val folder = allFolders.value.find { it.folderId == curr } ?: break
-            path.insert(0, "/")
+            if (allFolders.find { it.folderId == curr } == null) Log.d(TAG, "getPath: ")
+            val folder = allFolders.find { it.folderId == curr } ?: fetchFolderById(curr)
             path.insert(0, folder.name)
+            path.insert(0, "/")
             curr = folder.parentFolderId ?: 0L
             if (folder.isLocked == true && hideLocked) return null
         }

@@ -4,7 +4,7 @@ import com.sinxn.mytasks.data.local.entities.Folder
 import kotlinx.coroutines.flow.Flow
 
 interface FolderRepositoryInterface {
-    fun getAllFolders(): Flow<List<Folder>>
+    suspend fun getAllFolders(): Flow<List<Folder>>
     fun getSubFolders(parentId: Long?): Flow<List<Folder>>
     suspend fun insertFolder(folder: Folder): Long
     suspend fun updateFolder(folder: Folder)

@@ -3,6 +3,7 @@ package com.sinxn.mytasks.ui.screens.homeScreen
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -146,6 +147,8 @@ fun HomeScreen(
         },
     ) { padding ->
         LazyVerticalStaggeredGrid(
+            verticalItemSpacing = 4.dp,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.padding(padding),
             columns = StaggeredGridCells.Fixed(2) //TODO Adaptive
         ) {
