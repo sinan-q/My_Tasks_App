@@ -99,7 +99,7 @@ class NoteViewModel @Inject constructor(
 
     fun newNoteByFolder(folderId: Long) {
         viewModelScope.launch {
-            _note.value = Note()
+            _note.value = Note(folderId = folderId)
             fetchFolderById(folderId)
         }
     }
