@@ -96,6 +96,11 @@ class FolderViewModel @Inject constructor(
     }
     fun onBack(folder: Folder) = getSubFolders(folder.parentFolderId?: 0L)
 
+    fun updateFolderName(folderId: Long, newName: String) {
+        viewModelScope.launch {
+            folderStore.folderRepository.updateFolderName(folderId, newName)
+        }
+    }
 
     fun updateTaskStatus(taskId: Long, status: Boolean) {
         viewModelScope.launch {

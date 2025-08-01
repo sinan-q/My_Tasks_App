@@ -11,4 +11,5 @@ interface FolderRepositoryInterface {
     suspend fun deleteFolder(folder: Folder)
     suspend fun lockFolder(folder: Folder)
     suspend fun getFolderById(folderId: Long): Folder
+    suspend fun updateFolderName(folderId: Long, newName: String)
 }

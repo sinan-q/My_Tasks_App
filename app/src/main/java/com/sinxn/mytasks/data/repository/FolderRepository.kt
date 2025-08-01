@@ -28,4 +28,5 @@ class FolderRepository @Inject constructor(
         return folderDao.getFolderById(folderId)
     }
 
+    override suspend fun updateFolderName(folderId: Long, newName: String) = folderDao.updateFolderName(folderId, newName)
 }

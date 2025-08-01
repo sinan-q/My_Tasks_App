@@ -31,5 +31,7 @@ interface FolderDao {
     @Query("SELECT * FROM folders WHERE folderId = :folderId")
     suspend fun getFolderById(folderId: Long): Folder
 
-    // Additional methods as needed
+    @Query("UPDATE folders SET name = :newName WHERE folderId = :folderId")
+    suspend fun updateFolderName(folderId: Long, newName: String)
+
 }

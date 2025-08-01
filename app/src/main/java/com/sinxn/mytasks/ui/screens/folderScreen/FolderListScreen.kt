@@ -9,7 +9,19 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,9 +35,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.core.SelectionActions
-import com.sinxn.mytasks.ui.components.AddEditTopAppBar
+import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
@@ -34,6 +45,7 @@ import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
 import com.sinxn.mytasks.ui.viewModels.FolderViewModel
 import kotlinx.coroutines.flow.collectLatest
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderListScreen(
     folderViewModel: FolderViewModel = hiltViewModel(),
@@ -45,6 +57,7 @@ fun FolderListScreen(
     onBack: () -> Unit,
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
+    var isFolderNameEdit by remember { mutableStateOf(false) }
 
     val selectedTasks by folderViewModel.selectedTasks.collectAsState()
     val selectedFolders by folderViewModel.selectedFolders.collectAsState()
@@ -71,6 +84,7 @@ fun FolderListScreen(
             folderId = 0L
         )
     )
+    var folderName by remember(currentFolder?.name) { mutableStateOf(currentFolder?.name ?: "") } // Add this line
     val tasks by folderViewModel.tasks.collectAsState(initial = emptyList())
     val notes by folderViewModel.notes.collectAsState(initial = emptyList())
     var folderEditToggle by remember { mutableStateOf(false) }
@@ -111,13 +125,67 @@ fun FolderListScreen(
 
         topBar = {
             currentFolder?.let { folder ->
+                TopAppBar(
+                    title = {
+                        if (isFolderNameEdit) {
+                            TextField(
+                                value = folderName,
+                                onValueChange = { folderName = it },
+                                singleLine = true // Optional: if you want a single line input
+                            )
+                        } else {
+                            Text(folderName)
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { if (folder.parentFolderId == 0L) onBack() else folderViewModel.onBack(folder) }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    },
+                    actions = {
+                        if (isFolderNameEdit) {
+                            IconButton(onClick = {
+                                isFolderNameEdit = false
+                                folderViewModel.updateFolderName(folder.folderId, folderName)
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Save new folder Name"
+                                )
+                            }
+                            IconButton(onClick = {
+                                folderName = folder.name
+                                isFolderNameEdit = false
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Cancel Folder Name change"
+                                )
+                            }
+                        } else {
+                            IconButton(onClick = {
+                                folderName = folder.name
+                                isFolderNameEdit = true
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit Folder Name"
+                                )
+                            }
+                        }
 
-                AddEditTopAppBar(
-                    title = folder.name,
-                    onNavigateUp = { if (folder.parentFolderId == 0L) onBack() else folderViewModel.onBack(folder) },
-                    showDeleteAction = true,
-                    onDelete = {
-                        showDeleteConfirmationDialog = true
+                        IconButton(onClick = {
+                            showDeleteConfirmationDialog = true
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete"
+                            )
+                        }
+
                     }
                 )
 
