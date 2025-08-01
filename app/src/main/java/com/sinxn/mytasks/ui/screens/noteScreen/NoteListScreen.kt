@@ -44,7 +44,7 @@ fun NoteListScreen(
     val context = LocalContext.current
 
     LaunchedEffect(toast) {
-        Toast.makeText(context, toast.value, Toast.LENGTH_SHORT).show()
+        if (toast.value != null) Toast.makeText(context, toast.value, Toast.LENGTH_SHORT).show()
     }
 
     var hideLocked by remember { mutableStateOf(true) }
