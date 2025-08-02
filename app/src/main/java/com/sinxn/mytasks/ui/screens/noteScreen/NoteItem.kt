@@ -35,7 +35,7 @@ fun NoteItem(
         ),
         shape = RectangleShape
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
+        Column(modifier = Modifier.padding(12.dp)) {
             path?.let { Text(text = path,
                 color = LocalContentColor.current.copy(alpha = 0.4f),
                 style = MaterialTheme.typography.labelSmall)}

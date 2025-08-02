@@ -15,8 +15,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -31,6 +33,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
@@ -56,7 +60,7 @@ fun HomeScreen(
     onNoteClick: (Long?) -> Unit,
     onAddTaskClick: (Long?) -> Unit,
     onTaskClick: (Long?) -> Unit,
-    onAddEventClick: (Long?) -> Unit,
+    onAddEventClick: (Long?) -> Unit, //TODO use navController
     onEventClick: () -> Unit,
     onFolderClick: (Long) -> Unit,
     onBackup: () -> Unit
@@ -155,16 +159,28 @@ fun HomeScreen(
             item(span = StaggeredGridItemSpan.FullLine) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     MyTitle(onClick = { onEventClick() }, text = "Upcoming Events")
-                    if (events.isEmpty()) Text(text = "Nothing to show here")
+                    HorizontalDivider()
+                    if (events.isEmpty()) Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
                 }
             }
 
             items(events) { event ->
                 EventSmallItem(event)
             }
+
+            item(span = StaggeredGridItemSpan.FullLine) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    MyTitle(onClick = { //TODO
+                         }, text = "Favourites")
+                    HorizontalDivider()
+                    Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
+                }
+            }
+            //TODO Favourites
             item(span = StaggeredGridItemSpan.FullLine) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     MyTitle(text = "Home")
+                    HorizontalDivider()
                     if (folders.isEmpty() && tasks.isEmpty() && notes.isEmpty()) Text(text = "Nothing to show here")
                 }
             }
