@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.data.local.entities.Folder
@@ -40,6 +41,7 @@ import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
+import com.sinxn.mytasks.ui.navigation.Routes
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
 import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
 import com.sinxn.mytasks.ui.viewModels.FolderViewModel
@@ -50,11 +52,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun FolderListScreen(
     folderViewModel: FolderViewModel = hiltViewModel(),
     folderId: Long = 0L,
-    onAddNoteClick: (Long?) -> Unit,
-    onNoteClick: (Long?) -> Unit,
-    onAddTaskClick: (Long?) -> Unit,
-    onTaskClick: (Long?) -> Unit,
-    onBack: () -> Unit,
+    navController: NavController,
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
     var isFolderNameEdit by remember { mutableStateOf(false) }
@@ -113,8 +111,7 @@ fun FolderListScreen(
                 }
                 currentFolder?.let {
                     ShowOptionsFAB(
-                        onAddTaskClick = onAddTaskClick,
-                        onAddNoteClick = onAddNoteClick,
+                        navController = navController,
                         onAddFolderClick = { folderEditToggle = true },
                         currentFolder = it
                     )
@@ -136,7 +133,7 @@ fun FolderListScreen(
                         }
 
                     ,
-                    onNavigateUp = { if (folder.parentFolderId == 0L) onBack() else folderViewModel.onBack(folder) },
+                    onNavigateUp = { if (folder.parentFolderId == 0L) navController.popBackStack() else folderViewModel.onBack(folder) },
                     actions = {
                         if (isFolderNameEdit) {
                             IconButton(onClick = {
@@ -220,7 +217,7 @@ fun FolderListScreen(
             ) { task ->
                 TaskItem(
                     task = task,
-                    onClick = { onTaskClick(task.id) },
+                    onClick = { navController.navigate(Routes.Task.get(task.id)) },
                     onHold = { folderViewModel.onSelectionTask(task) },
                     onUpdate = { status -> folderViewModel.updateTaskStatus(task.id!!, status) },
                     path = null,
@@ -230,7 +227,7 @@ fun FolderListScreen(
             items(notes) { note ->
                 NoteItem(
                     note = note,
-                    onClick = { onNoteClick(note.id) },
+                    onClick = { navController.navigate(Routes.Note.get(note.id)) },
                     onHold = { folderViewModel.onSelectionNote(note) },
                     selected = note in selectedNotes
                 )

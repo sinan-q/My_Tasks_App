@@ -7,9 +7,9 @@ sealed class Routes(val route: String, val name: String? = null) {
     object Note : Routes("note_list_screen", "Note") {
         val noteIdArg = "noteId"
         val folderIdArg = "folderId"
-        fun add(folderId: Long?) = "note_screen/-1L/$folderId"
         fun get(noteId: Long?) = "note_screen/$noteId/0"
         object Add : Routes("note_screen/{noteId}/{folderId}", "Edit Note") {
+            fun byFolder(folderId: Long?) = "note_screen/-1L/$folderId"
             val deepLink = "mytasks://add_note"
         }
     }
@@ -18,8 +18,9 @@ sealed class Routes(val route: String, val name: String? = null) {
         val folderIdArg = "folderId"
         object Add : Routes("task_screen/{taskId}/{folderId}", "Edit Task") {
             val deepLink = "mytasks://add_task"
+            fun byFolder(folderId: Long?) = "task_screen/-1L/$folderId"
+
         }
-        fun add(folderId: Long?) = "task_screen/-1L/$folderId"
         fun get(taskId: Long?) = "task_screen/$taskId/0"
 
     }
@@ -27,6 +28,7 @@ sealed class Routes(val route: String, val name: String? = null) {
         val eventIdArg = "eventId"
         val folderIdArg = "folderId"
         val dateArg = "date"
+        fun get(eventId: Long?) = "event_screen/$eventId/0"
         object Add : Routes("event_screen/{eventId}/{folderId}/{date}", "Edit Event") {
             val deepLink = "mytasks://add_event"
             fun byDate(epochDay: Long) = "event_screen/-1L/0/$epochDay"
@@ -36,7 +38,7 @@ sealed class Routes(val route: String, val name: String? = null) {
 
     object Folder : Routes("folder_list_screen/{folderId}", "Folders") {
         val folerIdArg = "folderId"
-        fun byId(folderId: Long) = "folder_list_screen/$folderId"
+        fun get(folderId: Long) = "folder_list_screen/$folderId"
     }
 
     object Backup : Routes("backup_screen", "Backup")

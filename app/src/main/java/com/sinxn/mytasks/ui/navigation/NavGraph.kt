@@ -29,25 +29,6 @@ fun NavGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    val onAddNoteClick: (folderId: Long?) -> Unit = { folderId -> navController.navigate(Note.add(folderId)) }
-    val onNoteClick: (noteId: Long?) -> Unit = { noteId ->
-        navController.navigate(Note.get(noteId))
-    }
-    val onAddTaskClick: (folderId: Long?) -> Unit = { folderId->
-        navController.navigate(Task.add(folderId))
-    }
-    val onTaskClick: (taskId: Long?) -> Unit = { taskId ->
-        navController.navigate(Task.get(taskId))
-    }
-
-    val onAddEventClick: (folderId: Long?) -> Unit = { folderId ->
-        navController.navigate(Event.Add.byFolder(folderId))
-    }
-
-    val onBack: () -> Unit = {
-        navController.popBackStack()
-    }
-
     NavHost(
         navController = navController,
         startDestination = Home.route,
@@ -56,32 +37,9 @@ fun NavGraph(
         composable(
             route = Home.route,
             deepLinks = listOf(navDeepLink { uriPattern = Home.deepLink })
-        ) {
+        ) { HomeScreen(navController = navController) }
 
-            HomeScreen(
-                onAddNoteClick = onAddNoteClick,
-                onNoteClick = onNoteClick,
-                onAddTaskClick = onAddTaskClick,
-                onTaskClick = onTaskClick,
-                onAddEventClick = onAddEventClick,
-                onEventClick = {
-                    navController.navigate(Event.route)
-                },
-                onFolderClick = { folderId ->
-                    navController.navigate(Folder.byId(folderId))
-                },
-                onBackup = {
-                    navController.navigate(Backup.route)
-                }
-            )
-        }
-
-        composable(Note.route) {
-            NoteListScreen(
-                onAddNoteClick = onAddNoteClick,
-                onNoteClick = onNoteClick
-            )
-        }
+        composable(Note.route) { NoteListScreen(navController = navController) }
 
         composable(
             route = Note.Add.route,
@@ -100,12 +58,7 @@ fun NavGraph(
             )
         }
 
-        composable(Task.route) {
-            TaskListScreen(
-                onAddTaskClick = onAddTaskClick,
-                onTaskClick = onTaskClick,
-            )
-        }
+        composable(Task.route) { TaskListScreen(navController = navController) }
         composable(
             route = Task.Add.route,
             deepLinks = listOf(navDeepLink { uriPattern = Task.Add.deepLink }),
@@ -119,18 +72,12 @@ fun NavGraph(
             AddEditTaskScreen(
                 taskId = taskId,
                 folderId = folderId,
-                onFinish = onBack,
+                onFinish = {
+                    navController.popBackStack()
+                },
             )
         }
-        composable(Event.route) {
-            EventListScreen(
-                onAddEventClick = onAddEventClick,
-                onEventClick = onAddEventClick,
-                onDayClick = { epochDay ->
-                    navController.navigate(Event.Add.byDate(epochDay))
-                }
-            )
-        }
+        composable(Event.route) { EventListScreen(navController = navController) }
 
         composable(
             route = Event.Add.route,
@@ -148,7 +95,9 @@ fun NavGraph(
                 eventId = eventId,
                 folderId = folderId,
                 date = date,
-                onFinish = onBack
+                onFinish = {
+                    navController.popBackStack()
+                }
             )
         }
 
@@ -161,11 +110,7 @@ fun NavGraph(
             val folderId = backStackEntry.arguments?.getLong(Folder.folerIdArg) ?: 0
             FolderListScreen(
                 folderId = folderId,
-                onAddNoteClick = onAddNoteClick,
-                onNoteClick = onNoteClick,
-                onAddTaskClick = onAddTaskClick,
-                onTaskClick = onTaskClick,
-                onBack = onBack
+                navController = navController,
             )
         }
 

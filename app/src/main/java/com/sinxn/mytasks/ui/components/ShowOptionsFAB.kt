@@ -20,15 +20,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.ui.navigation.Routes
+import com.sinxn.mytasks.ui.navigation.Routes.Event
 
 
 @Composable
 fun ShowOptionsFAB(
-    onAddTaskClick: (Long?) -> Unit = {},
-    onAddNoteClick: (Long?) -> Unit = {},
-    onAddEventClick: (Long?) -> Unit = {},
+    navController: NavController,
     onAddFolderClick: () -> Unit = {},
     currentFolder: Folder,
 ) {
@@ -42,9 +43,9 @@ fun ShowOptionsFAB(
             visible = isOptionsVisible,
         ) {
             OptionsColumn(
-                onAddTaskClick = { onAddTaskClick(currentFolder.folderId) },
-                onAddNoteClick = { onAddNoteClick(currentFolder.folderId) },
-                onAddEventClick = { onAddEventClick(currentFolder.folderId) },
+                onAddTaskClick = { navController.navigate(Routes.Task.Add.byFolder(currentFolder.folderId))  },
+                onAddNoteClick = { navController.navigate(Routes.Note.Add.byFolder(currentFolder.folderId))},
+                onAddEventClick = { navController.navigate(Event.Add.byFolder(currentFolder.folderId))  },
                 onAddFolderClick = onAddFolderClick,
                 onCloseOptions = { isOptionsVisible = false }
             )

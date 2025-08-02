@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.data.local.entities.Folder
@@ -44,6 +45,11 @@ import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
+import com.sinxn.mytasks.ui.navigation.Routes
+import com.sinxn.mytasks.ui.navigation.Routes.Backup
+import com.sinxn.mytasks.ui.navigation.Routes.Event
+import com.sinxn.mytasks.ui.navigation.Routes.Note
+import com.sinxn.mytasks.ui.navigation.Routes.Task
 import com.sinxn.mytasks.ui.screens.eventScreen.EventSmallItem
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderItem
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderItemEdit
@@ -56,14 +62,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    onAddNoteClick: (Long?) -> Unit,
-    onNoteClick: (Long?) -> Unit,
-    onAddTaskClick: (Long?) -> Unit,
-    onTaskClick: (Long?) -> Unit,
-    onAddEventClick: (Long?) -> Unit, //TODO use navController
-    onEventClick: () -> Unit,
-    onFolderClick: (Long) -> Unit,
-    onBackup: () -> Unit
+    navController: NavController,
 ) {
     val context = LocalContext.current
     val folders by viewModel.mainFolders.collectAsState(initial = emptyList())
@@ -107,9 +106,7 @@ fun HomeScreen(
                     )
                 }
                 ShowOptionsFAB(
-                    onAddTaskClick = onAddTaskClick,
-                    onAddNoteClick = onAddNoteClick,
-                    onAddEventClick = onAddEventClick,
+                    navController = navController,
                     onAddFolderClick = { folderEditToggle = true },
                     currentFolder = Folder(
                         folderId = 0L,
@@ -140,7 +137,7 @@ fun HomeScreen(
                                 .padding(horizontal = 20.dp, vertical = 10.dp)
                                 .clickable {
                                     expanded = false
-                                    onBackup()
+                                    navController.navigate(Backup.route)
                                 },
                             text = "Backup"
                         )
@@ -158,7 +155,7 @@ fun HomeScreen(
         ) {
             item(span = StaggeredGridItemSpan.FullLine) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    MyTitle(onClick = { onEventClick() }, text = "Upcoming Events")
+                    MyTitle(onClick = { navController.navigate(Event.route) }, text = "Upcoming Events")
                     HorizontalDivider()
                     if (events.isEmpty()) Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
                 }
@@ -199,7 +196,7 @@ fun HomeScreen(
             items(folders) { folder ->
                 FolderItem(
                     folder = folder,
-                    onClick = { onFolderClick(folder.folderId)},
+                    onClick = { navController.navigate(Routes.Folder.get(folder.folderId)) },
                     onDelete = { viewModel.deleteFolder(folder) },
                     onLock = { viewModel.lockFolder(folder) },
                     onHold = { viewModel.onSelectionFolder(folder) },
@@ -212,7 +209,8 @@ fun HomeScreen(
                 items = tasks,
             ) { task ->
                 TaskItem(
-                    task = task, onClick = { onTaskClick(task.id)},
+                    task = task,
+                    onClick = { navController.navigate(Task.get(task.id))},
                     onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
                     onHold = { viewModel.onSelectionTask(task) },
                     path = null,
@@ -222,7 +220,7 @@ fun HomeScreen(
             items(notes) { note ->
                     NoteItem(
                         note = note,
-                        onClick = { onNoteClick(note.id) },
+                        onClick = { navController.navigate(Note.get(note.id)) },
                         onHold = { viewModel.onSelectionNote(note) },
                         selected = note in selectedNotes
                     )

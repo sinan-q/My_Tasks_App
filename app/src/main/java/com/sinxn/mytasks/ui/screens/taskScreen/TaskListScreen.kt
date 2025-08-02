@@ -29,20 +29,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
+import com.sinxn.mytasks.ui.navigation.Routes
 import com.sinxn.mytasks.ui.viewModels.TaskViewModel
 import showBiometricsAuthentication
 
 @Composable
 fun TaskListScreen(
     viewModel: TaskViewModel = hiltViewModel(),
-    onAddTaskClick: (Long?) -> Unit,
-    onTaskClick: (Long?) -> Unit,
+    navController: NavController,
 ) {
     val tasks = viewModel.tasks.collectAsState().value
     val selectionAction by viewModel.selectedAction.collectAsState()
@@ -83,7 +84,7 @@ fun TaskListScreen(
                         }
                     )
                 }
-                RectangleFAB(onClick = { onAddTaskClick(0L) }) {
+                RectangleFAB(onClick = { navController.navigate(Routes.Task.Add.byFolder(0L)) }) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add Task")
                 }
             }
@@ -135,14 +136,15 @@ fun TaskListScreen(
                     isLoadingPath = false
                 }
 
-                if (!isLoadingPath) { // Only compose TaskItem if path is loaded
-                    if (path != null) TaskItem(
-                        task = task,
-                        path = path,
-                        onClick = { onTaskClick(task.id) },
-                        onUpdate = { task.id?.let { it1 -> viewModel.updateStatusTask(it1, it) } },
-                        onHold = { viewModel.onSelectionTask(task) },
-                        selected = task in selectedTasks
+                if (!isLoadingPath) {
+                    if (path != null)
+                        TaskItem(
+                            task = task,
+                            path = path,
+                            onClick = { navController.navigate(Routes.Task.get(task.id)) },
+                            onUpdate = { task.id?.let { it1 -> viewModel.updateStatusTask(it1, it) } },
+                            onHold = { viewModel.onSelectionTask(task) },
+                            selected = task in selectedTasks
                     )
                 }
             }

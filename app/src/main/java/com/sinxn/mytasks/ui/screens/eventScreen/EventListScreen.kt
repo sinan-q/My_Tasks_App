@@ -14,19 +14,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.sinxn.mytasks.ui.components.CalendarGrid
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.RectangleFAB
+import com.sinxn.mytasks.ui.navigation.Routes.Event
 import com.sinxn.mytasks.ui.viewModels.EventViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventListScreen(
     eventViewModel: EventViewModel = hiltViewModel(),
-    onAddEventClick: (folderId: Long) -> Unit,
-    onEventClick: (Long) -> Unit,
-    onDayClick: (Long) -> Unit
+    navController: NavController,
 ) {
     val upcomingEvents = eventViewModel.upcomingEvents.collectAsState()
     val eventOnMonth = eventViewModel.eventsOnMonth.collectAsState()
@@ -39,14 +39,14 @@ fun EventListScreen(
             )
         },
         floatingActionButton = {
-            RectangleFAB(onClick = { onAddEventClick( 0L) }) {
+            RectangleFAB(onClick = { navController.navigate(Event.Add.byFolder(0)) }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Event")
             }
         }
     ) { paddingValues ->
         LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxWidth()) {
             item {
-                CalendarGrid(eventOnMonth.value, taskOnMonth.value, onDayClick, onMonthChange = {
+                CalendarGrid(eventOnMonth.value, taskOnMonth.value, { navController.navigate(Event.Add.byDate(it)) }, onMonthChange = {
                     eventViewModel.onMonthChange(it)
                 })
                 MyTitle(text = "Upcoming Events")
@@ -54,7 +54,7 @@ fun EventListScreen(
 
             items(upcomingEvents.value) { event ->
                 EventItem(event = event, onClick = {
-                    event.id?.let { onEventClick(it) }
+                    event.id?.let { navController.navigate(Event.get(it)) }
                 })
             }
 

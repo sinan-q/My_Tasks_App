@@ -30,20 +30,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
+import com.sinxn.mytasks.ui.navigation.Routes
 import com.sinxn.mytasks.ui.viewModels.NoteViewModel
 import showBiometricsAuthentication
 
 @Composable
 fun NoteListScreen(
     viewModel: NoteViewModel = hiltViewModel(),
-    onAddNoteClick: (folder: Long?) -> Unit,
-    onNoteClick: (Long?) -> Unit,
+    navController: NavController,
 ) {
     val notes = viewModel.notes.collectAsState().value
     val selectionAction by viewModel.selectedAction.collectAsState()
@@ -83,7 +84,7 @@ fun NoteListScreen(
                         }
                     )
                 }
-                RectangleFAB(onClick = { onAddNoteClick(0) }) {
+                RectangleFAB(onClick = { navController.navigate(Routes.Note.Add.byFolder(0)) }) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add Note")
                 }
             }
@@ -145,7 +146,7 @@ fun NoteListScreen(
                     NoteItem(
                         note = note,
                         path = path,
-                        onClick = { onNoteClick(note.id) },
+                        onClick = { navController.navigate(Routes.Note.get(note.id)) },
                         onHold = { viewModel.onSelectionNote(note) },
                         selected = note in selectedNotes,
                     )
