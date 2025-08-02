@@ -1,16 +1,22 @@
 package com.sinxn.mytasks.ui.screens.noteScreen
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,10 +33,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
-import com.sinxn.mytasks.ui.components.ListTopAppBar
+import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.viewModels.NoteViewModel
+import showBiometricsAuthentication
 
 @Composable
 fun NoteListScreen(
@@ -49,6 +56,16 @@ fun NoteListScreen(
         if (toast.value != null) Toast.makeText(context, toast.value, Toast.LENGTH_SHORT).show()
     }
 
+    fun authenticate(function: () -> Unit) {
+        showBiometricsAuthentication(
+            context,
+            onSuccess = function,
+            onError = { errString ->
+                // Authentication error
+                Toast.makeText(context, "Authentication error: $errString", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
     var hideLocked by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
     Scaffold(
@@ -71,14 +88,37 @@ fun NoteListScreen(
                 }
             }
         },
-        topBar = {
-            ListTopAppBar(
-                expanded = expanded,
-                setExpanded = { expanded = it},
-                hideLocked = hideLocked,
-                setHideLocked = { hideLocked = it }
-            )
-        },
+        topBar = { MyTasksTopAppBar(
+            title = { Text("My Tasks") },
+            // No navigation icon for the main list screen typically
+            actions = {
+                IconButton(onClick = { expanded = true }) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = "More Options",
+                    )
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp, vertical = 10.dp)
+                            .clickable {
+                                expanded = false
+                                if (hideLocked) {
+                                    authenticate { hideLocked = false }
+                                } else {
+                                    hideLocked =
+                                        true // Or authenticate { hideLocked = true } if locking also needs auth
+                                }
+                            },
+                        text = (if (hideLocked) "Show" else "Hide") + " Locked Notes"
+                    )
+                }
+            }
+        )},
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
         LazyVerticalStaggeredGrid (

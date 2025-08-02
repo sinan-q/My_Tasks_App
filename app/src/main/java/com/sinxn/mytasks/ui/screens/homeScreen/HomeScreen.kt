@@ -21,7 +21,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,6 +40,7 @@ import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
+import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
@@ -121,7 +121,7 @@ fun HomeScreen(
         },
 
         topBar = {
-            TopAppBar(
+            MyTasksTopAppBar(
                 actions = {
                     IconButton(
                         onClick = { expanded = true }
@@ -143,7 +143,7 @@ fun HomeScreen(
                                     onBackup()
                                 },
                             text = "Backup"
-                        ) 
+                        )
                     }
                 },
                 title = { Text("My Tasks") }

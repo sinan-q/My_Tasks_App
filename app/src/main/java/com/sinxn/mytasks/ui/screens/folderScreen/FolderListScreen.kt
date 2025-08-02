@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
@@ -20,9 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,6 +37,7 @@ import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
+import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.screens.noteScreen.NoteItem
@@ -127,26 +125,18 @@ fun FolderListScreen(
 
         topBar = {
             currentFolder?.let { folder ->
-                TopAppBar(
+                MyTasksTopAppBar(
                     title = {
-                        if (isFolderNameEdit) {
                             TextField(
                                 value = folderName,
                                 onValueChange = { folderName = it },
-                                singleLine = true // Optional: if you want a single line input
-                            )
-                        } else {
-                            Text(folderName)
-                        }
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { if (folder.parentFolderId == 0L) onBack() else folderViewModel.onBack(folder) }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
+                                singleLine = true,
+                                enabled = isFolderNameEdit
                             )
                         }
-                    },
+
+                    ,
+                    onNavigateUp = { if (folder.parentFolderId == 0L) onBack() else folderViewModel.onBack(folder) },
                     actions = {
                         if (isFolderNameEdit) {
                             IconButton(onClick = {

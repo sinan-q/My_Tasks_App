@@ -1,15 +1,21 @@
 package com.sinxn.mytasks.ui.screens.taskScreen
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -26,10 +32,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
-import com.sinxn.mytasks.ui.components.ListTopAppBar
+import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.viewModels.TaskViewModel
+import showBiometricsAuthentication
 
 @Composable
 fun TaskListScreen(
@@ -46,6 +53,17 @@ fun TaskListScreen(
 
     var hideLocked by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
+
+    fun authenticate(function: () -> Unit) {
+        showBiometricsAuthentication(
+            context,
+            onSuccess = function,
+            onError = { errString ->
+                // Authentication error
+                Toast.makeText(context, "Authentication error: $errString", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
 
     LaunchedEffect(toast) {
         if (toast.value != null) Toast.makeText(context, toast.value, Toast.LENGTH_SHORT).show()
@@ -70,14 +88,35 @@ fun TaskListScreen(
                 }
             }
         },
-        topBar = {
-            ListTopAppBar(
-                expanded = expanded,
-                setExpanded = { expanded = it},
-                hideLocked = hideLocked,
-                setHideLocked = { hideLocked = it }
-            )
-        },
+        topBar = { MyTasksTopAppBar(
+            title = { Text("My Tasks") },
+            actions = {
+                IconButton(onClick = { expanded = true }) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = "More Options",
+                    )
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp, vertical = 10.dp)
+                            .clickable {
+                                expanded = false
+                                if (hideLocked) {
+                                    authenticate { hideLocked = false }
+                                } else {
+                                    hideLocked = true
+                                }
+                            },
+                        text = (if (hideLocked) "Show" else "Hide") + " Locked Notes"
+                    )
+                }
+            }
+        )},
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
         LazyColumn(

@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -29,8 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.ui.components.AddEditTopAppBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
+import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
@@ -112,12 +114,20 @@ fun AddEditNoteScreen(
             }
         },
         topBar = {
-            AddEditTopAppBar(
-                title = if (noteId == -1L) "Add Note" else "Edit Note",
+            MyTasksTopAppBar(
+                title = { Text(if (noteId == -1L) "Add Note" else "Edit Note")},
                 onNavigateUp = handleBackPressAttempt,
-                showDeleteAction = noteId != -1L,
-                onDelete = {
-                    showDeleteConfirmationDialog = true
+                actions = {
+                    if (noteId != -1L) {
+                        IconButton(onClick = {
+                            showDeleteConfirmationDialog = true
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete"
+                            )
+                        }
+                    }
                 }
             )
         },

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -39,8 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Event
-import com.sinxn.mytasks.ui.components.AddEditTopAppBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
+import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
@@ -136,11 +137,19 @@ fun AddEditEventScreen(
             }
         },
         topBar = {
-            AddEditTopAppBar(
-                title = if (eventId == -1L) "Add Event" else "Edit Event",
+            MyTasksTopAppBar(
+                title = {Text(if (eventId == -1L) "Add Event" else "Edit Event")},
                 onNavigateUp = handleBackPressAttempt,
-                showDeleteAction = eventId != -1L,
-                onDelete = { showDeleteConfirmationDialog = true }
+                actions = {
+                    if (eventId != -1L) {
+                        IconButton(onClick = { showDeleteConfirmationDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete"
+                            )
+                        }
+                    }
+                }
             )
         },
         modifier = Modifier.imePadding()

@@ -10,12 +10,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.ui.components.CalendarGrid
+import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.viewModels.EventViewModel
@@ -34,7 +34,7 @@ fun EventListScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            MyTasksTopAppBar(
                 title = { Text(text = "Event List") }
             )
         },
