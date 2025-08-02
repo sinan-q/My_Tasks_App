@@ -27,22 +27,30 @@ fun BottomBar(navController: NavController) {
         BottomNavItem.Tasks,
         BottomNavItem.Notes,
     )
-    NavigationBar {
-        val navBackStackEntry = navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry.value?.destination?.route
-        items.forEach { item ->
-            NavigationBarItem(
-                icon = { Icon(painterResource(item.icon) , contentDescription = item.screen.name) },
-                label = { Text(item.screen.name?:"Label Missing") },
-                selected = currentRoute == item.screen.route,
-                onClick = {
-                    navController.navigate(item.screen.route) {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+    if (currentRoute in listOf(Routes.Home.route, Routes.Event.route, Routes.Task.route, Routes.Note.route)) {
+        NavigationBar {
+            val navBackStackEntry = navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry.value?.destination?.route
+            items.forEach { item ->
+                NavigationBarItem(
+                    icon = {
+                        Icon(
+                            painterResource(item.icon),
+                            contentDescription = item.screen.name
+                        )
+                    },
+                    label = { Text(item.screen.name ?: "Label Missing") },
+                    selected = currentRoute == item.screen.route,
+                    onClick = {
+                        navController.navigate(item.screen.route) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }
