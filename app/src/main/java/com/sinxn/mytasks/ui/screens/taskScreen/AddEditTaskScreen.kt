@@ -38,7 +38,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -73,6 +77,10 @@ fun AddEditTaskScreen(
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
 
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
     val context = LocalContext.current
 
     var taskInputState by remember { mutableStateOf(Task()) }
@@ -95,14 +103,14 @@ fun AddEditTaskScreen(
     fun showToast(message : String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
-    LaunchedEffect(key1 = Unit) { // key1 = Unit makes it run once on composition
-        taskViewModel.toastMessage.collectLatest { message -> // or .collect {
+    LaunchedEffect(key1 = Unit) {
+        taskViewModel.toastMessage.collectLatest { message ->
             showToast(message)
         }
     }
 
     val handleBackPressAttempt = rememberPressBackTwiceState(
-        enabled = isEditing, // Only require double press if currently editing
+        enabled = isEditing,
         onExit = onFinish,
     )
     BackHandler(onBack = handleBackPressAttempt)
@@ -113,6 +121,8 @@ fun AddEditTaskScreen(
         } else {
             taskInputState = Task()
             taskViewModel.fetchFolderById(folderId)
+            focusRequester.requestFocus()
+            keyboardController?.show()
         }
     }
 
@@ -133,6 +143,7 @@ fun AddEditTaskScreen(
                             )
                             taskViewModel.insertTask(taskToSave, reminders)
                             isEditing = false
+                            onFinish()
                         } else {
                             Toast.makeText(context, "Title or Description cannot be empty", Toast.LENGTH_SHORT).show()
                         }
@@ -176,7 +187,8 @@ fun AddEditTaskScreen(
                 onValueChange = { taskInputState = taskInputState.copy(title = it) },
                 label = { Text("Title") },
                 readOnly = !isEditing,
-                modifier = Modifier.fillMaxWidth()
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
             )
             Spacer(modifier = Modifier.height(8.dp))
             FolderDropDown(
@@ -235,7 +247,9 @@ fun AddEditTaskScreen(
                         values = (0..60).toList(),
                         defaultValue = 0,
                         height = itemHeight,
-                        modifier = Modifier.width(70.dp).height(itemHeight)
+                        modifier = Modifier
+                            .width(70.dp)
+                            .height(itemHeight)
                     ) {
                         reminder = it.toString()
                     }
@@ -249,7 +263,9 @@ fun AddEditTaskScreen(
                         values = ReminderTypes.entries,
                         defaultValue = ReminderTypes.MINUTE,
                         height = itemHeight,
-                        modifier = Modifier.width(100.dp).height(itemHeight)
+                        modifier = Modifier
+                            .width(100.dp)
+                            .height(itemHeight)
                     ) {
                         reminderType = it
                     }

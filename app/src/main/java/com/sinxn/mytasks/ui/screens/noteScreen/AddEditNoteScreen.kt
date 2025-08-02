@@ -25,7 +25,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,6 +59,10 @@ fun AddEditNoteScreen(
     val folder by noteViewModel.folder.collectAsState()
     val subFolders by noteViewModel.folders.collectAsState()
 
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
     val handleBackPressAttempt = rememberPressBackTwiceState(
         enabled = isEditing, // Only require double press if currently editing
         onExit = onFinish,
@@ -68,6 +76,8 @@ fun AddEditNoteScreen(
             noteViewModel.fetchNoteById(noteId)
         } else {
             noteViewModel.newNoteByFolder(folderId)
+            focusRequester.requestFocus()
+            keyboardController?.show()
         }
     }
     LaunchedEffect(noteState) {
@@ -143,7 +153,7 @@ fun AddEditNoteScreen(
                 onValueChange = { noteInputState = noteInputState.copy(title = it) },
                 label = { Text("Title") },
                 readOnly = !isEditing,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
             )
             Spacer(modifier = Modifier.height(8.dp))
             FolderDropDown(
