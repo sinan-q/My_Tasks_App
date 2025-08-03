@@ -28,7 +28,7 @@ fun BottomBar(navController: NavController) {
         BottomNavItem.Notes,
     )
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-    if (currentRoute in listOf(Routes.Home.route, Routes.Event.route, Routes.Task.route, Routes.Note.route)) {
+    if (currentRoute in listOf(Routes.Home.route, Routes.Folder.route, Routes.Event.route, Routes.Task.route, Routes.Note.route)) {
         NavigationBar {
             val navBackStackEntry = navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry.value?.destination?.route
