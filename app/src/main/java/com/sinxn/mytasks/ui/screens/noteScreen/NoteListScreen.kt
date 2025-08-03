@@ -90,7 +90,7 @@ fun NoteListScreen(
             }
         },
         topBar = { MyTasksTopAppBar(
-            title = { Text("My Tasks") },
+            title = { Text("Notes") },
             actions = {
                 IconButton(onClick = { expanded = true }) {
                     Icon(

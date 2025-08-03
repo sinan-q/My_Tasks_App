@@ -90,7 +90,7 @@ fun TaskListScreen(
             }
         },
         topBar = { MyTasksTopAppBar(
-            title = { Text("My Tasks") },
+            title = { Text("Tasks") },
             actions = {
                 IconButton(onClick = { expanded = true }) {
                     Icon(
