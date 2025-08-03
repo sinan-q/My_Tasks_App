@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -63,6 +64,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navController: NavController,
+
 ) {
     val context = LocalContext.current
     val folders by viewModel.mainFolders.collectAsState(initial = emptyList())
@@ -146,11 +148,12 @@ fun HomeScreen(
                 title = { Text("My Tasks") }
             )
         },
+        modifier = Modifier.fillMaxSize()
     ) { padding ->
         LazyVerticalStaggeredGrid(
             verticalItemSpacing = 4.dp,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.padding(padding),
+            contentPadding = padding,
             columns = StaggeredGridCells.Fixed(2) //TODO Adaptive
         ) {
             item(span = StaggeredGridItemSpan.FullLine) {

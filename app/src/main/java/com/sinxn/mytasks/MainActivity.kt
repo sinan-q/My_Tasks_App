@@ -6,9 +6,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.navigation.NavGraph
@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
 
             MyTasksTheme {
                 Scaffold(
-                    contentWindowInsets = WindowInsets.safeContent,
+                    contentWindowInsets = WindowInsets(16.dp,0.dp,16.dp,0.dp),
                     bottomBar = { BottomBar(navController = navController) }
                 ) { paddingValues ->
                     NavGraph(

@@ -5,7 +5,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
@@ -28,7 +27,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -70,8 +68,8 @@ fun FolderListScreen(
     fun showToast(message : String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
-    LaunchedEffect(key1 = Unit) { // key1 = Unit makes it run once on composition
-        folderViewModel.toastMessage.collectLatest { message -> // or .collect {
+    LaunchedEffect(key1 = Unit) {
+        folderViewModel.toastMessage.collectLatest { message ->
             showToast(message)
         }
     }
@@ -184,7 +182,7 @@ fun FolderListScreen(
         LazyVerticalStaggeredGrid(
             verticalItemSpacing = 4.dp,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.padding(padding),
+            contentPadding = padding,
             columns = StaggeredGridCells.Fixed(2), //TODO Adaptive
         ) {
             item(span = StaggeredGridItemSpan.FullLine) {

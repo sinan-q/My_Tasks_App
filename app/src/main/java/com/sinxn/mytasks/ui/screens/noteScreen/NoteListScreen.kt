@@ -91,7 +91,6 @@ fun NoteListScreen(
         },
         topBar = { MyTasksTopAppBar(
             title = { Text("My Tasks") },
-            // No navigation icon for the main list screen typically
             actions = {
                 IconButton(onClick = { expanded = true }) {
                     Icon(
@@ -111,8 +110,7 @@ fun NoteListScreen(
                                 if (hideLocked) {
                                     authenticate { hideLocked = false }
                                 } else {
-                                    hideLocked =
-                                        true // Or authenticate { hideLocked = true } if locking also needs auth
+                                    hideLocked = true
                                 }
                             },
                         text = (if (hideLocked) "Show" else "Hide") + " Locked Notes"
@@ -127,7 +125,6 @@ fun NoteListScreen(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             columns = StaggeredGridCells.Fixed(2),
             contentPadding = paddingValues,
-            modifier = Modifier
         ) {
             items(notes) { note ->
                 var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state
