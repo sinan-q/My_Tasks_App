@@ -24,10 +24,7 @@ class AlarmRepository @Inject constructor(
             ))
         }
     }
-//    suspend fun rescheduleAlarms() { //TODO
-//        alarmDao.insertAlarm(alarm)
-//        alarmScheduler.scheduleAlarm(alarm)
-//    }
+
     override suspend fun snoozeAlarm(alarm: Alarm) {
         alarmScheduler.scheduleAlarm(alarm)
         alarmDao.updateAlarm(alarm.alarmId, alarm.time)
