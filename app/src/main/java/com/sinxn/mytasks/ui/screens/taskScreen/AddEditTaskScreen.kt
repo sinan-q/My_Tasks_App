@@ -138,16 +138,25 @@ fun AddEditTaskScreen(
             RectangleFAB(
                 onClick = {
                     if (isEditing) {
-                        if (taskInputState.title.isNotEmpty() || taskInputState.description.isNotEmpty()) {
-                            val taskToSave = taskInputState.copy(
+                        if (taskInputState.title.isEmpty() && taskInputState.description.isEmpty()) {
+                            taskViewModel.showToast("Title or Description cannot be empty")
+                            return@RectangleFAB
+                        }
+                        taskInputState.due?.let { due ->
+                            if (reminders.isNotEmpty() && reminders.map { taskViewModel.validateReminder(due, it) }.contains(false) ) {
+                                taskViewModel.showToast("Reminder should be in a future time")
+                                return@RectangleFAB
+                            }
+                        }
+
+
+                        val taskToSave = taskInputState.copy(
                                 id = if (taskId == -1L) null else taskId,
                             )
                             taskViewModel.insertTask(taskToSave, reminders)
                             isEditing = false
                             onFinish()
-                        } else {
-                            Toast.makeText(context, "Title or Description cannot be empty", Toast.LENGTH_SHORT).show()
-                        }
+
                     } else {
                         isEditing = true
                     }
@@ -190,7 +199,9 @@ fun AddEditTaskScreen(
                 label = { Text("Title") },
                 readOnly = !isEditing,
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
             )
             Spacer(modifier = Modifier.height(8.dp))
             FolderDropDown(
@@ -225,52 +236,60 @@ fun AddEditTaskScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
-            if (taskInputState.due != null) {
-                Text(text = "Set Reminders on " )
+            taskInputState.due?.let { dueDate ->
+                Text(text = "Reminders on " )
+                if (reminders.isEmpty())
+                    Text(text = "No Remainders set")
+
                 reminders.forEach { option ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = { taskViewModel.removeReminder(option) }) {
-                            Icon(Icons.Default.Close, contentDescription = "Delete Reminder")
+                        if (isEditing) {
+                            IconButton(onClick = { taskViewModel.removeReminder(option) }) {
+                                Icon(Icons.Default.Close, contentDescription = "Delete Reminder")
+                            }
                         }
                         Text(text = "${option.first} ${option.second.name}")
                     }
                 }
-                Row  {
-                    val itemHeight = 50.dp
-                    RectangleButton(
-                        modifier = Modifier.height(itemHeight),
-                        onClick = {
-                            taskViewModel.addReminder(Pair(reminder.toInt(), reminderType.unit))
+                if (isEditing) {
+                    Row {
+                        val itemHeight = 50.dp
+                        RectangleButton(
+                            modifier = Modifier.height(itemHeight),
+                            onClick = {
+                                if (taskViewModel.validateReminder(dueDate, Pair(reminder.toInt(), reminderType.unit)))
+                                    taskViewModel.addReminder(Pair(reminder.toInt(), reminderType.unit))
+                                else showToast("Reminder should be in a future time")
+                            }
+                        ) {
+                            Icon(Icons.Default.Add, "Add Reminder")
                         }
-                    ) {
-                        Icon(Icons.Default.Add, "Add Reminder")
-                    }
-                    ScrollablePicker (
-                        values = (0..60).toList(),
-                        defaultValue = 0,
-                        height = itemHeight,
-                        modifier = Modifier
-                            .width(70.dp)
-                            .height(itemHeight)
-                    ) {
-                        reminder = it.toString()
-                    }
+                        ScrollablePicker(
+                            values = (0..60).toList(),
+                            defaultValue = 0,
+                            height = itemHeight,
+                            modifier = Modifier
+                                .width(70.dp)
+                                .height(itemHeight)
+                        ) {
+                            reminder = it.toString()
+                        }
 //                    OutlinedTextField(
 //                        value = reminder,
 //                        onValueChange = { reminder = it},
 //                        modifier = Modifier.width(70.dp).height(itemHeight),
 //                        singleLine = true
 //                    )
-                    ScrollablePicker (
-                        values = ReminderTypes.entries,
-                        defaultValue = ReminderTypes.MINUTE,
-                        height = itemHeight,
-                        modifier = Modifier
-                            .width(100.dp)
-                            .height(itemHeight)
-                    ) {
-                        reminderType = it
-                    }
+                        ScrollablePicker(
+                            values = ReminderTypes.entries,
+                            defaultValue = ReminderTypes.MINUTE,
+                            height = itemHeight,
+                            modifier = Modifier
+                                .width(100.dp)
+                                .height(itemHeight)
+                        ) {
+                            reminderType = it
+                        }
 //                    ExposedDropdownMenuBox(
 //                        expanded = expandedDropDown,
 //                        onExpandedChange = { expandedDropDown = !expandedDropDown },
@@ -303,7 +322,7 @@ fun AddEditTaskScreen(
 ////                            }
 //                       // }
 //                    }
-
+                    }
                 }
             }
 

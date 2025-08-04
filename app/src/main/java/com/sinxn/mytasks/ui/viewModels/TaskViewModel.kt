@@ -1,6 +1,5 @@
 package com.sinxn.mytasks.ui.viewModels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.FolderStore
@@ -23,6 +22,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Duration
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
@@ -120,7 +120,7 @@ class TaskViewModel @Inject constructor(
 
     fun deleteTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
         if (task.id == null || task.due == null) {
-            Log.d("TaskViewModel","Task ID: ${task.id}")
+            showToast("Task ID: ${task.id}")
         }
         else {
             alarmRepository.cancelAlarmsByTaskId(task.id)
@@ -131,8 +131,14 @@ class TaskViewModel @Inject constructor(
     }
 
     fun addReminder(pair: Pair<Int, ChronoUnit>) {
+        if (reminders.value.contains(pair)) {
+            showToast("Reminder already added")
+            return
+        }
         _reminders.value = reminders.value.plus(pair)
     }
+
+    fun validateReminder(dueDae: LocalDateTime, pair: Pair<Int, ChronoUnit>): Boolean = dueDae.minus(pair.first.toLong(),pair.second).isAfter(LocalDateTime.now())
 
     fun removeReminder(pair: Pair<Int, ChronoUnit>) {
         _reminders.value = reminders.value.minus(pair)

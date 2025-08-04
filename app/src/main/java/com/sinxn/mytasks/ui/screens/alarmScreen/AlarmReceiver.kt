@@ -23,12 +23,12 @@ class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val alarmId = intent.getLongExtra("ALARM_ID", 0)
         val taskId = intent.getLongExtra("ALARM_TASK_ID", 0L)
-        val time = intent.getStringExtra("ALARM_TIME") ?: "Not Available"
+        //val time = intent.getStringExtra("ALARM_TIME") ?: "Not Available"
         val fullScreenIntent = Intent(context, AlarmScreen::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("ALARM_ID", alarmId)
             putExtra("ALARM_TASK_ID", taskId)
-            putExtra("ALARM_TIME", time)
+            //putExtra("ALARM_TIME", time)
         }
 
 
@@ -59,6 +59,7 @@ class AlarmReceiver : BroadcastReceiver() {
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setCategory(NotificationCompat.CATEGORY_ALARM)
                     .setFullScreenIntent(fullScreenPendingIntent, true)
+                    .setOngoing(true)
                     .build()
 
                 notificationManager.notify(alarmId.toInt(), notification)
