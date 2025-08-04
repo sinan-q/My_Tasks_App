@@ -148,14 +148,9 @@ fun AddEditTaskScreen(
                                 return@RectangleFAB
                             }
                         }
-
-
-                        val taskToSave = taskInputState.copy(
-                                id = if (taskId == -1L) null else taskId,
-                            )
-                            taskViewModel.insertTask(taskToSave, reminders)
-                            isEditing = false
-                            onFinish()
+                        val taskToSave = taskInputState.copy(id = if (taskId == -1L) null else taskId)
+                        taskViewModel.insertTask(taskToSave, reminders)
+                        onFinish()
 
                     } else {
                         isEditing = true
