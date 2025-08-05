@@ -55,8 +55,8 @@ fun EventItem(
 }
 
 @Composable
-fun EventSmallItem(event: Event) {
-    RectangleCard()  {
+fun EventSmallItem(event: Event, onClick: () -> Unit) {
+    RectangleCard(onClick = onClick)  {
         Row(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.padding(end = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(

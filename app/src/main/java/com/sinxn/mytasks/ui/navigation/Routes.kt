@@ -28,7 +28,7 @@ sealed class Routes(val route: String, val name: String? = null) {
         val eventIdArg = "eventId"
         val folderIdArg = "folderId"
         val dateArg = "date"
-        fun get(eventId: Long?) = "event_screen/$eventId/0"
+        fun get(eventId: Long?) = "event_screen/$eventId/0/-1L"
         object Add : Routes("event_screen/{eventId}/{folderId}/{date}", "Edit Event") {
             val deepLink = "mytasks://add_event"
             fun byDate(epochDay: Long) = "event_screen/-1L/0/$epochDay"

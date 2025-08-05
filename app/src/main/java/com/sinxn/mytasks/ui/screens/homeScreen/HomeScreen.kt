@@ -165,7 +165,9 @@ fun HomeScreen(
             }
 
             items(events) { event ->
-                EventSmallItem(event)
+                EventSmallItem(event) {
+                    navController.navigate(Event.get(event.id))
+                }
             }
 
             item(span = StaggeredGridItemSpan.FullLine) {

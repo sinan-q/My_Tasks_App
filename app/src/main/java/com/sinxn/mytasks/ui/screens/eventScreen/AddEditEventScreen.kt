@@ -96,6 +96,7 @@ fun AddEditEventScreen(
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
     LaunchedEffect(key1 = Unit) {
+        showToast(eventId.toString())
         focusRequester.requestFocus()
         keyboardController?.show()
         eventViewModel.toastMessage.collectLatest { message ->
@@ -130,7 +131,7 @@ fun AddEditEventScreen(
 
                         if (isInputValid) {
                             val eventToSave = eventInputState.copy(
-                                id = if (eventId == -1L) null else eventId,
+                                id = if (eventInputState.id == -1L) null else eventInputState.id,
                             )
                             eventViewModel.insertEvent(eventToSave)
                             isEditing = false

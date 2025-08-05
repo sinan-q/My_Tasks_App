@@ -104,7 +104,7 @@ fun AddEditNoteScreen(
                         if (noteInputState.title.isNotEmpty() || noteInputState.content.isNotEmpty()) {
                             noteViewModel.addNote(
                                 noteInputState.copy(
-                                    id = if (noteId == -1L) null else noteId
+                                    id = if (noteInputState.id == -1L) null else noteInputState.id
                                 )
                             )
                             onFinish()
@@ -178,7 +178,7 @@ fun AddEditNoteScreen(
         showDialog = showDeleteConfirmationDialog,
         onDismiss = { showDeleteConfirmationDialog = false },
         onConfirm = {
-            noteState?.let { noteViewModel.deleteNote(it) }
+            noteState.let { noteViewModel.deleteNote(it) }
             showDeleteConfirmationDialog = false
             onFinish()
         },
