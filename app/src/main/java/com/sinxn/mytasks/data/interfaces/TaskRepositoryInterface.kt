@@ -12,6 +12,7 @@ interface TaskRepositoryInterface {
     suspend fun insertTasks(tasks: List<Task>)
     suspend fun deleteTask(task: Task)
     suspend fun deleteTasks(tasks: List<Task>)
+    suspend fun clearAllTasks()
     suspend fun updateTask(task: Task)
     suspend fun getTaskById(taskId: Long): Task?
     suspend fun updateStatusTask(taskId: Long, status: Boolean)

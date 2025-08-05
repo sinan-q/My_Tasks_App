@@ -24,6 +24,8 @@ class TaskRepository @Inject constructor(
 
     override suspend fun deleteTask(task: Task) = taskDao.deleteTask(task)
     override suspend fun deleteTasks(tasks: List<Task>) = taskDao.deleteTasks(tasks)
+    override suspend fun clearAllTasks() = taskDao.clearAllTasks()
+
 
     override suspend fun updateTask(task: Task) {
         taskDao.updateTask(task)

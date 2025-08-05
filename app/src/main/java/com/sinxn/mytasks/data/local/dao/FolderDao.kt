@@ -16,6 +16,12 @@ interface FolderDao {
     @Insert
     suspend fun insertFolder(folder: Folder): Long
 
+    @Insert
+    suspend fun insertFolders(folders: List<Folder>)
+
+    @Query("DELETE FROM folders")
+    suspend fun clearAllFolders()
+
     @Update
     suspend fun updateFolder(folder: Folder)
 

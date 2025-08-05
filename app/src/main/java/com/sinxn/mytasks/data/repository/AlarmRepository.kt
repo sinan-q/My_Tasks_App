@@ -24,6 +24,12 @@ class AlarmRepository @Inject constructor(
             ))
         }
     }
+    override suspend fun insertAlarms(alarms: List<Alarm>) {
+        alarmDao.insertAlarms(alarms)
+    }
+    override suspend fun clearAllAlarms() {
+        alarmDao.clearAllAlarms()
+    }
 
     override suspend fun snoozeAlarm(alarm: Alarm) {
         alarmScheduler.scheduleAlarm(alarm)

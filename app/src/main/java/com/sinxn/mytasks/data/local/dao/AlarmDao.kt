@@ -15,11 +15,17 @@ interface AlarmDao {
     @Insert
     suspend fun insertAlarm(alarm: Alarm): Long
 
+    @Insert
+    suspend fun insertAlarms(alarms: List<Alarm>)
+
     @Query("UPDATE alarm SET `time` = :time WHERE alarmId = :id")
     suspend fun updateAlarm(id: Long, time: Long)
 
     @Delete
     suspend fun deleteAlarm(alarm: Alarm)
+
+    @Query("DELETE FROM alarm")
+    suspend fun clearAllAlarms()
 
     @Query("SELECT * FROM alarm WHERE alarmId = :alarmId")
     suspend fun getAlarmById(alarmId: Long): Alarm

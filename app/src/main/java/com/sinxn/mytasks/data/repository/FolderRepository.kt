@@ -16,6 +16,8 @@ class FolderRepository @Inject constructor(
     override fun getSubFolders(parentId: Long?): Flow<List<Folder>> = folderDao.getSubFolders(parentId)
 
     override suspend fun insertFolder(folder: Folder): Long = folderDao.insertFolder(folder)
+    override suspend fun insertFolders(folders: List<Folder>) = folderDao.insertFolders(folders)
+    override suspend fun clearAllFolders() = folderDao.clearAllFolders()
 
     override suspend fun updateFolder(folder: Folder) = folderDao.updateFolder(folder)
 

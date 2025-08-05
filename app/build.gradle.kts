@@ -92,4 +92,7 @@ dependencies {
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
 
+    //Gson
+    implementation(libs.gson) // Or the latest version
+
 }

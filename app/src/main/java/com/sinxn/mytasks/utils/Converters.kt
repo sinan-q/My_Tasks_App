@@ -1,6 +1,11 @@
 package com.sinxn.mytasks.utils
 
 import androidx.room.TypeConverter
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
+import com.google.gson.stream.JsonWriter
+import java.io.IOException
 import java.time.LocalDateTime
 
 class Converters {
@@ -15,5 +20,31 @@ class Converters {
     @TypeConverter
     fun localDateToEpochMilli(date: LocalDateTime?): Long {
         return date?.toMillis()?:0L
+    }
+}
+
+class LocalDateTimeAdapter : TypeAdapter<LocalDateTime>() {
+
+    @Throws(IOException::class)
+    override fun write(out: JsonWriter, value: LocalDateTime?) {
+        if (value == null) {
+            out.nullValue()
+        } else {
+            out.value(value.toMillis())
+        }
+    }
+
+    @Throws(IOException::class)
+    override fun read(input: JsonReader): LocalDateTime? {
+        return when (input.peek()) {
+            JsonToken.NULL -> {
+                input.nextNull()
+                null
+            }
+            else -> {
+                val stringValue = input.nextLong()
+                fromMillis(stringValue)
+            }
+        }
     }
 }

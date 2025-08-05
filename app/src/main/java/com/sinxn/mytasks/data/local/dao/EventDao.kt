@@ -1,6 +1,11 @@
 package com.sinxn.mytasks.data.local.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
 import com.sinxn.mytasks.data.local.entities.Event
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
@@ -15,6 +20,12 @@ interface EventDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEvent(event: Event)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEvents(events: List<Event>)
+
+    @Query("DELETE FROM events")
+    suspend fun clearAllEvents()
 
     @Delete
     suspend fun deleteEvent(event: Event)
