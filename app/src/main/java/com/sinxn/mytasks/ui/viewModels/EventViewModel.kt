@@ -14,10 +14,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,11 +36,11 @@ class EventViewModel @Inject constructor(
     val folders = folderStore.folders
     val folder = folderStore.parentFolder
 
-    private val _eventsOnMonth = MutableStateFlow<List<Event>>(emptyList())
-    val eventsOnMonth: StateFlow<List<Event>> = _eventsOnMonth
+    private val _events = MutableStateFlow<List<Event>>(emptyList())
+    val events: StateFlow<List<Event>> = _events.asStateFlow()
 
-    private val _tasksOnMonth = MutableStateFlow<List<Task>>(emptyList())
-    val tasksOnMonth: StateFlow<List<Task>> = _tasksOnMonth
+    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
+    val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
     private val _event = MutableStateFlow<Event?>(null)
     val event: StateFlow<Event?> = _event
@@ -54,28 +54,19 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun onMonthChange(month: LocalDate) {
-        getEventsAndTasksByMonth(month)
-    }
-
     init {
-        getEventsAndTasksByMonth(LocalDate.now())
-    }
-    private fun getEventsAndTasksByMonth(date: LocalDate) {
-        val startOfMonth = date.withDayOfMonth(1).atStartOfDay()
-        val endOfMonth = startOfMonth.plusMonths(1).minusSeconds(1)
         viewModelScope.launch {
-            repository.getEventsByMonth(startOfMonth, endOfMonth)
-                .collectLatest { events ->
-                    _eventsOnMonth.value = events
-                }
+            repository.getAllEvents().collectLatest { events ->
+                _events.value = events
+            }
         }
         viewModelScope.launch {
-            taskRepository.getTasksByMonth(startOfMonth, endOfMonth ).collectLatest { tasks ->
-                _tasksOnMonth.value = tasks
+            taskRepository.getAllTasks().collectLatest { tasks ->
+                _tasks.value = tasks
             }
         }
     }
+
 
     fun fetchFolderById(folderId: Long) {
         viewModelScope.launch {
