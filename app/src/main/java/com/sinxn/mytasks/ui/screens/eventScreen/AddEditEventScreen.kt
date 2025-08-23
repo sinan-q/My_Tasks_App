@@ -72,13 +72,12 @@ fun AddEditEventScreen(
 
     val context = LocalContext.current
 
-    var eventInputState by remember { mutableStateOf(Event()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var isDatePickerForStart by remember { mutableStateOf<Boolean?>(null) }
     var isEditing by remember { mutableStateOf(eventId == -1L) }
 
-    val eventState by eventViewModel.event.collectAsState()
+    val eventInputState by eventViewModel.event.collectAsState()
     val folder by eventViewModel.folder.collectAsState()
     val folders by eventViewModel.folders.collectAsState()
 
@@ -110,17 +109,12 @@ fun AddEditEventScreen(
             eventViewModel.fetchFolderById(folderId)
         }
         val initialDate = if (date != -1L) fromMillis(date) else LocalDateTime.now()
-        eventInputState = eventInputState.copy(
-                start = initialDate.withHour(10).withMinute(0),
-                end = initialDate.withHour(11).withMinute(0),
-            )
+        eventViewModel.onUpdateEvent(eventInputState.copy(
+            start = initialDate.withHour(10).withMinute(0),
+            end = initialDate.withHour(11).withMinute(0),
+        ))
     }
-    // Update the input state when the task state changes
-    LaunchedEffect(eventState) {
-        eventState?.let { event ->
-            eventInputState = event.copy() // Use copy to avoid shared mutable state
-        }
-    }
+
 
     Scaffold(
         floatingActionButton = {
@@ -169,7 +163,7 @@ fun AddEditEventScreen(
         ) {
             OutlinedTextField(
                 value = eventInputState.title,
-                onValueChange = { eventInputState = eventInputState.copy(title = it) },
+                onValueChange = { eventViewModel.onUpdateEvent(eventInputState.copy(title = it)) },
                 label = { Text("Title") },
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
@@ -185,7 +179,7 @@ fun AddEditEventScreen(
             )
             OutlinedTextField(
                 value = eventInputState.description,
-                onValueChange = { eventInputState = eventInputState.copy(description = it) },
+                onValueChange = { eventViewModel.onUpdateEvent(eventInputState.copy(description = it)) },
                 label = { Text("Description") },
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
@@ -242,14 +236,14 @@ fun AddEditEventScreen(
                         TextButton(
                             onClick = {
                                 if (isDatePickerForStart == true) {
-                                    eventInputState = eventInputState.copy(
+                                    eventViewModel.onUpdateEvent(eventInputState.copy(
                                         start = datePickerState.selectedDateMillis?.let { fromMillis(it) }
-                                    )
+                                    ))
                                 }
                                 else if (isDatePickerForStart == false){
-                                    eventInputState = eventInputState.copy(
+                                    eventViewModel.onUpdateEvent(eventInputState.copy(
                                         end = datePickerState.selectedDateMillis?.let { fromMillis(it) }
-                                    )
+                                    ))
                                 }
                                 showDatePicker = false
                                 showTimePicker = true
@@ -280,17 +274,17 @@ fun AddEditEventScreen(
                     },
                     onConfirm = {
                         if (isDatePickerForStart == true) {
-                            eventInputState = eventInputState.copy(
+                            eventViewModel.onUpdateEvent(eventInputState.copy(
                                 start = eventInputState.start?.addTimerPickerState(timePickerState),
-                            )
+                            ))
                             if (eventInputState.end!!.isBefore(eventInputState.start))
-                                eventInputState = eventInputState.copy(
+                                eventViewModel.onUpdateEvent(eventInputState.copy(
                                     end = eventInputState.start?.plusHours(1),
-                                )
+                                ))
                         } else if (isDatePickerForStart == false)
-                            eventInputState = eventInputState.copy(
+                            eventViewModel.onUpdateEvent(eventInputState.copy(
                                 end = eventInputState.end?.addTimerPickerState(timePickerState)
-                            )
+                            ))
                         isDatePickerForStart = null
                         showTimePicker = false
                     }
@@ -306,7 +300,7 @@ fun AddEditEventScreen(
         showDialog = showDeleteConfirmationDialog,
         onDismiss = { showDeleteConfirmationDialog = false },
         onConfirm = {
-            eventState?.let { eventViewModel.deleteEvent(it) }
+            eventViewModel.deleteEvent(eventInputState)
             showDeleteConfirmationDialog = false
             onFinish() },
         title = stringResource(R.string.delete_confirmation_title),

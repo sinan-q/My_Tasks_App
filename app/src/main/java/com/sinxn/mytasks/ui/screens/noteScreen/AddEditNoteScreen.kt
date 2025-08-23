@@ -25,7 +25,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -41,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTextField
@@ -63,9 +61,8 @@ fun AddEditNoteScreen(
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
 
     val context = LocalContext.current
-    var noteInputState by rememberSaveable(stateSaver = NoteSaver) { mutableStateOf(Note()) }
+    val noteInputState by noteViewModel.note.collectAsState()
     var isEditing by remember { mutableStateOf(noteId == -1L) }
-    val noteState by noteViewModel.note.collectAsState()
     val folder by noteViewModel.folder.collectAsState()
     val subFolders by noteViewModel.folders.collectAsState()
 
@@ -88,11 +85,6 @@ fun AddEditNoteScreen(
             noteViewModel.newNoteByFolder(folderId)
             focusRequester.requestFocus()
             keyboardController?.show()
-        }
-    }
-    LaunchedEffect(noteState) {
-        noteState.let { note ->
-            noteInputState = note.copy()
         }
     }
 
@@ -156,7 +148,7 @@ fun AddEditNoteScreen(
         ) {
             MyTextField(
                 value = noteInputState.title,
-                onValueChange = { noteInputState = noteInputState.copy(title = it) },
+                onValueChange = { noteViewModel.onNoteUpdate(noteInputState.copy(title = it)) },
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                 placeholder = "Title",
@@ -186,7 +178,7 @@ fun AddEditNoteScreen(
             if (isEditing) {
                 MyTextField(
                     value = noteInputState.content,
-                    onValueChange = { noteInputState = noteInputState.copy(content = it) },
+                    onValueChange = { noteViewModel.onNoteUpdate(noteInputState.copy(content = it)) },
                     modifier = Modifier.fillMaxSize(),
                     placeholder = "Content",
                     textStyle = TextStyle.Default.copy(
@@ -208,7 +200,7 @@ fun AddEditNoteScreen(
         showDialog = showDeleteConfirmationDialog,
         onDismiss = { showDeleteConfirmationDialog = false },
         onConfirm = {
-            noteState.let { noteViewModel.deleteNote(it) }
+            noteViewModel.deleteNote(noteInputState)
             showDeleteConfirmationDialog = false
             onFinish()
         },

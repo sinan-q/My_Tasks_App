@@ -49,7 +49,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleButton
@@ -84,10 +83,8 @@ fun AddEditTaskScreen(
 
     val context = LocalContext.current
 
-    var taskInputState by remember { mutableStateOf(Task()) }
-    val reminders by taskViewModel.reminders.collectAsState(
-
-    )
+    val taskInputState by taskViewModel.task.collectAsState()
+    val reminders by taskViewModel.reminders.collectAsState()
     var reminder by remember { mutableStateOf("0") }
     var expandedDropDown by remember { mutableStateOf(false) }
     var reminderType by remember { mutableStateOf(ReminderTypes.MINUTE) }
@@ -120,16 +117,9 @@ fun AddEditTaskScreen(
         if (taskId != -1L) {
             taskViewModel.fetchTaskById(taskId)
         } else {
-            taskInputState = Task()
             taskViewModel.fetchFolderById(folderId)
             focusRequester.requestFocus()
             keyboardController?.show()
-        }
-    }
-
-    LaunchedEffect(taskState) {
-        taskState.let { task ->
-            taskInputState = task.copy()
         }
     }
 
@@ -138,9 +128,7 @@ fun AddEditTaskScreen(
             RectangleFAB(
                 onClick = {
                     if (isEditing) {
-                        taskViewModel.insertTask(taskInputState, reminders) { onFinish() }
-
-
+                        taskViewModel.insertTask(taskInputState, reminders)
                     } else {
                         isEditing = true
                     }
@@ -179,7 +167,7 @@ fun AddEditTaskScreen(
         ) {
             OutlinedTextField(
                 value = taskInputState.title,
-                onValueChange = { taskInputState = taskInputState.copy(title = it) },
+                onValueChange = { taskViewModel.onTaskUpdate(taskInputState.copy(title = it)) },
                 label = { Text("Title") },
                 readOnly = !isEditing,
                 singleLine = true,
@@ -198,7 +186,7 @@ fun AddEditTaskScreen(
             )
             OutlinedTextField(
                 value = taskInputState.description,
-                onValueChange = { taskInputState = taskInputState.copy(description = it) },
+                onValueChange = { taskViewModel.onTaskUpdate(taskInputState.copy(description = it)) },
                 label = { Text("Description") },
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
@@ -320,9 +308,9 @@ fun AddEditTaskScreen(
                     confirmButton = {
                         TextButton(
                             onClick = {
-                                taskInputState = taskInputState.copy(
+                                taskViewModel.onTaskUpdate(taskInputState.copy(
                                     due = datePickerState.selectedDateMillis?.let { fromMillis(it) }
-                                )
+                                ))
                                 showDatePicker = false
                                 showTimePicker = true
                             }
@@ -345,8 +333,8 @@ fun AddEditTaskScreen(
                 TimePickerDialog(
                     onDismiss = { showTimePicker = false },
                     onConfirm = {
-                        taskInputState = taskInputState.copy(
-                            due = taskInputState.due?.addTimerPickerState(timePickerState))
+                        taskViewModel.onTaskUpdate(taskInputState.copy(
+                            due = taskInputState.due?.addTimerPickerState(timePickerState)))
                         showTimePicker = false
                     }
                 ) {

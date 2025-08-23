@@ -66,6 +66,10 @@ class NoteViewModel @Inject constructor(
     private val _note = MutableStateFlow(Note())
     val note: StateFlow<Note> = _note
 
+    fun onNoteUpdate(note: Note) {
+        _note.value = note
+    }
+
     fun addNote(note: Note) {
         viewModelScope.launch {
             noteRepository.insertNote(note)

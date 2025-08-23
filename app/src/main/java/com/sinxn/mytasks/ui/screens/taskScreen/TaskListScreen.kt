@@ -39,6 +39,7 @@ import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.navigation.Routes
 import com.sinxn.mytasks.ui.viewModels.TaskViewModel
+import kotlinx.coroutines.flow.collectLatest
 import showBiometricsAuthentication
 
 @Composable
@@ -67,9 +68,12 @@ fun TaskListScreen(
         )
     }
 
-    LaunchedEffect(toast) {
-        if (toast.value != null) Toast.makeText(context, toast.value, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(key1 = Unit) {
+        viewModel.toastMessage.collectLatest { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
     }
+
     Scaffold(
         bottomBar = { BottomBar(navController = navController) },
         floatingActionButton = {

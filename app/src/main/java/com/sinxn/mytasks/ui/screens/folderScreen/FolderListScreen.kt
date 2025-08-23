@@ -71,12 +71,10 @@ fun FolderListScreen(
     LaunchedEffect(folderId) {
         folderViewModel.getSubFolders(folderId)
     }
-    fun showToast(message : String) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-    }
+
     LaunchedEffect(key1 = Unit) {
         folderViewModel.toastMessage.collectLatest { message ->
-            showToast(message)
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
     val folders by folderViewModel.folders.collectAsState(initial = emptyList())

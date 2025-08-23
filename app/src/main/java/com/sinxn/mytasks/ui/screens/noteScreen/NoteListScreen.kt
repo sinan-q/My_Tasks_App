@@ -40,6 +40,7 @@ import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.navigation.Routes
 import com.sinxn.mytasks.ui.viewModels.NoteViewModel
+import kotlinx.coroutines.flow.collectLatest
 import showBiometricsAuthentication
 
 @Composable
@@ -51,11 +52,12 @@ fun NoteListScreen(
     val selectionAction by viewModel.selectedAction.collectAsState()
     val selectedNotes by viewModel.selectedNotes.collectAsState()
     val selectionCount = viewModel.selectionCount.collectAsState()
-    val toast = viewModel.toastMessage.collectAsState(null)
     val context = LocalContext.current
 
-    LaunchedEffect(toast) {
-        if (toast.value != null) Toast.makeText(context, toast.value, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(key1 = Unit) {
+        viewModel.toastMessage.collectLatest { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
     }
 
     fun authenticate(function: () -> Unit) {

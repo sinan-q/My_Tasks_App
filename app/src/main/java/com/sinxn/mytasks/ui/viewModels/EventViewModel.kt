@@ -42,8 +42,8 @@ class EventViewModel @Inject constructor(
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
-    private val _event = MutableStateFlow<Event?>(null)
-    val event: StateFlow<Event?> = _event
+    private val _event = MutableStateFlow<Event>(Event())
+    val event: StateFlow<Event> = _event
 
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
@@ -52,6 +52,10 @@ class EventViewModel @Inject constructor(
         viewModelScope.launch {
             _toastMessage.emit(message)
         }
+    }
+
+    fun onUpdateEvent(event: Event) {
+        _event.value = event
     }
 
     init {
@@ -71,7 +75,7 @@ class EventViewModel @Inject constructor(
     fun fetchFolderById(folderId: Long) {
         viewModelScope.launch {
             folderStore.fetchFolderById(folderId = folderId)
-            _event.value = event.value?.copy(
+            _event.value = event.value.copy(
                 folderId = folderId,
             )
         }
@@ -81,8 +85,11 @@ class EventViewModel @Inject constructor(
     fun fetchEventById(eventId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val fetchedEvent = repository.getEventById(eventId)
+            if (fetchedEvent==null) {
+                showToast("Event not found"); return@launch
+            }
             _event.value = fetchedEvent
-            fetchFolderById(fetchedEvent?.folderId?:0L)
+            fetchFolderById(fetchedEvent.folderId)
         }
     }
 

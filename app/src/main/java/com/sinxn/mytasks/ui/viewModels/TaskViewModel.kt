@@ -80,6 +80,9 @@ class TaskViewModel @Inject constructor(
     private val _reminders = MutableStateFlow(emptyList<Pair<Int, ChronoUnit>>())
     val reminders: StateFlow<List<Pair<Int, ChronoUnit>>> = _reminders
 
+    fun onTaskUpdate(task: Task) {
+        _task.value = task
+    }
 
     fun fetchTaskById(taskId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -102,7 +105,6 @@ class TaskViewModel @Inject constructor(
         task: Task,
         reminders:
         List<Pair<Int, ChronoUnit>>,
-        onFinish: () -> Unit
         ) {
         if (task.title.isEmpty() && task.description.isEmpty()) { showToast("Title or Description cannot be empty");return }
         task.due?.let { due ->
@@ -125,7 +127,6 @@ class TaskViewModel @Inject constructor(
                 }
             }
             showToast("Task Added")
-            onFinish()
         }
     }
 
