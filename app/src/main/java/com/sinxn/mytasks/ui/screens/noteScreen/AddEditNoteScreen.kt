@@ -24,6 +24,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -54,7 +55,7 @@ fun AddEditNoteScreen(
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
 
     val context = LocalContext.current
-    var noteInputState by remember { mutableStateOf(Note()) }
+    var noteInputState by rememberSaveable(stateSaver = NoteSaver) { mutableStateOf(Note()) }
     var isEditing by remember { mutableStateOf(noteId == -1L) }
     val noteState by noteViewModel.note.collectAsState()
     val folder by noteViewModel.folder.collectAsState()
