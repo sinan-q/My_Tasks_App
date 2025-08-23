@@ -35,6 +35,7 @@ import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
@@ -91,6 +92,7 @@ fun FolderListScreen(
         folderViewModel.onBack(currentFolder!!)
     }
     Scaffold(
+        bottomBar = { BottomBar(navController = navController) },
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
                 if (selectionCount.value != 0) {

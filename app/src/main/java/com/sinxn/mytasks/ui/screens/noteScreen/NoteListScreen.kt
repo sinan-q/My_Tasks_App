@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
@@ -70,6 +71,7 @@ fun NoteListScreen(
     var hideLocked by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
     Scaffold(
+        bottomBar = { BottomBar(navController = navController) },
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
                 if (selectionCount.value != 0) {

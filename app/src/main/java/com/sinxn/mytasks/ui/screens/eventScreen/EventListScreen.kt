@@ -24,6 +24,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.RectangleFAB
@@ -74,6 +75,7 @@ fun EventListScreen(
             }
     }
     Scaffold(
+        bottomBar = { BottomBar(navController = navController) },
         topBar = {
             MyTasksTopAppBar(
                 title = { Text(text = "Events") }
