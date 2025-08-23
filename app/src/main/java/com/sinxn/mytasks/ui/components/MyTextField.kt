@@ -16,6 +16,7 @@ fun MyTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
+    singleLine: Boolean = false,
     readOnly: Boolean = false,
     textStyle: TextStyle = TextStyle.Default,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -28,6 +29,7 @@ fun MyTextField(
         onValueChange = onValueChange,
         placeholder = { Text(placeholder) },
         readOnly = readOnly,
+        singleLine = singleLine,
         colors = TextFieldDefaults.colors().copy(
             focusedContainerColor = Color.Transparent,
             unfocusedContainerColor = Color.Transparent,
