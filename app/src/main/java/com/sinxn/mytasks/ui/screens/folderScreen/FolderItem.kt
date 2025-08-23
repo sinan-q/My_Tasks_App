@@ -6,6 +6,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,9 +34,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
@@ -202,6 +205,7 @@ fun FolderItemEdit(folder: Folder, onDismiss: () -> Unit, onSubmit: (Folder) -> 
 
 @Composable
 fun FolderDropDown(
+    modifier: Modifier = Modifier,
     onClick: (folderDd: Long) -> Unit,
     isEditing: Boolean,
     folder: Folder?,
@@ -209,7 +213,11 @@ fun FolderDropDown(
 ) {
     var folderChangeExpanded by remember { mutableStateOf(false) }
 
-    Text(folder?.name?:"Parent", modifier = Modifier.clickable(enabled = isEditing) { folderChangeExpanded = true })
+    Row( modifier = Modifier.clickable(enabled = isEditing) { folderChangeExpanded = true }) {
+        Icon(painterResource(R.drawable.folder_ic), contentDescription = "Folder Icon", tint = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+        Text(folder?.name?:"Parent", fontSize = 12.sp)
+    }
     DropdownMenu(
         expanded = folderChangeExpanded,
         onDismissRequest = { folderChangeExpanded = false }
@@ -224,6 +232,7 @@ fun FolderDropDown(
                 onClick = { onClick(folder.folderId)}
             )
         }
-
     }
+
+
 }
