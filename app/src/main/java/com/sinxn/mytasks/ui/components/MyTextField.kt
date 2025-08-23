@@ -21,6 +21,7 @@ fun MyTextField(
     textStyle: TextStyle = TextStyle.Default,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    trailingIcon: @Composable (() -> Unit)? = null,
 
 ) {
     TextField(
@@ -38,7 +39,8 @@ fun MyTextField(
         ),
         textStyle = textStyle,
         keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions
+        keyboardActions = keyboardActions,
+        trailingIcon = trailingIcon
 
     )
 }

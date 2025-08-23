@@ -188,7 +188,7 @@ fun AddEditNoteScreen(
             } else {
                 MarkdownText(
                     markdown = noteInputState.content,
-                    modifier = Modifier.fillMaxSize().padding(10.dp),
+                    modifier = Modifier.fillMaxSize().padding(20.dp),
                     style = TextStyle.Default.copy(
                         fontSize = 16.sp
                     )

@@ -213,7 +213,7 @@ fun FolderDropDown(
 ) {
     var folderChangeExpanded by remember { mutableStateOf(false) }
 
-    Row( modifier = Modifier.clickable(enabled = isEditing) { folderChangeExpanded = true }) {
+    Row( modifier = modifier.clickable(enabled = isEditing) { folderChangeExpanded = true }) {
         Icon(painterResource(R.drawable.folder_ic), contentDescription = "Folder Icon", tint = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.padding(horizontal = 4.dp))
         Text(folder?.name?:"Parent", fontSize = 12.sp)

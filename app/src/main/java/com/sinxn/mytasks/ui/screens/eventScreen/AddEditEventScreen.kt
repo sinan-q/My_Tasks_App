@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -46,6 +47,7 @@ import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
+import com.sinxn.mytasks.ui.components.MyTextField
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
@@ -110,8 +112,8 @@ fun AddEditEventScreen(
         }
         val initialDate = if (date != -1L) fromMillis(date) else LocalDateTime.now()
         eventViewModel.onUpdateEvent(eventInputState.copy(
-            start = initialDate.withHour(10).withMinute(0),
-            end = initialDate.withHour(11).withMinute(0),
+            start = initialDate.plusDays(1).withHour(10).withMinute(0),
+            end = initialDate.plusDays(1).withHour(11).withMinute(0),
         ))
     }
 
@@ -161,15 +163,17 @@ fun AddEditEventScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            OutlinedTextField(
+            MyTextField(
                 value = eventInputState.title,
                 onValueChange = { eventViewModel.onUpdateEvent(eventInputState.copy(title = it)) },
-                label = { Text("Title") },
+                placeholder = "Title",
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
             )
             Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider()
             FolderDropDown(
+                modifier = Modifier.padding(horizontal = 20.dp),
                 onClick = { folderId ->
                     eventViewModel.fetchFolderById(folderId)
                 },
@@ -177,14 +181,15 @@ fun AddEditEventScreen(
                 folder = folder,
                 folders = folders
             )
-            OutlinedTextField(
+            HorizontalDivider()
+            MyTextField(
                 value = eventInputState.description,
                 onValueChange = { eventViewModel.onUpdateEvent(eventInputState.copy(description = it)) },
-                label = { Text("Description") },
+                placeholder = "Description",
                 readOnly = !isEditing,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider()
             OutlinedTextField(
                 value = eventInputState.start?.formatDate() ?: "No Start Date",
                 onValueChange = {},
@@ -202,10 +207,8 @@ fun AddEditEventScreen(
                     }
 
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = eventInputState.end?.formatDate() ?: "No End Date",
                 onValueChange = {},
@@ -222,7 +225,7 @@ fun AddEditEventScreen(
                         )
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
             )
 
             if (showDatePicker) {

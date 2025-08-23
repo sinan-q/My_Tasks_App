@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -51,6 +52,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
+import com.sinxn.mytasks.ui.components.MyTextField
 import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ScrollablePicker
@@ -165,10 +167,10 @@ fun AddEditTaskScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            OutlinedTextField(
+            MyTextField(
                 value = taskInputState.title,
                 onValueChange = { taskViewModel.onTaskUpdate(taskInputState.copy(title = it)) },
-                label = { Text("Title") },
+                placeholder = "Title",
                 readOnly = !isEditing,
                 singleLine = true,
                 modifier = Modifier
@@ -176,7 +178,9 @@ fun AddEditTaskScreen(
                     .focusRequester(focusRequester)
             )
             Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider()
             FolderDropDown(
+                modifier = Modifier.padding(horizontal = 20.dp),
                 onClick = {folderId ->
                     taskViewModel.fetchFolderById(folderId)
                 },
@@ -184,14 +188,14 @@ fun AddEditTaskScreen(
                 folder = folder,
                 folders = folders
             )
-            OutlinedTextField(
+            HorizontalDivider()
+            MyTextField(
                 value = taskInputState.description,
                 onValueChange = { taskViewModel.onTaskUpdate(taskInputState.copy(description = it)) },
-                label = { Text("Description") },
+                placeholder = "Description",
                 readOnly = !isEditing,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = taskInputState.due?.formatDate() ?: "No Due",
                 onValueChange = {},
@@ -205,95 +209,58 @@ fun AddEditTaskScreen(
                         )
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
             taskInputState.due?.let { dueDate ->
-                Text(text = "Reminders on " )
-                if (reminders.isEmpty())
-                    Text(text = "No Remainders set")
+                Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
+                    Text(text = "Reminders on " )
+                    if (reminders.isEmpty())
+                        Text(text = "No Remainders set")
 
-                reminders.forEach { option ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (isEditing) {
-                            IconButton(onClick = { taskViewModel.removeReminder(option) }) {
-                                Icon(Icons.Default.Close, contentDescription = "Delete Reminder")
+                    reminders.forEach { option ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (isEditing) {
+                                IconButton(onClick = { taskViewModel.removeReminder(option) }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Delete Reminder")
+                                }
                             }
+                            Text(text = "${option.first} ${option.second.name}")
                         }
-                        Text(text = "${option.first} ${option.second.name}")
                     }
-                }
-                if (isEditing) {
-                    Row {
-                        val itemHeight = 50.dp
-                        RectangleButton(
-                            modifier = Modifier.height(itemHeight),
-                            onClick = {
-                                if (taskViewModel.validateReminder(dueDate, Pair(reminder.toInt(), reminderType.unit)))
-                                    taskViewModel.addReminder(Pair(reminder.toInt(), reminderType.unit))
-                                else showToast("Reminder should be in a future time")
+                    if (isEditing) {
+                        Row {
+                            val itemHeight = 50.dp
+                            RectangleButton(
+                                modifier = Modifier.height(itemHeight),
+                                onClick = {
+                                    if (taskViewModel.validateReminder(dueDate, Pair(reminder.toInt(), reminderType.unit)))
+                                        taskViewModel.addReminder(Pair(reminder.toInt(), reminderType.unit))
+                                    else showToast("Reminder should be in a future time")
+                                }
+                            ) {
+                                Icon(Icons.Default.Add, "Add Reminder")
                             }
-                        ) {
-                            Icon(Icons.Default.Add, "Add Reminder")
+                            ScrollablePicker(
+                                values = (0..60).toList(),
+                                defaultValue = 0,
+                                height = itemHeight,
+                                modifier = Modifier
+                                    .width(70.dp)
+                                    .height(itemHeight)
+                            ) {
+                                reminder = it.toString()
+                            }
+                            ScrollablePicker(
+                                values = ReminderTypes.entries,
+                                defaultValue = ReminderTypes.MINUTE,
+                                height = itemHeight,
+                                modifier = Modifier
+                                    .width(100.dp)
+                                    .height(itemHeight)
+                            ) {
+                                reminderType = it
+                            }
                         }
-                        ScrollablePicker(
-                            values = (0..60).toList(),
-                            defaultValue = 0,
-                            height = itemHeight,
-                            modifier = Modifier
-                                .width(70.dp)
-                                .height(itemHeight)
-                        ) {
-                            reminder = it.toString()
-                        }
-//                    OutlinedTextField(
-//                        value = reminder,
-//                        onValueChange = { reminder = it},
-//                        modifier = Modifier.width(70.dp).height(itemHeight),
-//                        singleLine = true
-//                    )
-                        ScrollablePicker(
-                            values = ReminderTypes.entries,
-                            defaultValue = ReminderTypes.MINUTE,
-                            height = itemHeight,
-                            modifier = Modifier
-                                .width(100.dp)
-                                .height(itemHeight)
-                        ) {
-                            reminderType = it
-                        }
-//                    ExposedDropdownMenuBox(
-//                        expanded = expandedDropDown,
-//                        onExpandedChange = { expandedDropDown = !expandedDropDown },
-//                    ) {
-//                        OutlinedTextField(
-//                            value = reminderType.label,
-//                            onValueChange = {},
-//                            readOnly = true,
-//                            trailingIcon = {
-//                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDropDown)
-//                            },
-//                            modifier = Modifier
-//                                .menuAnchor(MenuAnchorType.PrimaryEditable, true)
-//                                .width(150.dp)
-//                        )
-////                        ExposedDropdownMenu(
-////                            expanded = expandedDropDown,
-////                            onDismissRequest = { expandedDropDown = false },
-////                        ) {
-//
-////                            ReminderTypes.entries.forEach { option ->
-////
-////                                DropdownMenuItem(
-////                                    text = { Text(option.label) },
-////                                    onClick = {
-////                                        reminderType = option
-////                                        expandedDropDown = false
-////                                    }
-////                                )
-////                            }
-//                       // }
-//                    }
                     }
                 }
             }
