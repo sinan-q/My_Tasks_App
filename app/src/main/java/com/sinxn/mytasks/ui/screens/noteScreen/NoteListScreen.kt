@@ -127,6 +127,7 @@ fun NoteListScreen(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             columns = StaggeredGridCells.Fixed(2),
             contentPadding = paddingValues,
+            modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             items(notes) { note ->
                 var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state

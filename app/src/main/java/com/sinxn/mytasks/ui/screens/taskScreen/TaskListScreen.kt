@@ -125,7 +125,7 @@ fun TaskListScreen(
         LazyColumn(
             contentPadding = paddingValues,
             verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier
+            modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             items(tasks) { task ->
                 var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state

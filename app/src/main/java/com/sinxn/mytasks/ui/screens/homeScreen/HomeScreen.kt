@@ -156,7 +156,8 @@ fun HomeScreen(
             verticalItemSpacing = 4.dp,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             contentPadding = padding,
-            columns = StaggeredGridCells.Fixed(2) //TODO Adaptive
+            columns = StaggeredGridCells.Fixed(2), //TODO Adaptive
+            modifier = Modifier.padding(horizontal = 16.dp),
         ) {
             item(span = StaggeredGridItemSpan.FullLine) {
                 Column(modifier = Modifier.fillMaxWidth()) {
