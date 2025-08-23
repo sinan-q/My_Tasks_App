@@ -93,6 +93,12 @@ dependencies {
     implementation(libs.androidx.glance.material3)
 
     //Gson
-    implementation(libs.gson) // Or the latest version
+    implementation(libs.gson)
+
+    //Markdown Editor
+    //implementation(libs.twain)
+    implementation(libs.compose.markdown)
+
+
 
 }
