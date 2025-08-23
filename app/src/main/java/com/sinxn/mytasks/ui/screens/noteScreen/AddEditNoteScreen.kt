@@ -3,19 +3,20 @@ package com.sinxn.mytasks.ui.screens.noteScreen
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,17 +33,24 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
+import com.sinxn.mytasks.ui.components.MyTextField
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
 import com.sinxn.mytasks.ui.viewModels.NoteViewModel
+import com.sinxn.mytasks.utils.formatDate
+import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -146,29 +154,54 @@ fun AddEditNoteScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            OutlinedTextField(
+            MyTextField(
                 value = noteInputState.title,
                 onValueChange = { noteInputState = noteInputState.copy(title = it) },
-                label = { Text("Title") },
                 readOnly = !isEditing,
-                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
+                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                placeholder = "Title",
+                textStyle = TextStyle.Default.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 18.sp
+                )
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            FolderDropDown(
-                onClick = { folderId ->
-                    noteViewModel.fetchFolderById(folderId)
-                },
-                isEditing = isEditing,
-                folder = folder,
-                folders = subFolders
-            )
-            OutlinedTextField(
-                value = noteInputState.content,
-                onValueChange = {noteInputState = noteInputState.copy( content = it )},
-                label = { Text("Description") },
-                readOnly = !isEditing,
-                modifier = Modifier.fillMaxSize()
-            )
+            HorizontalDivider()
+            Row(modifier = Modifier.padding(horizontal = 20.dp)) {
+                Icon(painterResource(R.drawable.clock_ic), contentDescription = "Clock Icon", tint = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                Text(noteInputState.timestamp.formatDate(), fontSize = 12.sp)
+                Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                FolderDropDown(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    onClick = { folderId ->
+                        noteViewModel.fetchFolderById(folderId)
+                    },
+                    isEditing = isEditing,
+                    folder = folder,
+                    folders = subFolders
+                )
+            }
+
+            HorizontalDivider()
+            if (isEditing) {
+                MyTextField(
+                    value = noteInputState.content,
+                    onValueChange = { noteInputState = noteInputState.copy(content = it) },
+                    modifier = Modifier.fillMaxSize(),
+                    placeholder = "Content",
+                    textStyle = TextStyle.Default.copy(
+                        fontSize = 16.sp
+                    )
+                )
+            } else {
+                MarkdownText(
+                    markdown = noteInputState.content,
+                    modifier = Modifier.fillMaxSize().padding(10.dp),
+                    style = TextStyle.Default.copy(
+                        fontSize = 16.sp
+                    )
+                )
+            }
         }
     }
     ConfirmationDialog(
