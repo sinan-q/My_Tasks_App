@@ -99,22 +99,31 @@ class TaskViewModel @Inject constructor(
     }
 
     fun insertTask(task: Task, reminders: List<Pair<Int, ChronoUnit>>) = viewModelScope.launch(Dispatchers.IO) {
-        var taskId = task.id ?: 0L
-        if (taskId != 0L) {
+        if (task.title.isEmpty() && task.description.isEmpty()) {
+            showToast("Title or Description cannot be empty")
+            return@launch
+        }
+        task.due?.let { due ->
+            if (reminders.isNotEmpty() && reminders.map { validateReminder(due, it) }.contains(false) ) {
+                showToast("Reminder should be in a future time")
+                return@launch
+            }
+        }
+        var taskId = task.id
+        if (taskId != null) {
             repository.updateTask(task)
             alarmRepository.cancelAlarmsByTaskId(taskId)
         } else taskId = repository.insertTask(task)
-        if (taskId != -1L)
-            task.due?.let { due ->
-                reminders.forEach { pair ->
-                    val time = due.minus(pair.first.toLong(), pair.second).toMillis()
-                    alarmRepository.insertAlarm(Alarm(
-                        taskId = taskId,
-                        isTask = true, //TODO Event
-                        time = time
-                    ))
-                }
+        task.due?.let { due ->
+            reminders.forEach { pair ->
+                val time = due.minus(pair.first.toLong(), pair.second).toMillis()
+                alarmRepository.insertAlarm(Alarm(
+                    taskId = taskId,
+                    isTask = true, //TODO Event
+                    time = time
+                ))
             }
+        }
         showToast("Task Added")
     }
 

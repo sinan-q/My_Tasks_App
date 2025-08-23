@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 @Entity(tableName = "notes")
 data class Note(
-    @PrimaryKey(autoGenerate = true) val id: Long? = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long? = null,
     val folderId: Long = 0L,
     val title: String = "",
     val content: String = "",

@@ -102,11 +102,7 @@ fun AddEditNoteScreen(
                 onClick = {
                     if (isEditing) {
                         if (noteInputState.title.isNotEmpty() || noteInputState.content.isNotEmpty()) {
-                            noteViewModel.addNote(
-                                noteInputState.copy(
-                                    id = if (noteInputState.id == -1L) null else noteInputState.id
-                                )
-                            )
+                            noteViewModel.addNote(noteInputState)
                             onFinish()
                         } else {
                             showToast("Note cannot be empty")

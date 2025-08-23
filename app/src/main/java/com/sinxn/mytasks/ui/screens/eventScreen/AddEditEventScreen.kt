@@ -130,10 +130,7 @@ fun AddEditEventScreen(
                         val isInputValid = validateEventInput(eventInputState)
 
                         if (isInputValid) {
-                            val eventToSave = eventInputState.copy(
-                                id = if (eventInputState.id == -1L) null else eventInputState.id,
-                            )
-                            eventViewModel.insertEvent(eventToSave)
+                            eventViewModel.insertEvent(eventInputState)
                             isEditing = false
                         }
                     } else {

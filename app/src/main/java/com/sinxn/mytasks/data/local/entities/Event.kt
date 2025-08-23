@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 @Entity(tableName = "events")
 data class Event(
     @PrimaryKey(autoGenerate = true)
-    val id: Long? = 0,
+    val id: Long? = null,
     val folderId: Long = 0L,
     val title: String = "",
     val description: String = "",

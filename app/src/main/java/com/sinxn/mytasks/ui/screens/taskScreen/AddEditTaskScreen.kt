@@ -138,18 +138,7 @@ fun AddEditTaskScreen(
             RectangleFAB(
                 onClick = {
                     if (isEditing) {
-                        if (taskInputState.title.isEmpty() && taskInputState.description.isEmpty()) {
-                            taskViewModel.showToast("Title or Description cannot be empty")
-                            return@RectangleFAB
-                        }
-                        taskInputState.due?.let { due ->
-                            if (reminders.isNotEmpty() && reminders.map { taskViewModel.validateReminder(due, it) }.contains(false) ) {
-                                taskViewModel.showToast("Reminder should be in a future time")
-                                return@RectangleFAB
-                            }
-                        }
-                        val taskToSave = taskInputState.copy(id = if (taskInputState.id == -1L) null else taskInputState.id)
-                        taskViewModel.insertTask(taskToSave, reminders)
+                        taskViewModel.insertTask(taskInputState, reminders)
                         onFinish()
 
                     } else {
