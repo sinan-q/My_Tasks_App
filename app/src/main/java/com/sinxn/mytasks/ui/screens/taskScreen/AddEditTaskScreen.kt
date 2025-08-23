@@ -138,8 +138,8 @@ fun AddEditTaskScreen(
             RectangleFAB(
                 onClick = {
                     if (isEditing) {
-                        taskViewModel.insertTask(taskInputState, reminders)
-                        onFinish()
+                        taskViewModel.insertTask(taskInputState, reminders) { onFinish() }
+
 
                     } else {
                         isEditing = true

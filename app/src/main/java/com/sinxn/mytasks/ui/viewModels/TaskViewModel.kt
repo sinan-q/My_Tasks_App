@@ -98,33 +98,35 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun insertTask(task: Task, reminders: List<Pair<Int, ChronoUnit>>) = viewModelScope.launch(Dispatchers.IO) {
-        if (task.title.isEmpty() && task.description.isEmpty()) {
-            showToast("Title or Description cannot be empty")
-            return@launch
-        }
+    fun insertTask(
+        task: Task,
+        reminders:
+        List<Pair<Int, ChronoUnit>>,
+        onFinish: () -> Unit
+        ) {
+        if (task.title.isEmpty() && task.description.isEmpty()) { showToast("Title or Description cannot be empty");return }
         task.due?.let { due ->
-            if (reminders.isNotEmpty() && reminders.map { validateReminder(due, it) }.contains(false) ) {
-                showToast("Reminder should be in a future time")
-                return@launch
-            }
+            if (reminders.isNotEmpty() && reminders.map { validateReminder(due, it) }.contains(false) ) { showToast("Reminder should be in a future time");return }
         }
-        var taskId = task.id
-        if (taskId != null) {
-            repository.updateTask(task)
-            alarmRepository.cancelAlarmsByTaskId(taskId)
-        } else taskId = repository.insertTask(task)
-        task.due?.let { due ->
-            reminders.forEach { pair ->
-                val time = due.minus(pair.first.toLong(), pair.second).toMillis()
-                alarmRepository.insertAlarm(Alarm(
-                    taskId = taskId,
-                    isTask = true, //TODO Event
-                    time = time
-                ))
+        viewModelScope.launch(Dispatchers.IO) {
+            var taskId = task.id
+            if (taskId != null) {
+                repository.updateTask(task)
+                alarmRepository.cancelAlarmsByTaskId(taskId)
+            } else taskId = repository.insertTask(task)
+            task.due?.let { due ->
+                reminders.forEach { pair ->
+                    val time = due.minus(pair.first.toLong(), pair.second).toMillis()
+                    alarmRepository.insertAlarm(Alarm(
+                        taskId = taskId,
+                        isTask = true, //TODO Event
+                        time = time
+                    ))
+                }
             }
+            showToast("Task Added")
+            onFinish()
         }
-        showToast("Task Added")
     }
 
     fun deleteTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
