@@ -69,8 +69,8 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val folders by viewModel.mainFolders.collectAsState(initial = emptyList())
-    val events by viewModel.events.collectAsState(initial = emptyList())
-
+    val upcomingEvents by viewModel.upcomingEvents.collectAsState(initial = emptyList())
+    val pendingTasks by viewModel.pendingTasks.collectAsState(initial = emptyList())
     val tasks by viewModel.tasks.collectAsState(initial = emptyList())
     val notes by viewModel.notes.collectAsState(initial = emptyList())
     var folderEditToggle by remember { mutableStateOf(false) }
@@ -163,13 +163,32 @@ fun HomeScreen(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     MyTitle(onClick = { navController.navigate(Event.route) }, text = "Upcoming Events")
                     HorizontalDivider()
-                    if (events.isEmpty()) Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
+                    if (upcomingEvents.isEmpty()) Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
                 }
             }
 
-            items(events) { event ->
+            items(upcomingEvents) { event ->
                 EventSmallItem(event) {
                     navController.navigate(Event.get(event.id))
+                }
+            }
+
+            item(span = StaggeredGridItemSpan.FullLine) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    MyTitle(onClick = { //TODO
+                    }, text = "Pending Tasks")
+                    HorizontalDivider()
+                    if (pendingTasks.isEmpty()) Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
+                    pendingTasks.forEach { task ->
+                        TaskItem(
+                            task = task,
+                            onClick = { navController.navigate(Task.get(task.id))},
+                            onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
+                            onHold = { viewModel.onSelectionTask(task) },
+                            path = null,
+                            selected = task in selectedTasks
+                        )
+                    }
                 }
             }
 

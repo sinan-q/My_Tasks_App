@@ -15,7 +15,9 @@ class TaskRepository @Inject constructor(
     override fun getAllTasks(): Flow<List<Task>> = taskDao.getAllTasks()
 
     override fun getAllTasksSorted(): Flow<List<Task>> = taskDao.getAllTasksSorted()
-
+    override fun getPendingTasks(limit: Int): Flow<List<Task>> {
+        return taskDao.getPendingTasks(limit)
+    }
     override fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>> {
         return taskDao.getTasksByMonth(startOfMonth, endOfMonth)
     }

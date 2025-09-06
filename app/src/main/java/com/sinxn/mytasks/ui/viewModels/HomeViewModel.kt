@@ -60,11 +60,18 @@ class HomeViewModel @Inject constructor(
     val parentFolder = folderStore.parentFolder
     val folders = folderStore.folders
 
-    val events = eventRepository.getUpcomingEvents(4).stateIn(
+    val upcomingEvents = eventRepository.getUpcomingEvents(4).stateIn(
         viewModelScope,
         SharingStarted.Lazily,
         emptyList()
     )
+
+    val pendingTasks = taskRepository.getPendingTasks(4).stateIn(
+        viewModelScope,
+        SharingStarted.Lazily,
+        emptyList()
+    )
+
     val mainFolders = folderStore.folderRepository.getSubFolders(0).stateIn(
         viewModelScope,
         SharingStarted.Lazily,

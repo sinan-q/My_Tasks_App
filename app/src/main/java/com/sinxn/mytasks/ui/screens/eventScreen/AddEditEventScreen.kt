@@ -185,14 +185,6 @@ fun AddEditEventScreen(
                 folders = folders
             )
             HorizontalDivider()
-            MyTextField(
-                value = eventInputState.description,
-                onValueChange = { eventViewModel.onUpdateEvent(eventInputState.copy(description = it)) },
-                placeholder = "Description",
-                readOnly = !isEditing,
-                modifier = Modifier.fillMaxWidth()
-            )
-            HorizontalDivider()
             OutlinedTextField(
                 value = eventInputState.start?.formatDate() ?: "No Start Date",
                 onValueChange = {},
@@ -229,6 +221,14 @@ fun AddEditEventScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
+            )
+            HorizontalDivider()
+            MyTextField(
+                value = eventInputState.description,
+                onValueChange = { eventViewModel.onUpdateEvent(eventInputState.copy(description = it)) },
+                placeholder = "Description",
+                readOnly = !isEditing,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
             )
 
             if (showDatePicker) {
