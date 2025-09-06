@@ -46,8 +46,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
@@ -174,6 +177,10 @@ fun AddEditTaskScreen(
                 placeholder = "Title",
                 readOnly = !isEditing,
                 singleLine = true,
+                textStyle = TextStyle.Default.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 18.sp
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
