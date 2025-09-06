@@ -207,7 +207,7 @@ fun AddEditEventScreen(
                     }
 
                 },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
             )
             OutlinedTextField(
                 value = eventInputState.end?.formatDate() ?: "No End Date",
@@ -225,7 +225,7 @@ fun AddEditEventScreen(
                         )
                     }
                 },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
             )
 
             if (showDatePicker) {

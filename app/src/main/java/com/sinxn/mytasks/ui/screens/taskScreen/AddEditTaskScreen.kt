@@ -210,7 +210,7 @@ fun AddEditTaskScreen(
                         )
                     }
                 },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
             )
             taskInputState.due?.let { dueDate ->
                 Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
