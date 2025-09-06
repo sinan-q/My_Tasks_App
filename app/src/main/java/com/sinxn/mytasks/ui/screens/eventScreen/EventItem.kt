@@ -15,44 +15,10 @@ import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.ui.components.RectangleCard
 import com.sinxn.mytasks.utils.formatDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
-
-@Composable
-fun EventItem(
-    event: Event,
-    onClick: () -> Unit
-) {
-    RectangleCard(onClick = onClick)  {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = event.title,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = event.description,
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = event.start?.formatDate()?:"Error",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = event.end?.formatDate()?:"Error",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
 
 @Composable
 fun EventSmallItem(event: Event, onClick: () -> Unit) {
@@ -70,15 +36,28 @@ fun EventSmallItem(event: Event, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.primary
                 )
             }
+            Column {
+                Text(
+                    text = event.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = formatTime(event.start),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-            Text(
-                text = event.title,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
 
         }
 
     }
+}
+
+fun formatTime(localDateTime: LocalDateTime?): String {
+    if (localDateTime == null) return "No Date found"
+    val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
+    return localDateTime.format(timeFormatter)
 }

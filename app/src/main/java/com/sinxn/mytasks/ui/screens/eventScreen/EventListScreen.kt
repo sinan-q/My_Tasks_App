@@ -134,7 +134,7 @@ fun EventListScreen(
             }
 
             items(upcomingEvents.value) { event ->
-                EventItem(event = event, onClick = {
+                EventSmallItem(event = event, onClick = {
                     event.id?.let { navController.navigate(Event.get(it)) }
                 })
             }
