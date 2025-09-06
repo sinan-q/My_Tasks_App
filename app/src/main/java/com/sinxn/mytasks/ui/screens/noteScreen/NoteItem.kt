@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens.noteScreen
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +12,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,11 +29,15 @@ fun NoteItem(
     onHold: () -> Unit,
     selected: Boolean
 ) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondaryContainer,
+        label = "NoteItemBackgroundAnimation"
+    )
     Card (
         modifier = modifier
             .combinedClickable(onLongClick = onHold, onClick = onClick ),
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondaryContainer
+            containerColor = backgroundColor
         ),
         shape = RectangleShape
     ) {

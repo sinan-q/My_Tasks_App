@@ -68,7 +68,7 @@ class HomeViewModel @Inject constructor(
 
     val pendingTasks = taskRepository.getPendingTasks(4).stateIn(
         viewModelScope,
-        SharingStarted.Lazily,
+        SharingStarted.WhileSubscribed(10000),
         emptyList()
     )
 

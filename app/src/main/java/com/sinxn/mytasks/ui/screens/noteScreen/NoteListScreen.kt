@@ -151,6 +151,7 @@ fun NoteListScreen(
                         onClick = { navController.navigate(Routes.Note.get(note.id)) },
                         onHold = { viewModel.onSelectionNote(note) },
                         selected = note in selectedNotes,
+                        modifier = Modifier.animateItem()
                     )
                 }
             }

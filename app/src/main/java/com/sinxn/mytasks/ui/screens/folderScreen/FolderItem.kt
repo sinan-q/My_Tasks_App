@@ -1,6 +1,7 @@
 package com.sinxn.mytasks.ui.screens.folderScreen
 
 import android.widget.Toast
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +56,10 @@ fun FolderItem(
     onHold: () -> Unit,
     selected: Boolean
 ) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.tertiaryContainer,
+        label = "FileItemBackgroundAnimation"
+    )
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
@@ -78,7 +83,7 @@ fun FolderItem(
                 else onClick()
             }),
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.tertiaryContainer
+            containerColor = backgroundColor
         ),
         shape = RectangleShape
         ) {

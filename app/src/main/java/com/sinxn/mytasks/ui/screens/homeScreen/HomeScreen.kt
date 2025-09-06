@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.screens.homeScreen
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
@@ -60,6 +61,7 @@ import com.sinxn.mytasks.ui.screens.taskScreen.TaskItem
 import com.sinxn.mytasks.ui.viewModels.HomeViewModel
 import kotlinx.coroutines.flow.collectLatest
 
+@SuppressLint("UnusedContentLambdaTargetStateParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -79,7 +81,7 @@ fun HomeScreen(
     val selectedNotes by viewModel.selectedNotes.collectAsState()
     val selectedFolders by viewModel.selectedFolders.collectAsState()
     val selectionAction by viewModel.selectedAction.collectAsState()
-    val selectionCount = viewModel.selectionCount.collectAsState()
+    val selectionCount by viewModel.selectionCount.collectAsState()
 
     var expanded by remember { mutableStateOf(false) }
     fun showToast(message : String) {
@@ -95,7 +97,7 @@ fun HomeScreen(
         bottomBar = { BottomBar(navController = navController) },
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End){
-                if (selectionCount.value != 0) {
+                if (selectionCount != 0) {
                     ShowActionsFAB(
                         onPaste = {
                             viewModel.pasteSelection()
@@ -178,18 +180,26 @@ fun HomeScreen(
                     MyTitle(onClick = { //TODO
                     }, text = "Pending Tasks")
                     HorizontalDivider()
+                    // TODO: Animated items if possible
                     if (pendingTasks.isEmpty()) Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
-                    pendingTasks.forEach { task ->
-                        TaskItem(
-                            task = task,
-                            onClick = { navController.navigate(Task.get(task.id))},
-                            onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
-                            onHold = { viewModel.onSelectionTask(task) },
-                            path = null,
-                            selected = task in selectedTasks
-                        )
-                    }
                 }
+            }
+
+            items (
+                items = pendingTasks,
+                key = { task -> "pendingTasks_${task.id}" },
+                span = { StaggeredGridItemSpan.FullLine },
+                contentType = { "pendingTask" } // Optional: for more efficient recompositions
+            ) { task ->
+                TaskItem(
+                    task = task,
+                    onClick = { navController.navigate(Task.get(task.id)) },
+                    onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
+                    onHold = { viewModel.onSelectionTask(task) },
+                    path = null,
+                    selected = task in selectedTasks,
+                    modifier = Modifier.animateItem() // Add this modifier
+                )
             }
 
             item(span = StaggeredGridItemSpan.FullLine) {
@@ -227,7 +237,8 @@ fun HomeScreen(
                     onDelete = { viewModel.deleteFolder(folder) },
                     onLock = { viewModel.lockFolder(folder) },
                     onHold = { viewModel.onSelectionFolder(folder) },
-                    selected = folder in selectedFolders
+                    selected = folder in selectedFolders,
+                    modifier = Modifier.animateItem()
                 )
             }
             items (
@@ -241,7 +252,8 @@ fun HomeScreen(
                     onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
                     onHold = { viewModel.onSelectionTask(task) },
                     path = null,
-                    selected = task in selectedTasks
+                    selected = task in selectedTasks,
+                    modifier = Modifier.animateItem()
                 )
             }
             items(notes) { note ->
@@ -249,7 +261,8 @@ fun HomeScreen(
                         note = note,
                         onClick = { navController.navigate(Note.get(note.id)) },
                         onHold = { viewModel.onSelectionNote(note) },
-                        selected = note in selectedNotes
+                        selected = note in selectedNotes,
+                        modifier = Modifier.animateItem()
                     )
 
             }
@@ -263,7 +276,7 @@ fun HomeScreen(
                 viewModel.deleteSelection()
             },
             title = stringResource(R.string.delete_confirmation_title),
-            message = "Sure want to delete ${selectionCount.value} items?"
+            message = "Sure want to delete $selectionCount items?"
         )
     }
 }

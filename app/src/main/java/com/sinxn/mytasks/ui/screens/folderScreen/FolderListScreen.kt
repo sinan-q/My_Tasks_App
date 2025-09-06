@@ -215,7 +215,8 @@ fun FolderListScreen(
                     onDelete = { folderViewModel.deleteFolder(folder) },
                     onLock = { folderViewModel.lockFolder(folder) },
                     onHold = { folderViewModel.onSelectionFolder(folder) },
-                    selected = folder in selectedFolders
+                    selected = folder in selectedFolders,
+                    modifier = Modifier.animateItem()
                 )
             }
             items (
@@ -229,7 +230,8 @@ fun FolderListScreen(
                     onHold = { folderViewModel.onSelectionTask(task) },
                     onUpdate = { status -> folderViewModel.updateTaskStatus(task.id!!, status) },
                     path = null,
-                    selected = task in selectedTasks
+                    selected = task in selectedTasks,
+                    modifier = Modifier.animateItem()
                 )
             }
             items(notes) { note ->
@@ -237,7 +239,8 @@ fun FolderListScreen(
                     note = note,
                     onClick = { navController.navigate(Routes.Note.get(note.id)) },
                     onHold = { folderViewModel.onSelectionNote(note) },
-                    selected = note in selectedNotes
+                    selected = note in selectedNotes,
+                    modifier = Modifier.animateItem()
                 )
             }
         }
