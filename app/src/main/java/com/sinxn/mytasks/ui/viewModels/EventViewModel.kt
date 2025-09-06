@@ -7,6 +7,7 @@ import com.sinxn.mytasks.data.interfaces.EventRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.ui.screens.eventScreen.EventConstants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -86,7 +87,8 @@ class EventViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val fetchedEvent = repository.getEventById(eventId)
             if (fetchedEvent==null) {
-                showToast("Event not found"); return@launch
+                showToast(EventConstants.EVENT_NOT_FOUND)
+                return@launch
             }
             _event.value = fetchedEvent
             fetchFolderById(fetchedEvent.folderId)
@@ -95,20 +97,20 @@ class EventViewModel @Inject constructor(
 
     fun insertEvent(event: Event) = viewModelScope.launch {
         if (event.start == null || event.end == null) {
-            showToast("Start date or end date cannot be empty")
+            showToast(EventConstants.EVENT_SAVE_FAILED_DATE_EMPTY)
             return@launch
         }
         if (event.start.isAfter(event.end)) {
-            showToast("Start date cannot be after end date")
+            showToast(EventConstants.EVENT_SAVE_FAILED_END_AFTER_START)
             return@launch
         }
         repository.insertEvent(event)
-        showToast("Event Created")
+        showToast(EventConstants.EVENT_SAVE_SUCCESS)
     }
 
     fun deleteEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {
         repository.deleteEvent(event)
-        showToast("Event Deleted")
+        showToast(EventConstants.EVENT_DELETE_SUCCESS)
     }
 
     fun updateEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {

@@ -95,6 +95,7 @@ fun AddEditEventScreen(
 
     fun showToast(message : String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        if (message in listOf(EventConstants.EVENT_NOT_FOUND, EventConstants.EVENT_SAVE_SUCCESS)) onFinish()
     }
     LaunchedEffect(key1 = Unit) {
         focusRequester.requestFocus()
