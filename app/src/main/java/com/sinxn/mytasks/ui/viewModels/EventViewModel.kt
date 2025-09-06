@@ -94,13 +94,16 @@ class EventViewModel @Inject constructor(
     }
 
     fun insertEvent(event: Event) = viewModelScope.launch {
-        if (event.start != null && event.end !=null)
-            if (event.start.isBefore(event.end)) repository.insertEvent(event)
-            else return@launch
-        else {
-            repository.insertEvent(event)
-            showToast("Event Created")
+        if (event.start == null || event.end == null) {
+            showToast("Start date or end date cannot be empty")
+            return@launch
         }
+        if (event.start.isAfter(event.end)) {
+            showToast("Start date cannot be after end date")
+            return@launch
+        }
+        repository.insertEvent(event)
+        showToast("Event Created")
     }
 
     fun deleteEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {
