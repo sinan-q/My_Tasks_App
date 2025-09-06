@@ -146,7 +146,6 @@ fun AddEditTaskScreen(
         },
         topBar = {
             MyTasksTopAppBar(
-                title = { Text(if (taskId == -1L) "Add Task" else "Edit Task")},
                 onNavigateUp = handleBackPressAttempt,
                 actions = {
                     if (taskId != -1L) {

@@ -12,12 +12,12 @@ import androidx.compose.runtime.Composable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyTasksTopAppBar(
-    title: @Composable () -> Unit,
+    title: @Composable () -> Unit = {},
     onNavigateUp: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
-        title =  title ,
+        title = title ,
         navigationIcon = {
             if (onNavigateUp != null) {
                 IconButton(onClick = onNavigateUp) {

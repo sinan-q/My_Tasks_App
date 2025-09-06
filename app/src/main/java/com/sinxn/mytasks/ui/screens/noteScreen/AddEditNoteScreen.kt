@@ -125,7 +125,6 @@ fun AddEditNoteScreen(
         },
         topBar = {
             MyTasksTopAppBar(
-                title = { Text(if (noteId == -1L) "Add Note" else "Edit Note")},
                 onNavigateUp = handleBackPressAttempt,
                 actions = {
                     if (noteId != -1L) {

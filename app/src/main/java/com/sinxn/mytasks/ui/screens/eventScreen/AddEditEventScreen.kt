@@ -52,8 +52,8 @@ import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
-import com.sinxn.mytasks.utils.Constants
 import com.sinxn.mytasks.ui.viewModels.EventViewModel
+import com.sinxn.mytasks.utils.Constants
 import com.sinxn.mytasks.utils.addTimerPickerState
 import com.sinxn.mytasks.utils.formatDate
 import com.sinxn.mytasks.utils.fromMillis
@@ -143,7 +143,6 @@ fun AddEditEventScreen(
         },
         topBar = {
             MyTasksTopAppBar(
-                title = {Text(if (eventId == -1L) "Add Event" else "Edit Event")},
                 onNavigateUp = handleBackPressAttempt,
                 actions = {
                     if (eventId != -1L) {
