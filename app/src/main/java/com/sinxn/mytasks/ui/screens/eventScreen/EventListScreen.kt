@@ -120,13 +120,13 @@ fun EventListScreen(
                     CalendarGrid(
                         tasks = tasks.filter {
                             // Filter diaries for the specific month being displayed by this pager page
-                            val diaryDate = it.timestamp
-                            YearMonth.from(diaryDate) == pageMonth
+                            val taskDueDate = it.due
+                            YearMonth.from(taskDueDate) == pageMonth
                         },
                         events = events.filter {
                             // Filter diaries for the specific month being displayed by this pager page
-                            val diaryDate = it.timestamp
-                            YearMonth.from(diaryDate) == pageMonth
+                            val eventStartDate = it.start
+                            YearMonth.from(eventStartDate) == pageMonth
                         },
                         displayMonth = pageMonth, // Pass the month this grid should display
                         onClick = { navController.navigate(Event.Add.byDate(it)) }
