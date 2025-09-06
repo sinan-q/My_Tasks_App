@@ -97,7 +97,6 @@ fun AddEditEventScreen(
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
     LaunchedEffect(key1 = Unit) {
-        showToast(eventId.toString())
         focusRequester.requestFocus()
         keyboardController?.show()
         eventViewModel.toastMessage.collectLatest { message ->
