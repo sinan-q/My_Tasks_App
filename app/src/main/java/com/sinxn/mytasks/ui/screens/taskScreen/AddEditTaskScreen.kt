@@ -136,6 +136,7 @@ fun AddEditTaskScreen(
                 onClick = {
                     if (isEditing) {
                         taskViewModel.insertTask(taskInputState, reminders)
+                        isEditing = false
                     } else {
                         isEditing = true
                     }

@@ -96,6 +96,13 @@ class EventViewModel @Inject constructor(
     }
 
     fun insertEvent(event: Event) = viewModelScope.launch {
+        if (event.title.isEmpty() && event.description.isEmpty()) {
+            showToast(Constants.SAVE_FAILED_EMPTY)
+            return@launch
+        } else if (event.title.isEmpty()) {
+            showToast(Constants.SAVE_FAILED_EMPTY)
+            return@launch
+        }
         if (event.start == null || event.end == null) {
             showToast(Constants.EVENT_SAVE_FAILED_DATE_EMPTY)
             return@launch

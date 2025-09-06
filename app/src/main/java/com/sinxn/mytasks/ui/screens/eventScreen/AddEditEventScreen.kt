@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTextField
@@ -127,12 +126,9 @@ fun AddEditEventScreen(
             RectangleFAB(
                 onClick = {
                     if (isEditing) {
-                        val isInputValid = validateEventInput(eventInputState)
+                        eventViewModel.insertEvent(eventInputState)
+                        isEditing = false
 
-                        if (isInputValid) {
-                            eventViewModel.insertEvent(eventInputState)
-                            isEditing = false
-                        }
                     } else {
                         isEditing = true
                     }
@@ -315,11 +311,4 @@ fun AddEditEventScreen(
         title = stringResource(R.string.delete_confirmation_title),
         message = stringResource(R.string.delete_item_message)
     )
-}
-
-fun validateEventInput(eventInputState: Event): Boolean {
-    return !(eventInputState.title.isEmpty() && eventInputState.description.isEmpty()) &&
-            eventInputState.start != null &&
-            eventInputState.end != null &&
-            !eventInputState.start.isAfter(eventInputState.end)
 }
