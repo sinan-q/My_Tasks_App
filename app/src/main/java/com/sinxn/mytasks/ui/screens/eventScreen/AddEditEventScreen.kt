@@ -110,10 +110,10 @@ fun AddEditEventScreen(
         } else if (folderId != 0L) {
             eventViewModel.fetchFolderById(folderId)
         }
-        val initialDate = if (date != -1L) fromMillis(date) else LocalDateTime.now()
+        val initialDate = if (date != -1L) fromMillis(date) else LocalDateTime.now().plusDays(1)
         eventViewModel.onUpdateEvent(eventInputState.copy(
-            start = initialDate.plusDays(1).withHour(10).withMinute(0),
-            end = initialDate.plusDays(1).withHour(11).withMinute(0),
+            start = initialDate.withHour(10).withMinute(0),
+            end = initialDate.withHour(11).withMinute(0),
         ))
     }
 
