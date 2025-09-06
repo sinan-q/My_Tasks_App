@@ -28,7 +28,7 @@ interface TaskDao {
     suspend fun insertTasks(tasks: List<Task>)
 
     @Delete
-    suspend fun deleteTask(task: Task)
+    suspend fun deleteTask(task: Task): Int
 
     @Delete
     suspend fun deleteTasks(tasks: List<Task>)

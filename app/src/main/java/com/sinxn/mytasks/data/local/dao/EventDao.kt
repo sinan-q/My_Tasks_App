@@ -28,7 +28,7 @@ interface EventDao {
     suspend fun clearAllEvents()
 
     @Delete
-    suspend fun deleteEvent(event: Event)
+    suspend fun deleteEvent(event: Event): Int
 
     @Update
     suspend fun updateEvent(event: Event)

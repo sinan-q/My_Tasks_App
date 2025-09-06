@@ -22,7 +22,7 @@ interface NoteDao {
     suspend fun insertNotes(notes: List<Note>)
 
     @Delete
-    suspend fun deleteNote(note: Note)
+    suspend fun deleteNote(note: Note): Int
 
     @Delete
     suspend fun deleteNotes(notes: List<Note>)
@@ -35,7 +35,7 @@ interface NoteDao {
 
 
     @Query("SELECT * FROM notes WHERE id = :noteId LIMIT 1")
-    suspend fun getNoteById(noteId: Long): Note
+    suspend fun getNoteById(noteId: Long): Note?
 
     @Query("SELECT * FROM notes WHERE folderId = :folderId")
     fun getNotesByFolderId(folderId: Long?): Flow<List<Note>>

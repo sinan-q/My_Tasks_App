@@ -7,6 +7,7 @@ import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,21 +73,33 @@ class NoteViewModel @Inject constructor(
 
     fun addNote(note: Note) {
         viewModelScope.launch {
+            if (note.title.isEmpty() && note.content.isEmpty()) {
+                showToast(Constants.SAVE_FAILED_EMPTY)
+                return@launch
+            }
             noteRepository.insertNote(note)
-            showToast("Note added successfully")
+            showToast(Constants.SAVE_SUCCESS)
         }
     }
 
     fun deleteNote(note: Note) {
         viewModelScope.launch {
-            noteRepository.deleteNote(note)
-            showToast("Note Deleted")
+            val deleted = noteRepository.deleteNote(note)
+            if (deleted == 0) {
+                showToast(Constants.DELETE_FAILED)
+                return@launch
+            }
+            showToast(Constants.DELETE_SUCCESS)
         }
     }
 
     fun fetchNoteById(noteId: Long) {
         viewModelScope.launch {
             val fetchedNote = noteRepository.getNoteById(noteId)
+            if (fetchedNote == null) {
+                showToast(Constants.NOT_FOUND)
+                return@launch
+            }
             fetchFolderById(fetchedNote.folderId)
             _note.value = fetchedNote
         }

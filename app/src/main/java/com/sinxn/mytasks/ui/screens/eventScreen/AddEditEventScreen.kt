@@ -52,6 +52,7 @@ import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
+import com.sinxn.mytasks.utils.Constants
 import com.sinxn.mytasks.ui.viewModels.EventViewModel
 import com.sinxn.mytasks.utils.addTimerPickerState
 import com.sinxn.mytasks.utils.formatDate
@@ -95,7 +96,7 @@ fun AddEditEventScreen(
 
     fun showToast(message : String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-        if (message in listOf(EventConstants.EVENT_NOT_FOUND, EventConstants.EVENT_SAVE_SUCCESS)) onFinish()
+        if (message in listOf(Constants.NOT_FOUND, Constants.SAVE_SUCCESS, Constants.DELETE_SUCCESS)) onFinish()
     }
     LaunchedEffect(key1 = Unit) {
         focusRequester.requestFocus()
@@ -304,8 +305,7 @@ fun AddEditEventScreen(
         onDismiss = { showDeleteConfirmationDialog = false },
         onConfirm = {
             eventViewModel.deleteEvent(eventInputState)
-            showDeleteConfirmationDialog = false
-            onFinish() },
+            showDeleteConfirmationDialog = false },
         title = stringResource(R.string.delete_confirmation_title),
         message = stringResource(R.string.delete_item_message)
     )

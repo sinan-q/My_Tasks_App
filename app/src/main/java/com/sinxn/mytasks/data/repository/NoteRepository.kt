@@ -22,16 +22,10 @@ class NoteRepository @Inject constructor(
     override suspend fun clearAllNotes() = noteDao.clearAllNotes()
 
 
-    override suspend fun updateNote(note: Note) {
-        noteDao.updateNote(note)
-    }
+    override suspend fun updateNote(note: Note) = noteDao.updateNote(note)
 
-    override suspend fun getNoteById(noteId: Long): Note {
-        return noteDao.getNoteById(noteId)
-    }
 
-    override fun getNotesByFolderId(folderId: Long): Flow<List<Note>> {
-        return noteDao.getNotesByFolderId(folderId)
+    override suspend fun getNoteById(noteId: Long): Note? = noteDao.getNoteById(noteId)
 
-    }
+    override fun getNotesByFolderId(folderId: Long): Flow<List<Note>> = noteDao.getNotesByFolderId(folderId)
 }

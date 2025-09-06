@@ -9,6 +9,7 @@ import com.sinxn.mytasks.data.interfaces.AlarmRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.utils.Constants
 import com.sinxn.mytasks.utils.differenceSeconds
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
@@ -101,14 +102,18 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun insertTask(
-        task: Task,
-        reminders:
-        List<Pair<Int, ChronoUnit>>,
-        ) {
-        if (task.title.isEmpty() && task.description.isEmpty()) { showToast("Title or Description cannot be empty");return }
+    fun insertTask(task: Task, reminders: List<Pair<Int, ChronoUnit>> ) {
+        if (task.title.isEmpty() && task.description.isEmpty()) {
+            showToast(Constants.SAVE_FAILED_EMPTY)
+            return
+        }
         task.due?.let { due ->
-            if (reminders.isNotEmpty() && reminders.map { validateReminder(due, it) }.contains(false) ) { showToast("Reminder should be in a future time");return }
+            if (reminders.isNotEmpty() && reminders.map {
+                validateReminder(due, it)
+            }.contains(false) ) {
+                showToast(Constants.NOTE_SAVE_FAILED_REMINDER_IN_PAST)
+                return
+            }
         }
         viewModelScope.launch(Dispatchers.IO) {
             var taskId = task.id
@@ -126,25 +131,30 @@ class TaskViewModel @Inject constructor(
                     ))
                 }
             }
-            showToast("Task Added")
+            showToast(Constants.SAVE_SUCCESS)
         }
     }
 
     fun deleteTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
-        if (task.id == null || task.due == null) {
-            showToast("Task ID: ${task.id}")
+        if (task.id == null) {
+            showToast(Constants.DELETE_FAILED)
+            return@launch
         }
-        else {
+        if(task.due != null) {
             alarmRepository.cancelAlarmsByTaskId(task.id)
         }
-        repository.deleteTask(task)
-        showToast("Task Deleted")
+        val deleted = repository.deleteTask(task)
+        if (deleted == 0) {
+            showToast(Constants.DELETE_FAILED)
+            return@launch
+        }
+        showToast(Constants.DELETE_SUCCESS)
 
     }
 
     fun addReminder(pair: Pair<Int, ChronoUnit>) {
         if (reminders.value.contains(pair)) {
-            showToast("Reminder already added")
+            showToast(Constants.TASK_REMINDER_ALREADY_EXISTS)
             return
         }
         _reminders.value = reminders.value.plus(pair)

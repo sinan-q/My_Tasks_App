@@ -60,6 +60,7 @@ import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
 import com.sinxn.mytasks.ui.viewModels.TaskViewModel
+import com.sinxn.mytasks.utils.Constants
 import com.sinxn.mytasks.utils.ReminderTypes
 import com.sinxn.mytasks.utils.addTimerPickerState
 import com.sinxn.mytasks.utils.formatDate
@@ -102,6 +103,7 @@ fun AddEditTaskScreen(
 
     fun showToast(message : String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        if (message in listOf(Constants.SAVE_SUCCESS, Constants.DELETE_SUCCESS, Constants.NOT_FOUND)) onFinish()
     }
     LaunchedEffect(key1 = Unit) {
         taskViewModel.toastMessage.collectLatest { message ->

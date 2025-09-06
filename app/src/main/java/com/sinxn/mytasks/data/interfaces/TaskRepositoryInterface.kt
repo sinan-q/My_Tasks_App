@@ -10,7 +10,7 @@ interface TaskRepositoryInterface {
     fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>>
     suspend fun insertTask(task: Task): Long
     suspend fun insertTasks(tasks: List<Task>)
-    suspend fun deleteTask(task: Task)
+    suspend fun deleteTask(task: Task): Int
     suspend fun deleteTasks(tasks: List<Task>)
     suspend fun clearAllTasks()
     suspend fun updateTask(task: Task)

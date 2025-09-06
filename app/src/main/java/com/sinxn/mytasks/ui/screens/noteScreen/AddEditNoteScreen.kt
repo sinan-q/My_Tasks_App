@@ -47,6 +47,7 @@ import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.screens.folderScreen.FolderDropDown
 import com.sinxn.mytasks.ui.viewModels.NoteViewModel
+import com.sinxn.mytasks.utils.Constants
 import com.sinxn.mytasks.utils.formatDate
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlinx.coroutines.flow.collectLatest
@@ -90,6 +91,7 @@ fun AddEditNoteScreen(
 
     fun showToast(message : String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        if (message in listOf(Constants.SAVE_SUCCESS, Constants.DELETE_SUCCESS, Constants.NOT_FOUND)) onFinish()
     }
     LaunchedEffect(key1 = Unit) { // key1 = Unit makes it run once on composition
         noteViewModel.toastMessage.collectLatest { message -> // or .collect {
@@ -202,7 +204,6 @@ fun AddEditNoteScreen(
         onConfirm = {
             noteViewModel.deleteNote(noteInputState)
             showDeleteConfirmationDialog = false
-            onFinish()
         },
         title = stringResource(R.string.delete_confirmation_title),
         message = stringResource(R.string.delete_item_message)
