@@ -34,7 +34,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.screens.alarmScreen.AlarmScreen"
+            android:name=".ui.features.alarms.AlarmScreen"
             android:exported="true"
             android:showOnLockScreen="true"
             android:turnScreenOn="true"
@@ -44,8 +44,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <receiver android:name=".ui.screens.alarmScreen.AlarmReceiver" android:exported="true" />
-        <receiver android:name=".ui.screens.alarmScreen.BootReceiver" android:exported="true">
+        <receiver android:name=".ui.features.alarms.broadcastReceivers.AlarmReceiver" android:exported="true" />
+        <receiver android:name=".ui.features.alarms.broadcastReceivers.BootReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>

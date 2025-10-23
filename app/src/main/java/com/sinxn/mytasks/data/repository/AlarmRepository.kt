@@ -3,7 +3,7 @@ package com.sinxn.mytasks.data.repository
 import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
 import com.sinxn.mytasks.data.local.dao.AlarmDao
 import com.sinxn.mytasks.data.local.entities.Alarm
-import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
+import com.sinxn.mytasks.ui.features.alarms.broadcastReceivers.AlarmScheduler
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton

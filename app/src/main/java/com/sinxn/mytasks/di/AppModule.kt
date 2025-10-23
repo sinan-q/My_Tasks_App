@@ -7,7 +7,7 @@ import com.sinxn.mytasks.data.local.dao.EventDao
 import com.sinxn.mytasks.data.local.dao.FolderDao
 import com.sinxn.mytasks.data.local.dao.TaskDao
 import com.sinxn.mytasks.data.local.database.AppDatabase
-import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
+import com.sinxn.mytasks.ui.features.alarms.broadcastReceivers.AlarmScheduler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
