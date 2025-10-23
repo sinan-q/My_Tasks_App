@@ -154,7 +154,7 @@ fun TaskListScreen(
                                     task = task,
                                     path = path,
                                     onClick = { navController.navigate(Routes.Task.get(task.id)) },
-                                    onUpdate = { task.id?.let { it1 -> viewModel.updateStatusTask(it1, it) } },
+                                    onUpdate = { task.id?.let { it1 -> viewModel.onAction(AddEditTaskAction.UpdateStatusTask(it1, it)) } },
                                     onHold = { viewModel.onSelectionTask(task) },
                                     selected = task in selectedTasks,
                                     modifier = Modifier.animateItem()

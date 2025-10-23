@@ -5,22 +5,8 @@
 ### 1. Unidirectional Data Flow (UDF) Enhancement
 - [x] Convert all ViewModels to use StateFlow for UI state management
 - [x] Create sealed class UiState for each screen
-- [ ] Implement Intent/Action pattern for user interactions
+- [x] Implement Intent/Action pattern for user interactions
 - [ ] Separate UI state from business logic state
-Example structure for TaskScreen:
-```kotlin
-sealed class TaskScreenIntent {
-    data class UpdateTask(val task: Task): TaskScreenIntent()
-    object RefreshTasks: TaskScreenIntent()
-    // etc
-}
-
-data class TaskScreenState(
-    val tasks: List<Task> = emptyList(),
-    val isLoading: Boolean = false,
-    val error: String? = null
-)
-```
 
 ### 2. Clean Architecture Refinements
 - [ ] Create proper domain layer with use cases

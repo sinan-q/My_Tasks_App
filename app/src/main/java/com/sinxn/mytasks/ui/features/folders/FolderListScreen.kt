@@ -71,7 +71,7 @@ fun FolderListScreen(
 
     val context = LocalContext.current
     LaunchedEffect(folderId) {
-        folderViewModel.getSubFolders(folderId)
+        folderViewModel.onAction(FolderAction.GetSubFolders(folderId))
     }
 
     LaunchedEffect(key1 = Unit) {
@@ -120,7 +120,7 @@ fun FolderListScreen(
                 enabled = currentFolder?.parentFolderId != 0L
             ) {
                 if (currentFolder != null) {
-                    folderViewModel.onBack(currentFolder)
+                    folderViewModel.onAction(FolderAction.GetSubFolders(currentFolder.parentFolderId ?: 0L))
                 }
             }
             Scaffold(
@@ -130,7 +130,7 @@ fun FolderListScreen(
                         if (selectionCount.value != 0) {
                             ShowActionsFAB(
                                 onPaste = {
-                                    folderViewModel.pasteSelection()
+                                    folderViewModel.onAction(FolderAction.PasteSelection)
                                 },
                                 action = selectionAction,
                                 setActions = {
@@ -168,12 +168,12 @@ fun FolderListScreen(
                                     placeholder = "Folder Name",
                                 )
                             },
-                            onNavigateUp = { if (folder.parentFolderId == 0L) navController.popBackStack() else folderViewModel.onBack(folder) },
+                            onNavigateUp = { if (folder.parentFolderId == 0L) navController.popBackStack() else folderViewModel.onAction(FolderAction.GetSubFolders(folder.parentFolderId ?: 0L)) },
                             actions = {
                                 if (isFolderNameEdit) {
                                     IconButton(onClick = {
                                         isFolderNameEdit = false
-                                        folderViewModel.updateFolderName(folder.folderId, folderName)
+                                        folderViewModel.onAction(FolderAction.UpdateFolderName(folder.folderId, folderName))
                                     }) {
                                         Icon(
                                             imageVector = Icons.Default.Check,
@@ -234,15 +234,15 @@ fun FolderListScreen(
                                     parentFolderId = currentFolder?.folderId?: 0L
                                 ),
                                 onDismiss = { folderEditToggle = false }
-                            ) { folderViewModel.addFolder(it) }
+                            ) { folderViewModel.onAction(FolderAction.AddFolder(it)) }
                         }
                     }
                     items(folders, key = { "folder_${it.folderId}" }) { folder ->
                         FolderItem(
                             folder = folder,
-                            onClick = { folderViewModel.getSubFolders(folder.folderId) },
-                            onDelete = { folderViewModel.deleteFolder(folder) },
-                            onLock = { folderViewModel.lockFolder(folder) },
+                            onClick = { folderViewModel.onAction(FolderAction.GetSubFolders(folder.folderId)) },
+                            onDelete = { folderViewModel.onAction(FolderAction.DeleteFolder(folder)) },
+                            onLock = { folderViewModel.onAction(FolderAction.LockFolder(folder)) },
                             onHold = { folderViewModel.onSelectionFolder(folder) },
                             selected = folder in selectedFolders,
                             modifier = Modifier.animateItem()
@@ -257,7 +257,7 @@ fun FolderListScreen(
                             task = task,
                             onClick = { navController.navigate(Routes.Task.get(task.id)) },
                             onHold = { folderViewModel.onSelectionTask(task) },
-                            onUpdate = { status -> folderViewModel.updateTaskStatus(task.id!!, status) },
+                            onUpdate = { status -> folderViewModel.onAction(FolderAction.UpdateTaskStatus(task.id!!, status)) },
                             path = null,
                             selected = task in selectedTasks,
                             modifier = Modifier.animateItem()
@@ -280,8 +280,8 @@ fun FolderListScreen(
                     showDialog = showDeleteConfirmationDialog,
                     onDismiss = { showDeleteConfirmationDialog = false },
                     onConfirm = {
-                        folderViewModel.deleteFolder(it)
-                        folderViewModel.onBack(it) 
+                        folderViewModel.onAction(FolderAction.DeleteFolder(it))
+                        folderViewModel.onAction(FolderAction.GetSubFolders(it.parentFolderId ?: 0L))
                         showDeleteConfirmationDialog = false
                     },
                     title = stringResource(R.string.delete_confirmation_title),

@@ -71,6 +71,19 @@ class TaskViewModel @Inject constructor(
         }
     }
 
+    fun onAction(action: AddEditTaskAction) {
+        when (action) {
+            is AddEditTaskAction.UpdateTask -> onTaskUpdate(action.task)
+            is AddEditTaskAction.InsertTask -> insertTask(action.task, action.reminders)
+            is AddEditTaskAction.DeleteTask -> deleteTask(action.task)
+            is AddEditTaskAction.FetchTaskById -> fetchTaskById(action.taskId)
+            is AddEditTaskAction.FetchFolderById -> fetchFolderById(action.folderId)
+            is AddEditTaskAction.AddReminder -> addReminder(action.reminder)
+            is AddEditTaskAction.RemoveReminder -> removeReminder(action.reminder)
+            is AddEditTaskAction.UpdateStatusTask -> updateStatusTask(action.taskId, action.status)
+        }
+    }
+
     suspend fun getPath(folderId: Long, hideLocked: Boolean): String? {
          return getPathUseCase(folderId, hideLocked)
     }
@@ -97,14 +110,14 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun onTaskUpdate(task: Task) {
+    private fun onTaskUpdate(task: Task) {
         val currentState = _uiState.value
         if (currentState is TaskScreenUiState.Success) {
             _uiState.value = currentState.copy(task = task)
         }
     }
 
-    fun fetchTaskById(taskId: Long) {
+    private fun fetchTaskById(taskId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = TaskScreenUiState.Loading
             try {
@@ -141,7 +154,7 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun insertTask(task: Task, reminders: List<Pair<Int, ChronoUnit>> ) {
+    private fun insertTask(task: Task, reminders: List<Pair<Int, ChronoUnit>> ) {
         if (task.title.isEmpty() && task.description.isEmpty()) {
             showToast(Constants.SAVE_FAILED_EMPTY)
             return
@@ -174,7 +187,7 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun deleteTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
+    private fun deleteTask(task: Task) = viewModelScope.launch(Dispatchers.IO) {
         if (task.id == null) {
             showToast(Constants.DELETE_FAILED)
             return@launch
@@ -191,9 +204,13 @@ class TaskViewModel @Inject constructor(
 
     }
 
-    fun addReminder(pair: Pair<Int, ChronoUnit>) {
+    private fun addReminder(pair: Pair<Int, ChronoUnit>) {
         val currentState = _uiState.value
         if (currentState is TaskScreenUiState.Success) {
+            if (currentState.task.due == null || !validateReminder(currentState.task.due, pair)) {
+                showToast(Constants.NOTE_SAVE_FAILED_REMINDER_IN_PAST)
+                return
+            }
             if (currentState.reminders.contains(pair)) {
                 showToast(Constants.TASK_REMINDER_ALREADY_EXISTS)
                 return
@@ -202,22 +219,22 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun validateReminder(dueDae: LocalDateTime, pair: Pair<Int, ChronoUnit>): Boolean = dueDae.minus(pair.first.toLong(),pair.second).isAfter(LocalDateTime.now())
+    private fun validateReminder(dueDae: LocalDateTime, pair: Pair<Int, ChronoUnit>): Boolean = dueDae.minus(pair.first.toLong(),pair.second).isAfter(LocalDateTime.now())
 
-    fun removeReminder(pair: Pair<Int, ChronoUnit>) {
+    private fun removeReminder(pair: Pair<Int, ChronoUnit>) {
         val currentState = _uiState.value
         if (currentState is TaskScreenUiState.Success) {
             _uiState.value = currentState.copy(reminders = currentState.reminders.minus(pair))
         }
     }
 
-    fun updateStatusTask(taskId: Long, status: Boolean) {
+    private fun updateStatusTask(taskId: Long, status: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
            repository.updateStatusTask(taskId, status)
         }
     }
 
-    fun fetchFolderById(folderId: Long) {
+    private fun fetchFolderById(folderId: Long) {
         viewModelScope.launch {
             val fetchedFolder = folderRepository.getFolderById(folderId)
             val subFolders = folderRepository.getSubFolders(folderId).first()

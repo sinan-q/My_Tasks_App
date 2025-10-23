@@ -60,6 +60,17 @@ class NoteViewModel @Inject constructor(
         }
     }
 
+    fun onAction(action: AddEditNoteAction) {
+        when (action) {
+            is AddEditNoteAction.UpdateNote -> onNoteUpdate(action.note)
+            is AddEditNoteAction.InsertNote -> addNote(action.note)
+            is AddEditNoteAction.DeleteNote -> deleteNote(action.note)
+            is AddEditNoteAction.FetchNoteById -> fetchNoteById(action.noteId)
+            is AddEditNoteAction.FetchFolderById -> fetchFolderById(action.folderId)
+            is AddEditNoteAction.NewNoteByFolder -> newNoteByFolder(action.folderId)
+        }
+    }
+
     suspend fun getPath(folderId: Long, hideLocked: Boolean): String? {
             return getPathUseCase(folderId, hideLocked)
     }
@@ -86,14 +97,14 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun onNoteUpdate(note: Note) {
+    private fun onNoteUpdate(note: Note) {
         val currentState = _uiState.value
         if (currentState is NoteScreenUiState.Success) {
             _uiState.value = currentState.copy(note = note)
         }
     }
 
-    fun addNote(note: Note) {
+    private fun addNote(note: Note) {
         viewModelScope.launch {
             if (note.title.isEmpty() && note.content.isEmpty()) {
                 showToast(Constants.SAVE_FAILED_EMPTY)
@@ -104,7 +115,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun deleteNote(note: Note) {
+    private fun deleteNote(note: Note) {
         viewModelScope.launch {
             val deleted = noteRepository.deleteNote(note)
             if (deleted == 0) {
@@ -115,7 +126,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun fetchNoteById(noteId: Long) {
+    private fun fetchNoteById(noteId: Long) {
         viewModelScope.launch {
             _uiState.value = NoteScreenUiState.Loading
             try {
@@ -139,7 +150,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun fetchFolderById(folderId: Long) {
+    private fun fetchFolderById(folderId: Long) {
         viewModelScope.launch {
             val fetchedFolder = folderRepository.getFolderById(folderId)
             val subFolders = folderRepository.getSubFolders(folderId).first()
@@ -162,7 +173,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun newNoteByFolder(folderId: Long) {
+    private fun newNoteByFolder(folderId: Long) {
         viewModelScope.launch {
             val fetchedFolder = folderRepository.getFolderById(folderId)
             val subFolders = folderRepository.getSubFolders(folderId).first()

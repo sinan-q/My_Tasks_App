@@ -62,59 +62,72 @@ class FolderViewModel @Inject constructor(
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
 
-    fun showToast(message: String) {
+    fun onAction(action: FolderAction) {
+        when (action) {
+            is FolderAction.AddFolder -> addFolder(action.folder)
+            is FolderAction.DeleteFolder -> deleteFolder(action.folder)
+            is FolderAction.LockFolder -> lockFolder(action.folder)
+            is FolderAction.UpdateFolderName -> updateFolderName(action.folderId, action.newName)
+            is FolderAction.GetSubFolders -> getSubFolders(action.folderId)
+            is FolderAction.UpdateTaskStatus -> updateTaskStatus(action.taskId, action.status)
+            is FolderAction.PasteSelection -> pasteSelection()
+        }
+    }
+
+    private fun showToast(message: String) {
         viewModelScope.launch {
             _toastMessage.emit(message)
         }
     }
 
-    fun addFolder(folder: Folder) {
+    private fun addFolder(folder: Folder) {
         viewModelScope.launch {
             try {
-                addFolderUseCase(folder) // Or addFolderUseCase.invoke(folder)
-                showToast("Folder Added") // From BaseViewModel
+                addFolderUseCase(folder)
+                showToast("Folder Added")
             } catch (e: Exception) {
                 showToast("Error adding folder: ${e.message}")
             }
         }
     }
 
-    fun deleteFolder(folder: Folder) {
+    private fun deleteFolder(folder: Folder) {
         viewModelScope.launch {
             try {
                 deleteFolderAndItsContentsUseCase(folder)
-                showToast("Folder Deleted") // From BaseViewModel
+                showToast("Folder Deleted")
             } catch (e: Exception) {
                 showToast("Error deleting folder: ${e.message}")
             }
         }
     }
 
-    fun lockFolder(folder: Folder) {
+    private fun lockFolder(folder: Folder) {
         viewModelScope.launch {
             try {
-                lockFolderUseCase(folder, !folder.isLocked) // Assuming use case takes folder and new lock state
+                lockFolderUseCase(folder, !folder.isLocked)
                 showToast(if (!folder.isLocked) "Folder Locked" else "Folder Unlocked")
             } catch (e: Exception) {
                 showToast("Error updating folder lock state: ${e.message}")
             }
         }
     }
-    fun onBack(folder: Folder) = getSubFolders(folder.parentFolderId?: 0L)
 
-    fun updateFolderName(folderId: Long, newName: String) {
+    fun onBack(folder: Folder) = getSubFolders(folder.parentFolderId ?: 0L)
+
+    private fun updateFolderName(folderId: Long, newName: String) {
         viewModelScope.launch {
             folderRepository.updateFolderName(folderId, newName)
         }
     }
 
-    fun updateTaskStatus(taskId: Long, status: Boolean) {
+    private fun updateTaskStatus(taskId: Long, status: Boolean) {
         viewModelScope.launch {
             taskRepository.updateStatusTask(taskId, status)
         }
     }
 
-    fun getSubFolders(folderId: Long) {
+    private fun getSubFolders(folderId: Long) {
         viewModelScope.launch {
             _uiState.value = FolderScreenUiState.Loading
             try {
@@ -141,7 +154,7 @@ class FolderViewModel @Inject constructor(
 
     fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
 
-    fun pasteSelection() {
+    private fun pasteSelection() {
         viewModelScope.launch {
             val currentState = _uiState.value
             if (currentState is FolderScreenUiState.Success) {
@@ -149,7 +162,6 @@ class FolderViewModel @Inject constructor(
                 selectionStore.pasteSelection(folderId)
             }
         }
-
     }
 
     fun clearSelection() {
@@ -161,6 +173,4 @@ class FolderViewModel @Inject constructor(
             selectionStore.deleteSelection()
         }
     }
-
-
 }

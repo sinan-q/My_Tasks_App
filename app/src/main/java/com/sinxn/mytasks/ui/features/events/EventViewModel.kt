@@ -54,13 +54,23 @@ class EventViewModel @Inject constructor(
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
 
-    fun showToast(message: String) {
+    fun onAction(action: AddEditEventAction) {
+        when (action) {
+            is AddEditEventAction.UpdateEvent -> onUpdateEvent(action.event)
+            is AddEditEventAction.InsertEvent -> insertEvent(action.event)
+            is AddEditEventAction.DeleteEvent -> deleteEvent(action.event)
+            is AddEditEventAction.FetchEventById -> fetchEventById(action.eventId)
+            is AddEditEventAction.FetchFolderById -> fetchFolderById(action.folderId)
+        }
+    }
+
+    private fun showToast(message: String) {
         viewModelScope.launch {
             _toastMessage.emit(message)
         }
     }
 
-    fun onUpdateEvent(event: Event) {
+    private fun onUpdateEvent(event: Event) {
         val currentState = _uiState.value
         if (currentState is EventScreenUiState.Success) {
             _uiState.value = currentState.copy(event = event)
@@ -89,7 +99,7 @@ class EventViewModel @Inject constructor(
     }
 
 
-    fun fetchFolderById(folderId: Long) {
+    private fun fetchFolderById(folderId: Long) {
         viewModelScope.launch {
             val fetchedFolder = folderRepository.getFolderById(folderId)
             val subFolders = folderRepository.getSubFolders(folderId).first()
@@ -113,7 +123,7 @@ class EventViewModel @Inject constructor(
 
     }
 
-    fun fetchEventById(eventId: Long) {
+    private fun fetchEventById(eventId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val fetchedEvent = repository.getEventById(eventId)
             if (fetchedEvent == null) {
@@ -138,7 +148,7 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun insertEvent(event: Event) = viewModelScope.launch {
+    private fun insertEvent(event: Event) = viewModelScope.launch {
         if (event.title.isEmpty() && event.description.isEmpty()) {
             showToast(Constants.SAVE_FAILED_EMPTY)
             return@launch
@@ -158,7 +168,7 @@ class EventViewModel @Inject constructor(
         showToast(Constants.SAVE_SUCCESS)
     }
 
-    fun deleteEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {
+    private fun deleteEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {
         val deleted = repository.deleteEvent(event)
         if (deleted == 0) {
             showToast(Constants.DELETE_FAILED)
@@ -167,7 +177,7 @@ class EventViewModel @Inject constructor(
         showToast(Constants.DELETE_SUCCESS)
     }
 
-    fun updateEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {
+    private fun updateEvent(event: Event) = viewModelScope.launch(Dispatchers.IO) {
         repository.updateEvent(event)
     }
 

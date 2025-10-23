@@ -76,9 +76,9 @@ fun AddEditNoteScreen(
 
     LaunchedEffect(noteId, folderId) {
         if (noteId != -1L) {
-            noteViewModel.fetchNoteById(noteId)
+            noteViewModel.onAction(AddEditNoteAction.FetchNoteById(noteId))
         } else {
-            noteViewModel.newNoteByFolder(folderId)
+            noteViewModel.onAction(AddEditNoteAction.NewNoteByFolder(folderId))
         }
     }
 
@@ -117,7 +117,7 @@ fun AddEditNoteScreen(
                         onClick = {
                             if (isEditing) {
                                 if (noteInputState.title.isNotEmpty() || noteInputState.content.isNotEmpty()) {
-                                    noteViewModel.addNote(noteInputState)
+                                    noteViewModel.onAction(AddEditNoteAction.InsertNote(noteInputState))
                                     isEditing = false
                                 } else {
                                     showToast("Note cannot be empty")
@@ -159,7 +159,7 @@ fun AddEditNoteScreen(
                 ) {
                     MyTextField(
                         value = noteInputState.title,
-                        onValueChange = { noteViewModel.onNoteUpdate(noteInputState.copy(title = it)) },
+                        onValueChange = { noteViewModel.onAction(AddEditNoteAction.UpdateNote(noteInputState.copy(title = it))) },
                         readOnly = !isEditing,
                         modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                         placeholder = "Title",
@@ -177,7 +177,7 @@ fun AddEditNoteScreen(
                         FolderDropDown(
                             modifier = Modifier.padding(horizontal = 20.dp),
                             onClick = { folderId ->
-                                noteViewModel.fetchFolderById(folderId)
+                                noteViewModel.onAction(AddEditNoteAction.FetchFolderById(folderId))
                             },
                             isEditing = isEditing,
                             folder = folder,
@@ -189,7 +189,7 @@ fun AddEditNoteScreen(
                     if (isEditing) {
                         MyTextField(
                             value = noteInputState.content,
-                            onValueChange = { noteViewModel.onNoteUpdate(noteInputState.copy(content = it)) },
+                            onValueChange = { noteViewModel.onAction(AddEditNoteAction.UpdateNote(noteInputState.copy(content = it))) },
                             modifier = Modifier.fillMaxSize(),
                             placeholder = "Content",
                             textStyle = TextStyle.Default.copy(
@@ -211,7 +211,7 @@ fun AddEditNoteScreen(
                 showDialog = showDeleteConfirmationDialog,
                 onDismiss = { showDeleteConfirmationDialog = false },
                 onConfirm = {
-                    noteViewModel.deleteNote(noteInputState)
+                    noteViewModel.onAction(AddEditNoteAction.DeleteNote(noteInputState))
                     showDeleteConfirmationDialog = false
                 },
                 title = stringResource(R.string.delete_confirmation_title),
