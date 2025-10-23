@@ -47,7 +47,7 @@ fun NoteListScreen(
     viewModel: NoteViewModel = hiltViewModel(),
     navController: NavController,
 ) {
-    val notes = viewModel.notes.collectAsState().value
+    val uiState by viewModel.uiState.collectAsState()
     val selectionAction by viewModel.selectedAction.collectAsState()
     val selectedNotes by viewModel.selectedNotes.collectAsState()
     val selectionCount = viewModel.selectionCount.collectAsState()
@@ -123,48 +123,59 @@ fun NoteListScreen(
         )},
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
-        LazyVerticalStaggeredGrid (
-            verticalItemSpacing = 4.dp,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            columns = StaggeredGridCells.Fixed(2),
-            contentPadding = paddingValues,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        ) {
-            items(notes) { note ->
-                var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state
-                var isLoadingPath by remember { mutableStateOf(true) }
+        when (val state = uiState) {
+            is NoteScreenUiState.Loading -> {
+                Text(text = "Loading...")
+            }
+            is NoteScreenUiState.Error -> {
+                Text(text = state.message)
+            }
+            is NoteScreenUiState.Success -> {
+                val notes = state.notes
+                LazyVerticalStaggeredGrid (
+                    verticalItemSpacing = 4.dp,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    columns = StaggeredGridCells.Fixed(2),
+                    contentPadding = paddingValues,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    items(notes, key = { it.id!! }) { note ->
+                        var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state
+                        var isLoadingPath by remember { mutableStateOf(true) }
 
-                // Launch a coroutine for each item to get its path
-                LaunchedEffect(key1 = note.folderId, key2 = hideLocked) {
-                    isLoadingPath = true
-                    path = viewModel.getPath(note.folderId, hideLocked)
-                    isLoadingPath = false
+                        // Launch a coroutine for each item to get its path
+                        LaunchedEffect(key1 = note.folderId, key2 = hideLocked) {
+                            isLoadingPath = true
+                            path = viewModel.getPath(note.folderId, hideLocked)
+                            isLoadingPath = false
+                        }
+
+                        if (!isLoadingPath)  // Only compose TaskItem if path is loaded
+
+                            if (path != null) {
+                                NoteItem(
+                                    note = note,
+                                    path = path,
+                                    onClick = { navController.navigate(Routes.Note.get(note.id)) },
+                                    onHold = { viewModel.onSelectionNote(note) },
+                                    selected = note in selectedNotes,
+                                    modifier = Modifier.animateItem()
+                                )
+                            }
+                    }
                 }
-
-                if (!isLoadingPath)  // Only compose TaskItem if path is loaded
-
-                if (path != null) {
-                    NoteItem(
-                        note = note,
-                        path = path,
-                        onClick = { navController.navigate(Routes.Note.get(note.id)) },
-                        onHold = { viewModel.onSelectionNote(note) },
-                        selected = note in selectedNotes,
-                        modifier = Modifier.animateItem()
-                    )
-                }
+                ConfirmationDialog(
+                    showDialog = selectionAction == SelectionActions.DELETE,
+                    onDismiss = {
+                        viewModel.setSelectionAction(SelectionActions.NONE)
+                    },
+                    onConfirm = {
+                        viewModel.deleteSelection()
+                    },
+                    title = stringResource(R.string.delete_confirmation_title),
+                    message = "Sure want to delete ${selectionCount.value} items?"
+                )
             }
         }
-        ConfirmationDialog(
-            showDialog = selectionAction == SelectionActions.DELETE,
-            onDismiss = {
-                viewModel.setSelectionAction(SelectionActions.NONE)
-            },
-            onConfirm = {
-                viewModel.deleteSelection()
-            },
-            title = stringResource(R.string.delete_confirmation_title),
-            message = "Sure want to delete ${selectionCount.value} items?"
-        )
     }
 }

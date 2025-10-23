@@ -41,7 +41,6 @@ class AlarmScreen : ComponentActivity() {
 
         val alarmId = intent.getLongExtra("ALARM_ID", 0)
         val taskId = intent.getLongExtra("ALARM_TASK_ID", 0L)
-        //val time = intent.getStringExtra("ALARM_TIME") ?: "Not Available"
 
         setContent {
             FullScreenAlertScreen(
@@ -64,7 +63,7 @@ fun FullScreenAlertScreen(
     LaunchedEffect(taskId) {
         alarmViewModel.getTaskById(taskId)
     }
-    val task by alarmViewModel.task.collectAsState()
+    val uiState by alarmViewModel.uiState.collectAsState()
 
     var reminder by remember { mutableStateOf("0") }
     var reminderType by remember { mutableStateOf(ReminderTypes.MINUTE) }
@@ -74,78 +73,90 @@ fun FullScreenAlertScreen(
             .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Column {
-            Text(
-                text = task.id.toString(),
-                fontSize = 24.sp
-            )
-            Text(
-                text = task.title,
-                fontSize = 24.sp
-            )
-            Text(
-                text = task.description,
-                fontSize = 24.sp
-            )
-            Text(
-                text = task.due?.formatDate()?:"NULL",
-                fontSize = 24.sp
-            )
-            Text(text = "Remind me again in")
-            Row  {
-                val itemHeight = 50.dp
-
-                ScrollablePicker (
-                    values = (0..60).toList(),
-                    defaultValue = 0,
-                    height = itemHeight,
-                    modifier = Modifier
-                        .width(70.dp)
-                        .height(itemHeight)
-                ) {
-                    reminder = it.toString()
-                }
-                ScrollablePicker (
-                    values = ReminderTypes.entries,
-                    defaultValue = ReminderTypes.MINUTE,
-                    height = itemHeight,
-                    modifier = Modifier
-                        .width(100.dp)
-                        .height(itemHeight)
-                ) {
-                    reminderType = it
-                }
-                RectangleButton(
-                    modifier = Modifier.height(itemHeight),
-                    onClick = {
-                        alarmViewModel.snoozeAlarm(alarmId, LocalDateTime.now().plus(reminder.toLong(), reminderType.unit).toMillis())
-                       // Toast.makeText(LocalContext.current, "Alarm Snoozed", Toast.LENGTH_SHORT).show() //TODO
-                        onFinish()
-                    }
-                ) {
-                    Text("SET")
-                }
-
+        when (val state = uiState) {
+            is AlarmScreenUiState.Loading -> {
+                Text(text = "Loading...")
             }
-            Row {
-                RectangleButton(onClick = {
-                    alarmViewModel.setAsCompleted(task.id!!)
-                    alarmViewModel.cancelNotification(alarmId)
-                    onFinish()
+            is AlarmScreenUiState.Success -> {
+                val task = state.task
+                Column {
+                    Text(
+                        text = task.id.toString(),
+                        fontSize = 24.sp
+                    )
+                    Text(
+                        text = task.title,
+                        fontSize = 24.sp
+                    )
+                    Text(
+                        text = task.description,
+                        fontSize = 24.sp
+                    )
+                    Text(
+                        text = task.due?.formatDate() ?: "NULL",
+                        fontSize = 24.sp
+                    )
+                    Text(text = "Remind me again in")
+                    Row {
+                        val itemHeight = 50.dp
 
-                }) {
-                    Text(text = "Set as completed")
-                }
-                RectangleButton(onClick = {
-                    alarmViewModel.cancelAlarm(alarmId)
-                    alarmViewModel.cancelNotification(alarmId)
-                    onFinish()
+                        ScrollablePicker(
+                            values = (0..60).toList(),
+                            defaultValue = 0,
+                            height = itemHeight,
+                            modifier = Modifier
+                                .width(70.dp)
+                                .height(itemHeight)
+                        ) {
+                            reminder = it.toString()
+                        }
+                        ScrollablePicker(
+                            values = ReminderTypes.entries,
+                            defaultValue = ReminderTypes.MINUTE,
+                            height = itemHeight,
+                            modifier = Modifier
+                                .width(100.dp)
+                                .height(itemHeight)
+                        ) {
+                            reminderType = it
+                        }
+                        RectangleButton(
+                            modifier = Modifier.height(itemHeight),
+                            onClick = {
+                                alarmViewModel.snoozeAlarm(
+                                    alarmId,
+                                    LocalDateTime.now().plus(reminder.toLong(), reminderType.unit).toMillis()
+                                )
+                                onFinish()
+                            }
+                        ) {
+                            Text("SET")
+                        }
 
-                }) {
-                    Text(text = "Close")
+                    }
+                    Row {
+                        RectangleButton(onClick = {
+                            task.id?.let { alarmViewModel.setAsCompleted(it) }
+                            alarmViewModel.cancelNotification(alarmId)
+                            onFinish()
+
+                        }) {
+                            Text(text = "Set as completed")
+                        }
+                        RectangleButton(onClick = {
+                            alarmViewModel.cancelAlarm(alarmId)
+                            alarmViewModel.cancelNotification(alarmId)
+                            onFinish()
+
+                        }) {
+                            Text(text = "Close")
+                        }
+                    }
                 }
+            }
+            is AlarmScreenUiState.Error -> {
+                Text(text = state.message)
             }
         }
-
     }
 }

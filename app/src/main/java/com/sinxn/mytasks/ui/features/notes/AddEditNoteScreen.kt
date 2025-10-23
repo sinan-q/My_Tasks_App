@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -61,14 +60,11 @@ fun AddEditNoteScreen(
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
 
     val context = LocalContext.current
-    val noteInputState by noteViewModel.note.collectAsState()
+    val uiState by noteViewModel.uiState.collectAsState()
     var isEditing by remember { mutableStateOf(noteId == -1L) }
-    val folder by noteViewModel.folder.collectAsState()
-    val subFolders by noteViewModel.folders.collectAsState()
 
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
 
     val handleBackPressAttempt = rememberPressBackTwiceState(
         enabled = isEditing, // Only require double press if currently editing
@@ -83,8 +79,6 @@ fun AddEditNoteScreen(
             noteViewModel.fetchNoteById(noteId)
         } else {
             noteViewModel.newNoteByFolder(folderId)
-            focusRequester.requestFocus()
-            keyboardController?.show()
         }
     }
 
@@ -98,112 +92,131 @@ fun AddEditNoteScreen(
         }
     }
 
-    Scaffold(
-        floatingActionButton = {
-            RectangleFAB(
-                onClick = {
+    when (val state = uiState) {
+        is NoteScreenUiState.Loading -> {
+            Text("Loading...")
+        }
+        is NoteScreenUiState.Error -> {
+            Text(state.message)
+        }
+        is NoteScreenUiState.Success -> {
+            val noteInputState = state.note
+            val folder = state.folder
+            val subFolders = state.folders
+
+            LaunchedEffect(Unit) {
+                if (noteId == -1L) {
+                    focusRequester.requestFocus()
+                    keyboardController?.show()
+                }
+            }
+
+            Scaffold(
+                floatingActionButton = {
+                    RectangleFAB(
+                        onClick = {
+                            if (isEditing) {
+                                if (noteInputState.title.isNotEmpty() || noteInputState.content.isNotEmpty()) {
+                                    noteViewModel.addNote(noteInputState)
+                                    isEditing = false
+                                } else {
+                                    showToast("Note cannot be empty")
+                                }
+                            } else {
+                                isEditing = true
+                            }
+                        }
+                    ) {
+                        Icon(
+                            if (!isEditing) Icons.Default.Edit else Icons.Default.Check,
+                            contentDescription = null
+                        )
+                    }
+                },
+                topBar = {
+                    MyTasksTopAppBar(
+                        onNavigateUp = handleBackPressAttempt,
+                        actions = {
+                            if (noteId != -1L) {
+                                IconButton(onClick = {
+                                    showDeleteConfirmationDialog = true
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete"
+                                    )
+                                }
+                            }
+                        }
+                    )
+                },
+                modifier = Modifier.imePadding()
+            ) { padding ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                ) {
+                    MyTextField(
+                        value = noteInputState.title,
+                        onValueChange = { noteViewModel.onNoteUpdate(noteInputState.copy(title = it)) },
+                        readOnly = !isEditing,
+                        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                        placeholder = "Title",
+                        textStyle = TextStyle.Default.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 18.sp
+                        )
+                    )
+                    HorizontalDivider()
+                    Row(modifier = Modifier.padding(horizontal = 20.dp)) {
+                        Icon(painterResource(R.drawable.clock_ic), contentDescription = "Clock Icon", tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                        Text(noteInputState.timestamp.formatDate(), fontSize = 12.sp)
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        FolderDropDown(
+                            modifier = Modifier.padding(horizontal = 20.dp),
+                            onClick = { folderId ->
+                                noteViewModel.fetchFolderById(folderId)
+                            },
+                            isEditing = isEditing,
+                            folder = folder,
+                            folders = subFolders
+                        )
+                    }
+
+                    HorizontalDivider()
                     if (isEditing) {
-                        if (noteInputState.title.isNotEmpty() || noteInputState.content.isNotEmpty()) {
-                            noteViewModel.addNote(noteInputState)
-                            isEditing = false
-                        } else {
-                            showToast("Note cannot be empty")
-                        }
-                    } else {
-                        isEditing = true
-                    }
-
-
-                }
-            ) {
-                Icon(
-                    if (!isEditing) Icons.Default.Edit else Icons.Default.Check,
-                    contentDescription = null
-                )
-            }
-        },
-        topBar = {
-            MyTasksTopAppBar(
-                onNavigateUp = handleBackPressAttempt,
-                actions = {
-                    if (noteId != -1L) {
-                        IconButton(onClick = {
-                            showDeleteConfirmationDialog = true
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete"
+                        MyTextField(
+                            value = noteInputState.content,
+                            onValueChange = { noteViewModel.onNoteUpdate(noteInputState.copy(content = it)) },
+                            modifier = Modifier.fillMaxSize(),
+                            placeholder = "Content",
+                            textStyle = TextStyle.Default.copy(
+                                fontSize = 16.sp
                             )
-                        }
+                        )
+                    } else {
+                        MarkdownText(
+                            markdown = noteInputState.content,
+                            modifier = Modifier.fillMaxSize().padding(20.dp),
+                            style = TextStyle.Default.copy(
+                                fontSize = 16.sp
+                            )
+                        )
                     }
                 }
-            )
-        },
-        modifier = Modifier.imePadding()
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            MyTextField(
-                value = noteInputState.title,
-                onValueChange = { noteViewModel.onNoteUpdate(noteInputState.copy(title = it)) },
-                readOnly = !isEditing,
-                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
-                placeholder = "Title",
-                textStyle = TextStyle.Default.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 18.sp
-                )
-            )
-            HorizontalDivider()
-            Row(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Icon(painterResource(R.drawable.clock_ic), contentDescription = "Clock Icon", tint = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-                Text(noteInputState.timestamp.formatDate(), fontSize = 12.sp)
-                Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                FolderDropDown(
-                    modifier = Modifier.padding(horizontal = 20.dp),
-                    onClick = { folderId ->
-                        noteViewModel.fetchFolderById(folderId)
-                    },
-                    isEditing = isEditing,
-                    folder = folder,
-                    folders = subFolders
-                )
             }
-
-            HorizontalDivider()
-            if (isEditing) {
-                MyTextField(
-                    value = noteInputState.content,
-                    onValueChange = { noteViewModel.onNoteUpdate(noteInputState.copy(content = it)) },
-                    modifier = Modifier.fillMaxSize(),
-                    placeholder = "Content",
-                    textStyle = TextStyle.Default.copy(
-                        fontSize = 16.sp
-                    )
-                )
-            } else {
-                MarkdownText(
-                    markdown = noteInputState.content,
-                    modifier = Modifier.fillMaxSize().padding(20.dp),
-                    style = TextStyle.Default.copy(
-                        fontSize = 16.sp
-                    )
-                )
-            }
+            ConfirmationDialog(
+                showDialog = showDeleteConfirmationDialog,
+                onDismiss = { showDeleteConfirmationDialog = false },
+                onConfirm = {
+                    noteViewModel.deleteNote(noteInputState)
+                    showDeleteConfirmationDialog = false
+                },
+                title = stringResource(R.string.delete_confirmation_title),
+                message = stringResource(R.string.delete_item_message)
+            )
         }
     }
-    ConfirmationDialog(
-        showDialog = showDeleteConfirmationDialog,
-        onDismiss = { showDeleteConfirmationDialog = false },
-        onConfirm = {
-            noteViewModel.deleteNote(noteInputState)
-            showDeleteConfirmationDialog = false
-        },
-        title = stringResource(R.string.delete_confirmation_title),
-        message = stringResource(R.string.delete_item_message)
-    )
 }

@@ -4,13 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.core.SelectionStore
+import com.sinxn.mytasks.data.local.entities.Event
+import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
-import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.domain.usecase.folder.AddFolderUseCase
 import com.sinxn.mytasks.domain.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
@@ -18,21 +19,33 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed class HomeScreenUiState {
+    object Loading : HomeScreenUiState()
+    data class Success(
+        val parentFolder: Folder?,
+        val folders: List<Folder>,
+        val upcomingEvents: List<Event>,
+        val pendingTasks: List<Task>,
+        val notes: List<Note>,
+        val tasks: List<Task>
+    ) : HomeScreenUiState()
+    data class Error(val message: String) : HomeScreenUiState()
+}
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    noteRepository: NoteRepositoryInterface,
+    private val noteRepository: NoteRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
     private val folderRepository: FolderRepositoryInterface,
-    eventRepository: EventRepositoryInterface,
+    private val eventRepository: EventRepositoryInterface,
     private val addFolderUseCase: AddFolderUseCase,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
@@ -61,48 +74,33 @@ class HomeViewModel @Inject constructor(
         selectionStore.deleteSelection()
     }}
 
-    private val _parentFolder = MutableStateFlow<Folder?>(null)
-    val parentFolder: StateFlow<Folder?> = _parentFolder.asStateFlow()
+    private val _uiState = MutableStateFlow<HomeScreenUiState>(HomeScreenUiState.Loading)
+    val uiState: StateFlow<HomeScreenUiState> = _uiState.asStateFlow()
 
-    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
-    val folders: StateFlow<List<Folder>> = _folders.asStateFlow()
-
-    val upcomingEvents = eventRepository.getUpcomingEvents(4).stateIn(
-        viewModelScope,
-        SharingStarted.Lazily,
-        emptyList()
-    )
-
-    val pendingTasks = taskRepository.getPendingTasks(4).stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(10000),
-        emptyList()
-    )
-
-    val mainFolders = folderRepository.getSubFolders(0).stateIn(
-        viewModelScope,
-        SharingStarted.Lazily,
-        emptyList()
-    )
-    val notes = noteRepository.getNotesByFolderId(0).stateIn(
-        viewModelScope,
-        SharingStarted.Lazily,
-        emptyList()
-    )
-    val tasks = taskRepository.getTasksByFolderId(0).stateIn(
-        viewModelScope,
-        SharingStarted.Lazily,
-        emptyList()
-    )
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
 
     init {
         viewModelScope.launch {
-            val fetchedFolder = folderRepository.getFolderById(0L)
-            val subFolders = folderRepository.getSubFolders(0L).first()
-            _parentFolder.value = fetchedFolder
-            _folders.value = subFolders
+            val parentFolder = folderRepository.getFolderById(0L)
+            combine(
+                folderRepository.getSubFolders(0),
+                eventRepository.getUpcomingEvents(4),
+                taskRepository.getPendingTasks(4),
+                noteRepository.getNotesByFolderId(0),
+                taskRepository.getTasksByFolderId(0),
+            ) { folders, upcomingEvents, pendingTasks, notes, tasks ->
+                HomeScreenUiState.Success(
+                    folders = folders,
+                    upcomingEvents = upcomingEvents,
+                    pendingTasks = pendingTasks,
+                    notes = notes,
+                    tasks = tasks,
+                    parentFolder = parentFolder
+                )
+            }.collectLatest { state ->
+                _uiState.value = state
+            }
         }
     }
     fun addFolder(folder: Folder) {

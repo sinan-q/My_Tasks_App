@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.core.SelectionStore
-import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
-import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
-import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
+import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
+import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.domain.usecase.folder.AddFolderUseCase
 import com.sinxn.mytasks.domain.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
@@ -20,9 +20,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+sealed class FolderScreenUiState {
+    object Loading : FolderScreenUiState()
+    data class Success(
+        val folder: Folder?,
+        val folders: List<Folder>,
+        val notes: List<Note>,
+        val tasks: List<Task>
+    ) : FolderScreenUiState()
+    data class Error(val message: String) : FolderScreenUiState()
+}
 
 @HiltViewModel
 class FolderViewModel @Inject constructor(
@@ -45,17 +56,8 @@ class FolderViewModel @Inject constructor(
     fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
     fun onSelectionFolder(folder: Folder) = selectionStore.toggleFolder(folder)
 
-    private val _folder = MutableStateFlow<Folder?>(null)
-    val folder: StateFlow<Folder?> = _folder.asStateFlow()
-
-    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
-    val folders: StateFlow<List<Folder>> = _folders.asStateFlow()
-
-    private val _notes = MutableStateFlow<List<Note>>(emptyList())
-    val notes: StateFlow<List<Note>> = _notes.asStateFlow()
-
-    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
-    val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
+    private val _uiState = MutableStateFlow<FolderScreenUiState>(FolderScreenUiState.Loading)
+    val uiState: StateFlow<FolderScreenUiState> = _uiState.asStateFlow()
 
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
@@ -114,19 +116,25 @@ class FolderViewModel @Inject constructor(
 
     fun getSubFolders(folderId: Long) {
         viewModelScope.launch {
-            val fetchedFolder = folderRepository.getFolderById(folderId)
-            val subFolders = folderRepository.getSubFolders(folderId).first()
-            _folder.value = fetchedFolder
-            _folders.value = subFolders
-        }
-        viewModelScope.launch {
-            taskRepository.getTasksByFolderId(folderId).collectLatest { taskList ->
-                _tasks.value = taskList
-            }
-        }
-        viewModelScope.launch {
-            noteRepository.getNotesByFolderId(folderId).collectLatest { noteList ->
-                _notes.value = noteList
+            _uiState.value = FolderScreenUiState.Loading
+            try {
+                val folder = folderRepository.getFolderById(folderId)
+                combine(
+                    folderRepository.getSubFolders(folderId),
+                    taskRepository.getTasksByFolderId(folderId),
+                    noteRepository.getNotesByFolderId(folderId)
+                ) { folders, tasks, notes ->
+                    FolderScreenUiState.Success(
+                        folders = folders,
+                        tasks = tasks,
+                        notes = notes,
+                        folder = folder
+                    )
+                }.collectLatest { state ->
+                    _uiState.value = state
+                }
+            } catch (e: Exception) {
+                _uiState.value = FolderScreenUiState.Error(e.message ?: "An error occurred")
             }
         }
     }
@@ -135,8 +143,11 @@ class FolderViewModel @Inject constructor(
 
     fun pasteSelection() {
         viewModelScope.launch {
-            val folderId = folder.value?.folderId?:0L
-            selectionStore.pasteSelection(folderId)
+            val currentState = _uiState.value
+            if (currentState is FolderScreenUiState.Success) {
+                val folderId = currentState.folder?.folderId ?: 0L
+                selectionStore.pasteSelection(folderId)
+            }
         }
 
     }

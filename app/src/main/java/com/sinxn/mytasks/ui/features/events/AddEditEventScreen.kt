@@ -38,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -81,13 +80,10 @@ fun AddEditEventScreen(
     var isDatePickerForStart by remember { mutableStateOf<Boolean?>(null) }
     var isEditing by remember { mutableStateOf(eventId == -1L) }
 
-    val eventInputState by eventViewModel.event.collectAsState()
-    val folder by eventViewModel.folder.collectAsState()
-    val folders by eventViewModel.folders.collectAsState()
+    val uiState by eventViewModel.uiState.collectAsState()
 
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
 
     val handleBackPressAttempt = rememberPressBackTwiceState(
         enabled = isEditing,
@@ -100,8 +96,6 @@ fun AddEditEventScreen(
         if (message in listOf(Constants.NOT_FOUND, Constants.SAVE_SUCCESS, Constants.DELETE_SUCCESS)) onFinish()
     }
     LaunchedEffect(key1 = Unit) {
-        focusRequester.requestFocus()
-        keyboardController?.show()
         eventViewModel.toastMessage.collectLatest { message ->
             showToast(message)
         }
@@ -113,201 +107,223 @@ fun AddEditEventScreen(
             eventViewModel.fetchFolderById(folderId)
         }
         val initialDate = if (date != -1L) fromMillis(date) else LocalDateTime.now().plusDays(1)
-        eventViewModel.onUpdateEvent(eventInputState.copy(
-            start = initialDate.withHour(10).withMinute(0),
-            end = initialDate.withHour(11).withMinute(0),
-        ))
+        (uiState as? EventScreenUiState.Success)?.let {
+            eventViewModel.onUpdateEvent(it.event.copy(
+                start = initialDate.withHour(10).withMinute(0),
+                end = initialDate.withHour(11).withMinute(0),
+            ))
+        }
     }
 
+    when (val state = uiState) {
+        is EventScreenUiState.Loading -> {
+            Text(text = "Loading...")
+        }
+        is EventScreenUiState.Error -> {
+            Text(text = state.message)
+        }
+        is EventScreenUiState.Success -> {
+            val eventInputState = state.event
+            val folder = state.folder
+            val folders = state.folders
 
-    Scaffold(
-        floatingActionButton = {
-            RectangleFAB(
-                onClick = {
-                    if (isEditing) {
-                        eventViewModel.insertEvent(eventInputState)
-                        isEditing = false
-
-                    } else {
-                        isEditing = true
-                    }
+            LaunchedEffect(Unit) {
+                if (eventId == -1L) {
+                    focusRequester.requestFocus()
+                    keyboardController?.show()
                 }
-            ) {
-                Icon(
-                    if (!isEditing) Icons.Default.Edit else Icons.Default.Check,
-                    contentDescription = if (!isEditing) "Edit Event" else "Save Event"
-                )
             }
-        },
-        topBar = {
-            MyTasksTopAppBar(
-                onNavigateUp = handleBackPressAttempt,
-                actions = {
-                    if (eventId != -1L) {
-                        IconButton(onClick = { showDeleteConfirmationDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete"
+
+            Scaffold(
+                floatingActionButton = {
+                    RectangleFAB(
+                        onClick = {
+                            if (isEditing) {
+                                eventViewModel.insertEvent(eventInputState)
+                                isEditing = false
+
+                            } else {
+                                isEditing = true
+                            }
+                        }
+                    ) {
+                        Icon(
+                            if (!isEditing) Icons.Default.Edit else Icons.Default.Check,
+                            contentDescription = if (!isEditing) "Edit Event" else "Save Event"
+                        )
+                    }
+                },
+                topBar = {
+                    MyTasksTopAppBar(
+                        onNavigateUp = handleBackPressAttempt,
+                        actions = {
+                            if (eventId != -1L) {
+                                IconButton(onClick = { showDeleteConfirmationDialog = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete"
+                                    )
+                                }
+                            }
+                        }
+                    )
+                },
+                modifier = Modifier.imePadding()
+            ) { innerPadding ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
+                    MyTextField(
+                        value = eventInputState.title,
+                        onValueChange = { eventViewModel.onUpdateEvent(eventInputState.copy(title = it)) },
+                        placeholder = "Title",
+                        readOnly = !isEditing,
+                        textStyle = TextStyle.Default.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 18.sp
+                        ),
+                        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    HorizontalDivider()
+                    FolderDropDown(
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                        onClick = { folderId ->
+                            eventViewModel.fetchFolderById(folderId)
+                        },
+                        isEditing = isEditing,
+                        folder = folder,
+                        folders = folders
+                    )
+                    HorizontalDivider()
+                    OutlinedTextField(
+                        value = eventInputState.start?.formatDate() ?: "No Start Date",
+                        onValueChange = {},
+                        label = { Text("Start Date") },
+                        readOnly = true,
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                isDatePickerForStart = true
+                                showDatePicker = isEditing
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = "Select Start Date"
+                                )
+                            }
+
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
+                    )
+                    OutlinedTextField(
+                        value = eventInputState.end?.formatDate() ?: "No End Date",
+                        onValueChange = {},
+                        label = { Text("End Date") },
+                        readOnly = true,
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                isDatePickerForStart = false
+                                showDatePicker = isEditing
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = "Select End Date"
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
+                    )
+                    HorizontalDivider()
+                    MyTextField(
+                        value = eventInputState.description,
+                        onValueChange = { eventViewModel.onUpdateEvent(eventInputState.copy(description = it)) },
+                        placeholder = "Description",
+                        readOnly = !isEditing,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    )
+
+                    if (showDatePicker) {
+                        val datePickerState = rememberDatePickerState(
+                            initialSelectedDateMillis = eventInputState.start?.toMillis()?:eventInputState.end?.toMillis()?: Instant.now().toEpochMilli()
+                        )
+
+                        DatePickerDialog(
+                            onDismissRequest = { showDatePicker = false },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        if (isDatePickerForStart == true) {
+                                            eventViewModel.onUpdateEvent(eventInputState.copy(
+                                                start = datePickerState.selectedDateMillis?.let { fromMillis(it) }
+                                            ))
+                                        }
+                                        else if (isDatePickerForStart == false){
+                                            eventViewModel.onUpdateEvent(eventInputState.copy(
+                                                end = datePickerState.selectedDateMillis?.let { fromMillis(it) }
+                                            ))
+                                        }
+                                        showDatePicker = false
+                                        showTimePicker = true
+                                    }
+                                ) {
+                                    Text("OK")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = {
+                                    showDatePicker = false
+                                    isDatePickerForStart = null
+                                }) {
+                                    Text("Cancel")
+                                }
+                            }
+                        ) {
+                            DatePicker(state = datePickerState)
+                        }
+                    }
+                    if (showTimePicker) {
+                        val timePickerState = rememberTimePickerState()
+
+                        TimePickerDialog(
+                            onDismiss = {
+                                showTimePicker = false
+                                isDatePickerForStart = null
+                            },
+                            onConfirm = {
+                                if (isDatePickerForStart == true) {
+                                    eventViewModel.onUpdateEvent(eventInputState.copy(
+                                        start = eventInputState.start?.addTimerPickerState(timePickerState),
+                                    ))
+                                    if (eventInputState.end!!.isBefore(eventInputState.start))
+                                        eventViewModel.onUpdateEvent(eventInputState.copy(
+                                            end = eventInputState.start?.plusHours(1),
+                                        ))
+                                } else if (isDatePickerForStart == false)
+                                    eventViewModel.onUpdateEvent(eventInputState.copy(
+                                        end = eventInputState.end?.addTimerPickerState(timePickerState)
+                                    ))
+                                isDatePickerForStart = null
+                                showTimePicker = false
+                            }
+                        ) {
+                            TimePicker(
+                                state = timePickerState,
                             )
                         }
                     }
                 }
-            )
-        },
-        modifier = Modifier.imePadding()
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            MyTextField(
-                value = eventInputState.title,
-                onValueChange = { eventViewModel.onUpdateEvent(eventInputState.copy(title = it)) },
-                placeholder = "Title",
-                readOnly = !isEditing,
-                textStyle = TextStyle.Default.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 18.sp
-                ),
-                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            HorizontalDivider()
-            FolderDropDown(
-                modifier = Modifier.padding(horizontal = 20.dp),
-                onClick = { folderId ->
-                    eventViewModel.fetchFolderById(folderId)
-                },
-                isEditing = isEditing,
-                folder = folder,
-                folders = folders
-            )
-            HorizontalDivider()
-            OutlinedTextField(
-                value = eventInputState.start?.formatDate() ?: "No Start Date",
-                onValueChange = {},
-                label = { Text("Start Date") },
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(onClick = {
-                        isDatePickerForStart = true
-                        showDatePicker = isEditing
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = "Select Start Date"
-                        )
-                    }
-
-                },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
-            )
-            OutlinedTextField(
-                value = eventInputState.end?.formatDate() ?: "No End Date",
-                onValueChange = {},
-                label = { Text("End Date") },
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(onClick = {
-                        isDatePickerForStart = false
-                        showDatePicker = isEditing
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = "Select End Date"
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
-            )
-            HorizontalDivider()
-            MyTextField(
-                value = eventInputState.description,
-                onValueChange = { eventViewModel.onUpdateEvent(eventInputState.copy(description = it)) },
-                placeholder = "Description",
-                readOnly = !isEditing,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-            )
-
-            if (showDatePicker) {
-                val datePickerState = rememberDatePickerState(
-                    initialSelectedDateMillis = eventInputState.start?.toMillis()?:eventInputState.end?.toMillis()?: Instant.now().toEpochMilli()
-                )
-
-                DatePickerDialog(
-                    onDismissRequest = { showDatePicker = false },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                if (isDatePickerForStart == true) {
-                                    eventViewModel.onUpdateEvent(eventInputState.copy(
-                                        start = datePickerState.selectedDateMillis?.let { fromMillis(it) }
-                                    ))
-                                }
-                                else if (isDatePickerForStart == false){
-                                    eventViewModel.onUpdateEvent(eventInputState.copy(
-                                        end = datePickerState.selectedDateMillis?.let { fromMillis(it) }
-                                    ))
-                                }
-                                showDatePicker = false
-                                showTimePicker = true
-                            }
-                        ) {
-                            Text("OK")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = {
-                            showDatePicker = false
-                            isDatePickerForStart = null
-                        }) {
-                            Text("Cancel")
-                        }
-                    }
-                ) {
-                    DatePicker(state = datePickerState)
-                }
             }
-            if (showTimePicker) {
-                val timePickerState = rememberTimePickerState()
-
-                TimePickerDialog(
-                    onDismiss = {
-                        showTimePicker = false
-                        isDatePickerForStart = null
-                    },
-                    onConfirm = {
-                        if (isDatePickerForStart == true) {
-                            eventViewModel.onUpdateEvent(eventInputState.copy(
-                                start = eventInputState.start?.addTimerPickerState(timePickerState),
-                            ))
-                            if (eventInputState.end!!.isBefore(eventInputState.start))
-                                eventViewModel.onUpdateEvent(eventInputState.copy(
-                                    end = eventInputState.start?.plusHours(1),
-                                ))
-                        } else if (isDatePickerForStart == false)
-                            eventViewModel.onUpdateEvent(eventInputState.copy(
-                                end = eventInputState.end?.addTimerPickerState(timePickerState)
-                            ))
-                        isDatePickerForStart = null
-                        showTimePicker = false
-                    }
-                ) {
-                    TimePicker(
-                        state = timePickerState,
-                    )
-                }
-            }
+            ConfirmationDialog(
+                showDialog = showDeleteConfirmationDialog,
+                onDismiss = { showDeleteConfirmationDialog = false },
+                onConfirm = {
+                    eventViewModel.deleteEvent(eventInputState)
+                    showDeleteConfirmationDialog = false },
+                title = stringResource(R.string.delete_confirmation_title),
+                message = stringResource(R.string.delete_item_message)
+            )
         }
     }
-    ConfirmationDialog(
-        showDialog = showDeleteConfirmationDialog,
-        onDismiss = { showDeleteConfirmationDialog = false },
-        onConfirm = {
-            eventViewModel.deleteEvent(eventInputState)
-            showDeleteConfirmationDialog = false },
-        title = stringResource(R.string.delete_confirmation_title),
-        message = stringResource(R.string.delete_item_message)
-    )
 }

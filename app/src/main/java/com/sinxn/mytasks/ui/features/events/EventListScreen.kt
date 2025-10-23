@@ -41,8 +41,7 @@ fun EventListScreen(
     navController: NavController,
 ) {
     val upcomingEvents = eventViewModel.upcomingEvents.collectAsState()
-    val events by eventViewModel.events.collectAsState()
-    val tasks by eventViewModel.tasks.collectAsState()
+    val uiState by eventViewModel.uiState.collectAsState()
 
     // Define a very large range for "infinite" swiping.
     // Pager works with indices. We'll map these indices to YearMonth.
@@ -86,60 +85,71 @@ fun EventListScreen(
             }
         }
     ) { paddingValues ->
-        LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxWidth()) {
-            item {
-                MonthYearHeader(
-                    currentMonth = currentDisplayMonth,
-                    onPreviousMonth = {
-                        // Animate to previous page
-                        // This requires a coroutine scope
-                        // rememberCoroutineScope().launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
-                        // For simplicity now, direct change, but animation is better
-                        currentDisplayMonth = currentDisplayMonth.minusMonths(1)
-                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
-                        // You would need to calculate the target page and scroll the pager
-                    },
-                    onNextMonth = {
-                        currentDisplayMonth = currentDisplayMonth.plusMonths(1)
-                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
-                        // You would need to calculate the target page and scroll the pager
+        when (val state = uiState) {
+            is EventScreenUiState.Loading -> {
+                Text("Loading...")
+            }
+            is EventScreenUiState.Error -> {
+                Text(state.message)
+            }
+            is EventScreenUiState.Success -> {
+                val events = state.events
+                val tasks = state.tasks
+                LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxWidth()) {
+                    item {
+                        MonthYearHeader(
+                            currentMonth = currentDisplayMonth,
+                            onPreviousMonth = {
+                                // Animate to previous page
+                                // This requires a coroutine scope
+                                // rememberCoroutineScope().launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+                                // For simplicity now, direct change, but animation is better
+                                currentDisplayMonth = currentDisplayMonth.minusMonths(1)
+                                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+                                // You would need to calculate the target page and scroll the pager
+                            },
+                            onNextMonth = {
+                                currentDisplayMonth = currentDisplayMonth.plusMonths(1)
+                                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                                // You would need to calculate the target page and scroll the pager
+                            }
+                        )
+
+                        HorizontalPager(
+                            state = pagerState,
+                            //modifier = Modifier.weight(1f) // Ensure Pager takes available space
+                        ) { pageIndex ->
+                            // Calculate the YearMonth for the current page
+                            val monthOffset = pageIndex - initialPage
+                            val pageMonth = initialMonth.plusMonths(monthOffset.toLong())
+
+                            // Pass this specific month to your CalendarGrid
+                            // CalendarGrid will now be responsible for rendering only ONE month
+                            CalendarGrid(
+                                tasks = tasks.filter {
+                                    // Filter diaries for the specific month being displayed by this pager page
+                                    it.due?.let { YearMonth.from(it) == pageMonth } == true
+                                },
+                                events = events.filter {
+                                    // Filter diaries for the specific month being displayed by this pager page
+                                    it.start?.let { YearMonth.from(it) == pageMonth } == true
+                                },
+                                displayMonth = pageMonth, // Pass the month this grid should display
+                                onClick = { navController.navigate(Event.Add.byDate(it)) }
+                            )
+                        }
+                        MyTitle(text = "Upcoming Events")
                     }
-                )
 
-                HorizontalPager(
-                    state = pagerState,
-                    //modifier = Modifier.weight(1f) // Ensure Pager takes available space
-                ) { pageIndex ->
-                    // Calculate the YearMonth for the current page
-                    val monthOffset = pageIndex - initialPage
-                    val pageMonth = initialMonth.plusMonths(monthOffset.toLong())
+                    items(upcomingEvents.value) { event ->
+                        EventSmallItem(event = event, modifier = Modifier.animateItem(), onClick = {
+                            event.id?.let { navController.navigate(Event.get(it)) }
+                        })
+                    }
 
-                    // Pass this specific month to your CalendarGrid
-                    // CalendarGrid will now be responsible for rendering only ONE month
-                    CalendarGrid(
-                        tasks = tasks.filter {
-                            // Filter diaries for the specific month being displayed by this pager page
-                            it.due?.let { YearMonth.from(it) == pageMonth } == true
-                        },
-                        events = events.filter {
-                            // Filter diaries for the specific month being displayed by this pager page
-                            it.start?.let { YearMonth.from(it) == pageMonth } == true
-                        },
-                        displayMonth = pageMonth, // Pass the month this grid should display
-                        onClick = { navController.navigate(Event.Add.byDate(it)) }
-                    )
                 }
-                MyTitle(text = "Upcoming Events")
             }
-
-            items(upcomingEvents.value) { event ->
-                EventSmallItem(event = event, onClick = {
-                    event.id?.let { navController.navigate(Event.get(it)) }
-                })
-            }
-
         }
-
     }
 }
 

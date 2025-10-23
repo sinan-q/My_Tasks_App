@@ -4,23 +4,33 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.core.SelectionStore
-import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
-import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
+import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
 import com.sinxn.mytasks.domain.usecase.folder.GetPathUseCase
 import com.sinxn.mytasks.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+sealed class NoteScreenUiState {
+    object Loading : NoteScreenUiState()
+    data class Success(
+        val note: Note,
+        val notes: List<Note>,
+        val folder: Folder?,
+        val folders: List<Folder>
+    ) : NoteScreenUiState()
+    data class Error(val message: String) : NoteScreenUiState()
+}
 
 @HiltViewModel
 class NoteViewModel @Inject constructor(
@@ -34,11 +44,21 @@ class NoteViewModel @Inject constructor(
     val selectedAction = selectionStore.action
     val selectionCount = selectionStore.selectionCount
 
-    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
-    val folders: StateFlow<List<Folder>> = _folders.asStateFlow()
+    private val _uiState = MutableStateFlow<NoteScreenUiState>(NoteScreenUiState.Loading)
+    val uiState: StateFlow<NoteScreenUiState> = _uiState.asStateFlow()
 
-    private val _folder = MutableStateFlow<Folder?>(null)
-    val folder: StateFlow<Folder?> = _folder.asStateFlow()
+    init {
+        viewModelScope.launch {
+            noteRepository.getAllNotes().collectLatest { notes ->
+                val currentState = _uiState.value
+                if (currentState is NoteScreenUiState.Success) {
+                    _uiState.value = currentState.copy(notes = notes)
+                } else {
+                    _uiState.value = NoteScreenUiState.Success(Note(), notes, null, emptyList())
+                }
+            }
+        }
+    }
 
     suspend fun getPath(folderId: Long, hideLocked: Boolean): String? {
             return getPathUseCase(folderId, hideLocked)
@@ -66,17 +86,11 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    val notes = noteRepository.getAllNotes().stateIn(
-        viewModelScope,
-        SharingStarted.Lazily,
-        emptyList()
-    )
-
-    private val _note = MutableStateFlow(Note())
-    val note: StateFlow<Note> = _note
-
     fun onNoteUpdate(note: Note) {
-        _note.value = note
+        val currentState = _uiState.value
+        if (currentState is NoteScreenUiState.Success) {
+            _uiState.value = currentState.copy(note = note)
+        }
     }
 
     fun addNote(note: Note) {
@@ -103,13 +117,25 @@ class NoteViewModel @Inject constructor(
 
     fun fetchNoteById(noteId: Long) {
         viewModelScope.launch {
-            val fetchedNote = noteRepository.getNoteById(noteId)
-            if (fetchedNote == null) {
-                showToast(Constants.NOT_FOUND)
-                return@launch
+            _uiState.value = NoteScreenUiState.Loading
+            try {
+                val fetchedNote = noteRepository.getNoteById(noteId)
+                if (fetchedNote == null) {
+                    _uiState.value = NoteScreenUiState.Error(Constants.NOT_FOUND)
+                    return@launch
+                }
+                val fetchedFolder = folderRepository.getFolderById(fetchedNote.folderId)
+                val subFolders = folderRepository.getSubFolders(fetchedNote.folderId).first()
+                val notes = noteRepository.getAllNotes().first()
+                _uiState.value = NoteScreenUiState.Success(
+                    note = fetchedNote,
+                    notes = notes,
+                    folder = fetchedFolder,
+                    folders = subFolders
+                )
+            } catch (e: Exception) {
+                _uiState.value = NoteScreenUiState.Error(e.message ?: "An error occurred")
             }
-            fetchFolderById(fetchedNote.folderId)
-            _note.value = fetchedNote
         }
     }
 
@@ -117,18 +143,36 @@ class NoteViewModel @Inject constructor(
         viewModelScope.launch {
             val fetchedFolder = folderRepository.getFolderById(folderId)
             val subFolders = folderRepository.getSubFolders(folderId).first()
-            _folder.value = fetchedFolder
-            _folders.value = subFolders
-            _note.value = note.value.copy(
-                folderId = folderId,
-            )
+            val currentState = _uiState.value
+            if (currentState is NoteScreenUiState.Success) {
+                _uiState.value = currentState.copy(
+                    folder = fetchedFolder,
+                    folders = subFolders,
+                    note = currentState.note.copy(folderId = folderId)
+                )
+            } else {
+                 val notes = noteRepository.getAllNotes().first()
+                _uiState.value = NoteScreenUiState.Success(
+                    note = Note(folderId = folderId),
+                    notes = notes,
+                    folder = fetchedFolder,
+                    folders = subFolders
+                )
+            }
         }
     }
 
     fun newNoteByFolder(folderId: Long) {
         viewModelScope.launch {
-            _note.value = Note(folderId = folderId)
-            fetchFolderById(folderId)
+            val fetchedFolder = folderRepository.getFolderById(folderId)
+            val subFolders = folderRepository.getSubFolders(folderId).first()
+            val notes = noteRepository.getAllNotes().first()
+            _uiState.value = NoteScreenUiState.Success(
+                note = Note(folderId = folderId),
+                notes = notes,
+                folder = fetchedFolder,
+                folders = subFolders
+            )
         }
     }
 

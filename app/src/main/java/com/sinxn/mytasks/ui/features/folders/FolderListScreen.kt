@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,9 +46,9 @@ import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTextField
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
-import com.sinxn.mytasks.ui.navigation.Routes
 import com.sinxn.mytasks.ui.features.notes.NoteItem
 import com.sinxn.mytasks.ui.features.tasks.TaskItem
+import com.sinxn.mytasks.ui.navigation.Routes
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,198 +77,208 @@ fun FolderListScreen(
             Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
-    val folders by folderViewModel.folders.collectAsState(initial = emptyList())
-    val currentFolder by folderViewModel.folder.collectAsState(
-        initial = Folder(
-            name = "Root",
-            folderId = 0L
-        )
-    )
-    var folderName by remember(currentFolder?.name) { mutableStateOf(currentFolder?.name ?: "") } // Add this line
-    val tasks by folderViewModel.tasks.collectAsState(initial = emptyList())
-    val notes by folderViewModel.notes.collectAsState(initial = emptyList())
+
+    val uiState by folderViewModel.uiState.collectAsState()
+
     var folderEditToggle by remember { mutableStateOf(false) }
 
-    BackHandler(
-        enabled = currentFolder?.parentFolderId != 0L
-    ) {
-        folderViewModel.onBack(currentFolder!!)
-    }
-    Scaffold(
-        bottomBar = { BottomBar(navController = navController) },
-        floatingActionButton = {
-            Column(horizontalAlignment = Alignment.End) {
-                if (selectionCount.value != 0) {
-                    ShowActionsFAB(
-                        onPaste = {
-                            folderViewModel.pasteSelection()
-                        },
-                        action = selectionAction,
-                        setActions = {
-                            folderViewModel.setSelectionAction(it)
-                        },
-                        onClearSelection = {
-                            folderViewModel.clearSelection()
-                        }
-                    )
-                }
-                currentFolder?.let {
-                    ShowOptionsFAB(
-                        navController = navController,
-                        onAddFolderClick = { folderEditToggle = true },
-                        currentFolder = it
-                    )
+
+    when (val state = uiState) {
+        is FolderScreenUiState.Loading -> {
+            Text("Loading...")
+        }
+        is FolderScreenUiState.Error -> {
+            Text(state.message)
+        }
+        is FolderScreenUiState.Success -> {
+            val folders = state.folders
+            val currentFolder = state.folder
+            val tasks = state.tasks
+            val notes = state.notes
+            var folderName by remember(currentFolder?.name) { mutableStateOf(currentFolder?.name ?: "") } // Add this line
+            BackHandler(
+                enabled = currentFolder?.parentFolderId != 0L
+            ) {
+                if (currentFolder != null) {
+                    folderViewModel.onBack(currentFolder)
                 }
             }
-
-        },
-
-        topBar = {
-            currentFolder?.let { folder ->
-                MyTasksTopAppBar(
-                    title = {
-                        MyTextField(
-                            value = folderName,
-                            onValueChange = { folderName = it },
-                            singleLine = true,
-                            textStyle = TextStyle.Default.copy(
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 18.sp
-                            ),
-                            readOnly = !isFolderNameEdit,
-                            placeholder = "Folder Name",
-                        )
-                    },
-                    onNavigateUp = { if (folder.parentFolderId == 0L) navController.popBackStack() else folderViewModel.onBack(folder) },
-                    actions = {
-                        if (isFolderNameEdit) {
-                            IconButton(onClick = {
-                                isFolderNameEdit = false
-                                folderViewModel.updateFolderName(folder.folderId, folderName)
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "Save new folder Name"
-                                )
-                            }
-                            IconButton(onClick = {
-                                folderName = folder.name
-                                isFolderNameEdit = false
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = "Cancel Folder Name change"
-                                )
-                            }
-                        } else {
-                            IconButton(onClick = {
-                                folderName = folder.name
-                                isFolderNameEdit = true
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = "Edit Folder Name"
-                                )
-                            }
-                            IconButton(onClick = {
-                                showDeleteConfirmationDialog = true
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete"
-                                )
-                            }
+            Scaffold(
+                bottomBar = { BottomBar(navController = navController) },
+                floatingActionButton = {
+                    Column(horizontalAlignment = Alignment.End) {
+                        if (selectionCount.value != 0) {
+                            ShowActionsFAB(
+                                onPaste = {
+                                    folderViewModel.pasteSelection()
+                                },
+                                action = selectionAction,
+                                setActions = {
+                                    folderViewModel.setSelectionAction(it)
+                                },
+                                onClearSelection = {
+                                    folderViewModel.clearSelection()
+                                }
+                            )
                         }
+                        currentFolder?.let {
+                            ShowOptionsFAB(
+                                navController = navController,
+                                onAddFolderClick = { folderEditToggle = true },
+                                currentFolder = it
+                            )
+                        }
+                    }
+
+                },
+
+                topBar = {
+                    currentFolder?.let { folder ->
+                        MyTasksTopAppBar(
+                            title = {
+                                MyTextField(
+                                    value = folderName,
+                                    onValueChange = { folderName = it },
+                                    singleLine = true,
+                                    textStyle = TextStyle.Default.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 18.sp
+                                    ),
+                                    readOnly = !isFolderNameEdit,
+                                    placeholder = "Folder Name",
+                                )
+                            },
+                            onNavigateUp = { if (folder.parentFolderId == 0L) navController.popBackStack() else folderViewModel.onBack(folder) },
+                            actions = {
+                                if (isFolderNameEdit) {
+                                    IconButton(onClick = {
+                                        isFolderNameEdit = false
+                                        folderViewModel.updateFolderName(folder.folderId, folderName)
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = "Save new folder Name"
+                                        )
+                                    }
+                                    IconButton(onClick = {
+                                        folderName = folder.name
+                                        isFolderNameEdit = false
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Clear,
+                                            contentDescription = "Cancel Folder Name change"
+                                        )
+                                    }
+                                } else {
+                                    IconButton(onClick = {
+                                        folderName = folder.name
+                                        isFolderNameEdit = true
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit Folder Name"
+                                        )
+                                    }
+                                    IconButton(onClick = {
+                                        showDeleteConfirmationDialog = true
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete"
+                                        )
+                                    }
+                                }
 
 
+
+                            }
+                        )
 
                     }
-                )
-
-            }
-        },
-    ) { padding ->
-        LazyVerticalStaggeredGrid(
-            verticalItemSpacing = 4.dp,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = padding,
-            columns = StaggeredGridCells.Fixed(2), //TODO Adaptive
-            modifier = Modifier.padding(horizontal = 16.dp),
-        ) {
-            item(span = StaggeredGridItemSpan.FullLine) {
-                AnimatedVisibility(
-                    visible = folderEditToggle
+                },
+            ) { padding ->
+                LazyVerticalStaggeredGrid(
+                    verticalItemSpacing = 4.dp,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    contentPadding = padding,
+                    columns = StaggeredGridCells.Fixed(2), //TODO Adaptive
+                    modifier = Modifier.padding(horizontal = 16.dp),
                 ) {
-                    FolderItemEdit(
-                        folder = Folder(
-                            name = "New Folder",
-                            parentFolderId = currentFolder?.folderId?: 0L
-                        ),
-                        onDismiss = { folderEditToggle = false }
-                    ) { folderViewModel.addFolder(it) }
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        AnimatedVisibility(
+                            visible = folderEditToggle
+                        ) {
+                            FolderItemEdit(
+                                folder = Folder(
+                                    name = "New Folder",
+                                    parentFolderId = currentFolder?.folderId?: 0L
+                                ),
+                                onDismiss = { folderEditToggle = false }
+                            ) { folderViewModel.addFolder(it) }
+                        }
+                    }
+                    items(folders, key = { "folder_${it.folderId}" }) { folder ->
+                        FolderItem(
+                            folder = folder,
+                            onClick = { folderViewModel.getSubFolders(folder.folderId) },
+                            onDelete = { folderViewModel.deleteFolder(folder) },
+                            onLock = { folderViewModel.lockFolder(folder) },
+                            onHold = { folderViewModel.onSelectionFolder(folder) },
+                            selected = folder in selectedFolders,
+                            modifier = Modifier.animateItem()
+                        )
+                    }
+                    items(
+                        items = tasks,
+                        key = { "task_${it.id!!}" },
+                        span = { StaggeredGridItemSpan.FullLine },
+                    ) { task ->
+                        TaskItem(
+                            task = task,
+                            onClick = { navController.navigate(Routes.Task.get(task.id)) },
+                            onHold = { folderViewModel.onSelectionTask(task) },
+                            onUpdate = { status -> folderViewModel.updateTaskStatus(task.id!!, status) },
+                            path = null,
+                            selected = task in selectedTasks,
+                            modifier = Modifier.animateItem()
+                        )
+                    }
+                    items(notes, key = { "note_${it.id!!}" }) { note ->
+                        NoteItem(
+                            note = note,
+                            onClick = { navController.navigate(Routes.Note.get(note.id)) },
+                            onHold = { folderViewModel.onSelectionNote(note) },
+                            selected = note in selectedNotes,
+                            modifier = Modifier.animateItem()
+                        )
+                    }
                 }
+
             }
-            items(folders) { folder ->
-                FolderItem(
-                    folder = folder,
-                    onClick = { folderViewModel.getSubFolders(folder.folderId) },
-                    onDelete = { folderViewModel.deleteFolder(folder) },
-                    onLock = { folderViewModel.lockFolder(folder) },
-                    onHold = { folderViewModel.onSelectionFolder(folder) },
-                    selected = folder in selectedFolders,
-                    modifier = Modifier.animateItem()
+            currentFolder?.let {
+                ConfirmationDialog(
+                    showDialog = showDeleteConfirmationDialog,
+                    onDismiss = { showDeleteConfirmationDialog = false },
+                    onConfirm = {
+                        folderViewModel.deleteFolder(it)
+                        folderViewModel.onBack(it) 
+                        showDeleteConfirmationDialog = false
+                    },
+                    title = stringResource(R.string.delete_confirmation_title),
+                    message = stringResource(R.string.delete_folder_message)
                 )
             }
-            items (
-                key = { it.id!! },
-                span = { StaggeredGridItemSpan.FullLine },
-                items = tasks,
-            ) { task ->
-                TaskItem(
-                    task = task,
-                    onClick = { navController.navigate(Routes.Task.get(task.id)) },
-                    onHold = { folderViewModel.onSelectionTask(task) },
-                    onUpdate = { status -> folderViewModel.updateTaskStatus(task.id!!, status) },
-                    path = null,
-                    selected = task in selectedTasks,
-                    modifier = Modifier.animateItem()
-                )
-            }
-            items(notes) { note ->
-                NoteItem(
-                    note = note,
-                    onClick = { navController.navigate(Routes.Note.get(note.id)) },
-                    onHold = { folderViewModel.onSelectionNote(note) },
-                    selected = note in selectedNotes,
-                    modifier = Modifier.animateItem()
-                )
-            }
+            ConfirmationDialog(
+                showDialog = selectionAction == SelectionActions.DELETE,
+                onDismiss = {
+                    folderViewModel.setSelectionAction(SelectionActions.NONE)
+                },
+                onConfirm = {
+                    folderViewModel.deleteSelection()
+                },
+                title = stringResource(R.string.delete_confirmation_title),
+                message = "Sure want to delete ${selectionCount.value} items?" //TODO
+            )
         }
-
     }
-    currentFolder?.let { folder ->
-        ConfirmationDialog(
-            showDialog = showDeleteConfirmationDialog,
-            onDismiss = { showDeleteConfirmationDialog = false },
-            onConfirm = {
-                folderViewModel.deleteFolder(folder)
-                folderViewModel.onBack(folder) 
-                showDeleteConfirmationDialog = false
-            },
-            title = stringResource(R.string.delete_confirmation_title),
-            message = stringResource(R.string.delete_folder_message)
-        )
-    }
-    ConfirmationDialog(
-        showDialog = selectionAction == SelectionActions.DELETE,
-        onDismiss = {
-            folderViewModel.setSelectionAction(SelectionActions.NONE)
-        },
-        onConfirm = {
-            folderViewModel.deleteSelection()
-        },
-        title = stringResource(R.string.delete_confirmation_title),
-        message = "Sure want to delete ${selectionCount.value} items?" //TODO
-    )
-
 }

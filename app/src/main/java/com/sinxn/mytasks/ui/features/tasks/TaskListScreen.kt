@@ -46,11 +46,10 @@ fun TaskListScreen(
     viewModel: TaskViewModel = hiltViewModel(),
     navController: NavController,
 ) {
-    val tasks = viewModel.tasks.collectAsState().value
+    val uiState by viewModel.uiState.collectAsState()
     val selectionAction by viewModel.selectedAction.collectAsState()
     val selectedTasks by viewModel.selectedTasks.collectAsState()
     val selectionCount = viewModel.selectionCount.collectAsState()
-    val toast = viewModel.toastMessage.collectAsState(null)
     val context = LocalContext.current
 
     var hideLocked by remember { mutableStateOf(true) }
@@ -125,46 +124,56 @@ fun TaskListScreen(
         )},
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
-        LazyColumn(
-            contentPadding = paddingValues,
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.padding(horizontal = 16.dp)
-        ) {
-            items(tasks) { task ->
-                var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state
-                var isLoadingPath by remember { mutableStateOf(true) }
+        when (val state = uiState) {
+            is TaskScreenUiState.Loading -> {
+                Text("Loading...")
+            }
+            is TaskScreenUiState.Error -> {
+                Text(state.message)
+            }
+            is TaskScreenUiState.Success -> {
+                LazyColumn(
+                    contentPadding = paddingValues,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    items(state.tasks, key = { it.id!! }) { task ->
+                        var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state
+                        var isLoadingPath by remember { mutableStateOf(true) }
 
-                // Launch a coroutine for each item to get its path
-                LaunchedEffect(key1 = task.folderId, key2 = hideLocked) {
-                    isLoadingPath = true
-                    path = viewModel.getPath(task.folderId, hideLocked)
-                    isLoadingPath = false
-                }
+                        // Launch a coroutine for each item to get its path
+                        LaunchedEffect(key1 = task.folderId, key2 = hideLocked) {
+                            isLoadingPath = true
+                            path = viewModel.getPath(task.folderId, hideLocked)
+                            isLoadingPath = false
+                        }
 
-                if (!isLoadingPath) {
-                    if (path != null)
-                        TaskItem(
-                            task = task,
-                            path = path,
-                            onClick = { navController.navigate(Routes.Task.get(task.id)) },
-                            onUpdate = { task.id?.let { it1 -> viewModel.updateStatusTask(it1, it) } },
-                            onHold = { viewModel.onSelectionTask(task) },
-                            selected = task in selectedTasks,
-                            modifier = Modifier.animateItem()
-                    )
+                        if (!isLoadingPath) {
+                            if (path != null)
+                                TaskItem(
+                                    task = task,
+                                    path = path,
+                                    onClick = { navController.navigate(Routes.Task.get(task.id)) },
+                                    onUpdate = { task.id?.let { it1 -> viewModel.updateStatusTask(it1, it) } },
+                                    onHold = { viewModel.onSelectionTask(task) },
+                                    selected = task in selectedTasks,
+                                    modifier = Modifier.animateItem()
+                                )
+                        }
+                    }
                 }
+                ConfirmationDialog(
+                    showDialog = selectionAction == SelectionActions.DELETE,
+                    onDismiss = {
+                        viewModel.setSelectionAction(SelectionActions.NONE)
+                    },
+                    onConfirm = {
+                        viewModel.deleteSelection()
+                    },
+                    title = stringResource(R.string.delete_confirmation_title),
+                    message = "Sure want to delete ${selectionCount.value} items?"
+                )
             }
         }
-        ConfirmationDialog(
-            showDialog = selectionAction == SelectionActions.DELETE,
-            onDismiss = {
-                viewModel.setSelectionAction(SelectionActions.NONE)
-            },
-            onConfirm = {
-                viewModel.deleteSelection()
-            },
-            title = stringResource(R.string.delete_confirmation_title),
-            message = "Sure want to delete ${selectionCount.value} items?"
-        )
     }
 }

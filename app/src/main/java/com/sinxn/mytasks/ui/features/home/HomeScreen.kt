@@ -48,16 +48,16 @@ import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
-import com.sinxn.mytasks.ui.navigation.Routes
-import com.sinxn.mytasks.ui.navigation.Routes.Backup
-import com.sinxn.mytasks.ui.navigation.Routes.Event
-import com.sinxn.mytasks.ui.navigation.Routes.Note
-import com.sinxn.mytasks.ui.navigation.Routes.Task
 import com.sinxn.mytasks.ui.features.events.EventSmallItem
 import com.sinxn.mytasks.ui.features.folders.FolderItem
 import com.sinxn.mytasks.ui.features.folders.FolderItemEdit
 import com.sinxn.mytasks.ui.features.notes.NoteItem
 import com.sinxn.mytasks.ui.features.tasks.TaskItem
+import com.sinxn.mytasks.ui.navigation.Routes
+import com.sinxn.mytasks.ui.navigation.Routes.Backup
+import com.sinxn.mytasks.ui.navigation.Routes.Event
+import com.sinxn.mytasks.ui.navigation.Routes.Note
+import com.sinxn.mytasks.ui.navigation.Routes.Task
 import kotlinx.coroutines.flow.collectLatest
 
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
@@ -69,11 +69,6 @@ fun HomeScreen(
 
 ) {
     val context = LocalContext.current
-    val folders by viewModel.mainFolders.collectAsState(initial = emptyList())
-    val upcomingEvents by viewModel.upcomingEvents.collectAsState(initial = emptyList())
-    val pendingTasks by viewModel.pendingTasks.collectAsState(initial = emptyList())
-    val tasks by viewModel.tasks.collectAsState(initial = emptyList())
-    val notes by viewModel.notes.collectAsState(initial = emptyList())
     var folderEditToggle by remember { mutableStateOf(false) }
 
     val selectedTasks by viewModel.selectedTasks.collectAsState()
@@ -91,6 +86,8 @@ fun HomeScreen(
             showToast(message)
         }
     }
+
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         bottomBar = { BottomBar(navController = navController) },
@@ -153,130 +150,145 @@ fun HomeScreen(
         },
         modifier = Modifier.fillMaxSize()
     ) { padding ->
-        LazyVerticalStaggeredGrid(
-            verticalItemSpacing = 4.dp,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = padding,
-            columns = StaggeredGridCells.Fixed(2), //TODO Adaptive
-            modifier = Modifier.padding(horizontal = 16.dp),
-        ) {
-            item(span = StaggeredGridItemSpan.FullLine) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    MyTitle(onClick = { navController.navigate(Event.route) }, text = "Upcoming Events")
-                    HorizontalDivider()
-                    if (upcomingEvents.isEmpty()) Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
-                }
+        when (val state = uiState) {
+            is HomeScreenUiState.Loading -> {
+                Text("Loading...")
             }
+            is HomeScreenUiState.Error -> {
+                Text(state.message)
+            }
+            is HomeScreenUiState.Success -> {
+                val folders = state.folders
+                val upcomingEvents = state.upcomingEvents
+                val pendingTasks = state.pendingTasks
+                val tasks = state.tasks
+                val notes = state.notes
 
-            items(upcomingEvents) { event ->
-                EventSmallItem(event) {
-                    navController.navigate(Event.get(event.id))
-                }
-            }
-
-            item(span = StaggeredGridItemSpan.FullLine) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    MyTitle(onClick = { //TODO
-                    }, text = "Pending Tasks")
-                    HorizontalDivider()
-                    // TODO: Animated items if possible
-                    if (pendingTasks.isEmpty()) Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
-                }
-            }
-
-            items (
-                items = pendingTasks,
-                key = { task -> "pendingTasks_${task.id}" },
-                span = { StaggeredGridItemSpan.FullLine },
-                contentType = { "pendingTask" } // Optional: for more efficient recompositions
-            ) { task ->
-                TaskItem(
-                    task = task,
-                    onClick = { navController.navigate(Task.get(task.id)) },
-                    onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
-                    onHold = { viewModel.onSelectionTask(task) },
-                    path = null,
-                    selected = task in selectedTasks,
-                    modifier = Modifier.animateItem() // Add this modifier
-                )
-            }
-
-            item(span = StaggeredGridItemSpan.FullLine) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    MyTitle(onClick = { //TODO
-                         }, text = "Favourites")
-                    HorizontalDivider()
-                    Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
-                }
-            }
-            //TODO Favourites
-            item(span = StaggeredGridItemSpan.FullLine) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    MyTitle(text = "Home")
-                    HorizontalDivider()
-                    if (folders.isEmpty() && tasks.isEmpty() && notes.isEmpty()) Text(text = "Nothing to show here")
-                }
-            }
-            item(span = StaggeredGridItemSpan.FullLine) {
-                AnimatedVisibility(
-                    visible = folderEditToggle
+                LazyVerticalStaggeredGrid(
+                    verticalItemSpacing = 4.dp,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    contentPadding = padding,
+                    columns = StaggeredGridCells.Fixed(2), //TODO Adaptive
+                    modifier = Modifier.padding(horizontal = 16.dp),
                 ) {
-                    FolderItemEdit(
-                        folder = Folder(
-                            name = "New Folder",
-                        ),
-                        onDismiss = { folderEditToggle = false }
-                    ) { viewModel.addFolder(it) }
-                }
-            }
-            items(folders) { folder ->
-                FolderItem(
-                    folder = folder,
-                    onClick = { navController.navigate(Routes.Folder.get(folder.folderId)) },
-                    onDelete = { viewModel.deleteFolder(folder) },
-                    onLock = { viewModel.lockFolder(folder) },
-                    onHold = { viewModel.onSelectionFolder(folder) },
-                    selected = folder in selectedFolders,
-                    modifier = Modifier.animateItem()
-                )
-            }
-            items (
-                key = { it.id!! },
-                span = { StaggeredGridItemSpan.FullLine },
-                items = tasks,
-            ) { task ->
-                TaskItem(
-                    task = task,
-                    onClick = { navController.navigate(Task.get(task.id))},
-                    onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
-                    onHold = { viewModel.onSelectionTask(task) },
-                    path = null,
-                    selected = task in selectedTasks,
-                    modifier = Modifier.animateItem()
-                )
-            }
-            items(notes) { note ->
-                    NoteItem(
-                        note = note,
-                        onClick = { navController.navigate(Note.get(note.id)) },
-                        onHold = { viewModel.onSelectionNote(note) },
-                        selected = note in selectedNotes,
-                        modifier = Modifier.animateItem()
-                    )
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            MyTitle(onClick = { navController.navigate(Event.route) }, text = "Upcoming Events")
+                            HorizontalDivider()
+                            if (upcomingEvents.isEmpty()) Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
+                        }
+                    }
 
+                    items(upcomingEvents, key = { "event_${it.id!!}" }) { event ->
+                        EventSmallItem(event, modifier = Modifier.animateItem()) {
+                            navController.navigate(Event.get(event.id))
+                        }
+                    }
+
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            MyTitle(onClick = { //TODO
+                            }, text = "Pending Tasks")
+                            HorizontalDivider()
+                            // TODO: Animated items if possible
+                            if (pendingTasks.isEmpty()) Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
+                        }
+                    }
+
+                    items (
+                        items = pendingTasks,
+                        key = { task -> "pendingTask_${task.id!!}" },
+                        span = { StaggeredGridItemSpan.FullLine },
+                        contentType = { "pendingTask" }
+                    ) { task ->
+                        TaskItem(
+                            task = task,
+                            onClick = { navController.navigate(Task.get(task.id)) },
+                            onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
+                            onHold = { viewModel.onSelectionTask(task) },
+                            path = null,
+                            selected = task in selectedTasks,
+                            modifier = Modifier.animateItem()
+                        )
+                    }
+
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            MyTitle(onClick = { //TODO
+                            }, text = "Favourites")
+                            HorizontalDivider()
+                            Text(text = "Nothing to show here", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = LocalContentColor.current.copy(alpha = 0.4f), fontStyle = FontStyle.Italic)
+                        }
+                    }
+                    //TODO Favourites
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            MyTitle(text = "Home")
+                            HorizontalDivider()
+                            if (folders.isEmpty() && tasks.isEmpty() && notes.isEmpty()) Text(text = "Nothing to show here")
+                        }
+                    }
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        AnimatedVisibility(
+                            visible = folderEditToggle
+                        ) {
+                            FolderItemEdit(
+                                folder = Folder(
+                                    name = "New Folder",
+                                ),
+                                onDismiss = { folderEditToggle = false }
+                            ) { viewModel.addFolder(it) }
+                        }
+                    }
+                    items(folders, key = { "folder_${it.folderId}" }) { folder ->
+                        FolderItem(
+                            folder = folder,
+                            onClick = { navController.navigate(Routes.Folder.get(folder.folderId)) },
+                            onDelete = { viewModel.deleteFolder(folder) },
+                            onLock = { viewModel.lockFolder(folder) },
+                            onHold = { viewModel.onSelectionFolder(folder) },
+                            selected = folder in selectedFolders,
+                            modifier = Modifier.animateItem()
+                        )
+                    }
+                    items (
+                        key = { "task_${it.id!!}" },
+                        span = { StaggeredGridItemSpan.FullLine },
+                        items = tasks,
+                    ) { task ->
+                        TaskItem(
+                            task = task,
+                            onClick = { navController.navigate(Task.get(task.id))},
+                            onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
+                            onHold = { viewModel.onSelectionTask(task) },
+                            path = null,
+                            selected = task in selectedTasks,
+                            modifier = Modifier.animateItem()
+                        )
+                    }
+                    items(notes, key = { "note_${it.id!!}" }) { note ->
+                        NoteItem(
+                            note = note,
+                            onClick = { navController.navigate(Note.get(note.id)) },
+                            onHold = { viewModel.onSelectionNote(note) },
+                            selected = note in selectedNotes,
+                            modifier = Modifier.animateItem()
+                        )
+
+                    }
+                }
+                ConfirmationDialog(
+                    showDialog = selectionAction == SelectionActions.DELETE,
+                    onDismiss = {
+                        viewModel.setSelectionAction(SelectionActions.NONE)
+                    },
+                    onConfirm = {
+                        viewModel.deleteSelection()
+                    },
+                    title = stringResource(R.string.delete_confirmation_title),
+                    message = "Sure want to delete $selectionCount items?"
+                )
             }
         }
-        ConfirmationDialog(
-            showDialog = selectionAction == SelectionActions.DELETE,
-            onDismiss = {
-                viewModel.setSelectionAction(SelectionActions.NONE)
-            },
-            onConfirm = {
-                viewModel.deleteSelection()
-            },
-            title = stringResource(R.string.delete_confirmation_title),
-            message = "Sure want to delete $selectionCount items?"
-        )
     }
 }
-

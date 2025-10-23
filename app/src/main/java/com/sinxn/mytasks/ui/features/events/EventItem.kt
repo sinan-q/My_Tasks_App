@@ -19,8 +19,8 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 @Composable
-fun EventSmallItem(event: Event, onClick: () -> Unit) {
-    RectangleCard(onClick = onClick, modifier = Modifier.fillMaxWidth())  {
+fun EventSmallItem(event: Event, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    RectangleCard(onClick = onClick, modifier = modifier.fillMaxWidth())  {
         Row(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.padding(end = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(

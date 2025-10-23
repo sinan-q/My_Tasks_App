@@ -3,8 +3,8 @@
 ## Architecture & Design Pattern Improvements
 
 ### 1. Unidirectional Data Flow (UDF) Enhancement
-- [ ] Convert all ViewModels to use StateFlow for UI state management
-- [ ] Create sealed class UiState for each screen
+- [x] Convert all ViewModels to use StateFlow for UI state management
+- [x] Create sealed class UiState for each screen
 - [ ] Implement Intent/Action pattern for user interactions
 - [ ] Separate UI state from business logic state
 Example structure for TaskScreen:

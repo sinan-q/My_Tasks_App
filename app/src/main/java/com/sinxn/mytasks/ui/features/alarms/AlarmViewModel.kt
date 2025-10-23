@@ -15,6 +15,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed class AlarmScreenUiState {
+    object Loading : AlarmScreenUiState()
+    data class Success(val task: Task) : AlarmScreenUiState()
+    data class Error(val message: String) : AlarmScreenUiState()
+}
+
 @HiltViewModel
 class AlarmViewModel @Inject constructor(
     private val alarmRepository: AlarmRepositoryInterface,
@@ -24,13 +30,21 @@ class AlarmViewModel @Inject constructor(
 ) : ViewModel() {
     private val notificationManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    private val _task = MutableStateFlow(Task())
-    val task: StateFlow<Task> = _task
+    private val _uiState = MutableStateFlow<AlarmScreenUiState>(AlarmScreenUiState.Loading)
+    val uiState: StateFlow<AlarmScreenUiState> = _uiState
 
     fun getTaskById(id: Long) {
         viewModelScope.launch {
-            taskRepository.getTaskById(id)?.let {
-                _task.value = it
+            _uiState.value = AlarmScreenUiState.Loading
+            try {
+                val task = taskRepository.getTaskById(id)
+                if (task != null) {
+                    _uiState.value = AlarmScreenUiState.Success(task)
+                } else {
+                    _uiState.value = AlarmScreenUiState.Error("Task not found.")
+                }
+            } catch (e: Exception) {
+                _uiState.value = AlarmScreenUiState.Error(e.message ?: "An error occurred")
             }
         }
     }
@@ -65,4 +79,3 @@ class AlarmViewModel @Inject constructor(
         }
     }
 }
-
