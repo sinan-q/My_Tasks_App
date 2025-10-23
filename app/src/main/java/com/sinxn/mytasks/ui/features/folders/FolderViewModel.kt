@@ -13,6 +13,10 @@ import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.domain.usecase.folder.AddFolderUseCase
 import com.sinxn.mytasks.domain.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
+import com.sinxn.mytasks.ui.features.notes.NoteListItemUiModel
+import com.sinxn.mytasks.ui.features.notes.toListItemUiModel
+import com.sinxn.mytasks.ui.features.tasks.TaskListItemUiModel
+import com.sinxn.mytasks.ui.features.tasks.toListItemUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +25,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,9 +33,9 @@ sealed class FolderScreenUiState {
     object Loading : FolderScreenUiState()
     data class Success(
         val folder: Folder?,
-        val folders: List<Folder>,
-        val notes: List<Note>,
-        val tasks: List<Task>
+        val folders: List<FolderListItemUiModel>,
+        val notes: List<NoteListItemUiModel>,
+        val tasks: List<TaskListItemUiModel>
     ) : FolderScreenUiState()
     data class Error(val message: String) : FolderScreenUiState()
 }
@@ -133,9 +138,9 @@ class FolderViewModel @Inject constructor(
             try {
                 val folder = folderRepository.getFolderById(folderId)
                 combine(
-                    folderRepository.getSubFolders(folderId),
-                    taskRepository.getTasksByFolderId(folderId),
-                    noteRepository.getNotesByFolderId(folderId)
+                    folderRepository.getSubFolders(folderId).map { folders -> folders.map { it.toListItemUiModel() } },
+                    taskRepository.getTasksByFolderId(folderId).map { tasks -> tasks.map { it.toListItemUiModel() } },
+                    noteRepository.getNotesByFolderId(folderId).map { notes -> notes.map { it.toListItemUiModel() } }
                 ) { folders, tasks, notes ->
                     FolderScreenUiState.Success(
                         folders = folders,

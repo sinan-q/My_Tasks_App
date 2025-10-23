@@ -4,10 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.core.SelectionStore
-import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
@@ -15,6 +12,10 @@ import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.domain.usecase.folder.AddFolderUseCase
 import com.sinxn.mytasks.domain.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
+import com.sinxn.mytasks.ui.features.events.toListItemUiModel
+import com.sinxn.mytasks.ui.features.folders.toListItemUiModel
+import com.sinxn.mytasks.ui.features.notes.toListItemUiModel
+import com.sinxn.mytasks.ui.features.tasks.toListItemUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,18 +25,14 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class HomeScreenUiState {
     object Loading : HomeScreenUiState()
     data class Success(
-        val parentFolder: Folder?,
-        val folders: List<Folder>,
-        val upcomingEvents: List<Event>,
-        val pendingTasks: List<Task>,
-        val notes: List<Note>,
-        val tasks: List<Task>
+        val homeUiModel: HomeUiModel
     ) : HomeScreenUiState()
     data class Error(val message: String) : HomeScreenUiState()
 }
@@ -58,9 +55,15 @@ class HomeViewModel @Inject constructor(
     val selectedAction = selectionStore.action
     val selectionCount = selectionStore.selectionCount
 
-    fun onSelectionTask(task: Task) = selectionStore.toggleTask(task)
-    fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
-    fun onSelectionFolder(folder: Folder) = selectionStore.toggleFolder(folder)
+    fun onSelectionTask(id: Long) = viewModelScope.launch {
+        taskRepository.getTaskById(id)?.let { selectionStore.toggleTask(it) }
+    }
+    fun onSelectionNote(id: Long) = viewModelScope.launch {
+        noteRepository.getNoteById(id)?.let { selectionStore.toggleNote(it) }
+    }
+    fun onSelectionFolder(id: Long) = viewModelScope.launch {
+        folderRepository.getFolderById(id)?.let { selectionStore.toggleFolder(it) }
+    }
 
     fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
     fun clearSelection() = selectionStore.clearSelection()
@@ -82,21 +85,23 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val parentFolder = folderRepository.getFolderById(0L)
+            val parentFolder = folderRepository.getFolderById(0L) ?: Folder(folderId = 0, name = "Root", parentFolderId = null, isLocked = false)
             combine(
-                folderRepository.getSubFolders(0),
-                eventRepository.getUpcomingEvents(4),
-                taskRepository.getPendingTasks(4),
-                noteRepository.getNotesByFolderId(0),
-                taskRepository.getTasksByFolderId(0),
+                folderRepository.getSubFolders(0).map { folders -> folders.map { it.toListItemUiModel() } },
+                eventRepository.getUpcomingEvents(4).map { events -> events.map { it.toListItemUiModel() } },
+                taskRepository.getPendingTasks(4).map { tasks -> tasks.map { it.toListItemUiModel() } },
+                noteRepository.getNotesByFolderId(0).map { notes -> notes.map { it.toListItemUiModel() } },
+                taskRepository.getTasksByFolderId(0).map { tasks -> tasks.map { it.toListItemUiModel() } },
             ) { folders, upcomingEvents, pendingTasks, notes, tasks ->
                 HomeScreenUiState.Success(
-                    folders = folders,
-                    upcomingEvents = upcomingEvents,
-                    pendingTasks = pendingTasks,
-                    notes = notes,
-                    tasks = tasks,
-                    parentFolder = parentFolder
+                    HomeUiModel(
+                        folders = folders,
+                        upcomingEvents = upcomingEvents,
+                        pendingTasks = pendingTasks,
+                        notes = notes,
+                        tasks = tasks,
+                        parentFolder = parentFolder
+                    )
                 )
             }.collectLatest { state ->
                 _uiState.value = state

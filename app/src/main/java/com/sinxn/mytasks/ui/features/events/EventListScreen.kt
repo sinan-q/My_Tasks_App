@@ -93,8 +93,8 @@ fun EventListScreen(
                 Text(state.message)
             }
             is EventScreenUiState.Success -> {
-                val events = state.events
-                val tasks = state.tasks
+                val events = state.uiModel.events
+                val tasks = state.uiModel.tasks
                 LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxWidth()) {
                     item {
                         MonthYearHeader(
@@ -143,7 +143,7 @@ fun EventListScreen(
 
                     items(upcomingEvents.value) { event ->
                         EventSmallItem(event = event, modifier = Modifier.animateItem(), onClick = {
-                            event.id?.let { navController.navigate(Event.get(it)) }
+                            event.id.let { navController.navigate(Event.get(it)) }
                         })
                     }
 

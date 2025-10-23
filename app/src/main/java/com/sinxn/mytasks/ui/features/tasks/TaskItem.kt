@@ -21,13 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.utils.formatDate
 
 @Composable
 fun TaskItem(
     modifier: Modifier = Modifier,
-    task: Task,
+    task: TaskListItemUiModel,
     path: String?,
     onClick: () -> Unit,
     onHold: () -> Unit,
@@ -64,20 +62,10 @@ fun TaskItem(
                         overflow = TextOverflow.Ellipsis
                     )
                 Spacer(modifier = Modifier.height(2.dp))
-                if (task.description.isNotEmpty()) {
-                    Text(
-                        text = task.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = LocalContentColor.current.copy(alpha = 0.6f),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                }
 
-                task.due?.let {
+                task.formattedDueDate?.let {
                     Text(
-                        text = it.formatDate(),
+                        text = it,
                         style = MaterialTheme.typography.bodySmall,
                         color = LocalContentColor.current.copy(alpha = 0.6f)
                     )
@@ -87,5 +75,3 @@ fun TaskItem(
 
     }
 }
-
-

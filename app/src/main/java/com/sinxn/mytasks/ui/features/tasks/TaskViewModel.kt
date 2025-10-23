@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
@@ -33,7 +34,7 @@ import javax.inject.Inject
 sealed class TaskScreenUiState {
     object Loading : TaskScreenUiState()
     data class Success(
-        val tasks: List<Task>,
+        val tasks: List<TaskListItemUiModel>,
         val task: Task,
         val reminders: List<Pair<Int, ChronoUnit>>,
         val folder: Folder?,
@@ -60,7 +61,7 @@ class TaskViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.getAllTasksSorted().collectLatest { tasks ->
+            repository.getAllTasksSorted().map { tasks -> tasks.map { it.toListItemUiModel() } }.collectLatest { tasks ->
                 val currentState = _uiState.value
                 if (currentState is TaskScreenUiState.Success) {
                     _uiState.value = currentState.copy(tasks = tasks)
@@ -139,9 +140,10 @@ class TaskViewModel @Inject constructor(
 
                 val fetchedFolder = folderRepository.getFolderById(fetchedTask.folderId)
                 val subFolders = folderRepository.getSubFolders(fetchedTask.folderId).first()
+                val tasks = repository.getAllTasksSorted().map { tasks -> tasks.map { it.toListItemUiModel() } }.first()
 
                 _uiState.value = TaskScreenUiState.Success(
-                    tasks = (uiState.value as? TaskScreenUiState.Success)?.tasks ?: emptyList(),
+                    tasks = tasks,
                     task = fetchedTask,
                     reminders = alarms,
                     folder = fetchedFolder,

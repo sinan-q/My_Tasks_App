@@ -6,7 +6,7 @@
 - [x] Convert all ViewModels to use StateFlow for UI state management
 - [x] Create sealed class UiState for each screen
 - [x] Implement Intent/Action pattern for user interactions
-- [ ] Separate UI state from business logic state
+- [x] Separate UI state from business logic state
 
 ### 2. Clean Architecture Refinements
 - [ ] Create proper domain layer with use cases

@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,7 +26,7 @@ sealed class NoteScreenUiState {
     object Loading : NoteScreenUiState()
     data class Success(
         val note: Note,
-        val notes: List<Note>,
+        val notes: List<NoteListItemUiModel>,
         val folder: Folder?,
         val folders: List<Folder>
     ) : NoteScreenUiState()
@@ -49,7 +50,7 @@ class NoteViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            noteRepository.getAllNotes().collectLatest { notes ->
+            noteRepository.getAllNotes().map { notes -> notes.map { it.toListItemUiModel() } }.collectLatest { notes ->
                 val currentState = _uiState.value
                 if (currentState is NoteScreenUiState.Success) {
                     _uiState.value = currentState.copy(notes = notes)
@@ -137,7 +138,7 @@ class NoteViewModel @Inject constructor(
                 }
                 val fetchedFolder = folderRepository.getFolderById(fetchedNote.folderId)
                 val subFolders = folderRepository.getSubFolders(fetchedNote.folderId).first()
-                val notes = noteRepository.getAllNotes().first()
+                val notes = noteRepository.getAllNotes().map { notes -> notes.map { it.toListItemUiModel() } }.first()
                 _uiState.value = NoteScreenUiState.Success(
                     note = fetchedNote,
                     notes = notes,
@@ -162,7 +163,7 @@ class NoteViewModel @Inject constructor(
                     note = currentState.note.copy(folderId = folderId)
                 )
             } else {
-                 val notes = noteRepository.getAllNotes().first()
+                 val notes = noteRepository.getAllNotes().map { notes -> notes.map { it.toListItemUiModel() } }.first()
                 _uiState.value = NoteScreenUiState.Success(
                     note = Note(folderId = folderId),
                     notes = notes,
@@ -177,7 +178,7 @@ class NoteViewModel @Inject constructor(
         viewModelScope.launch {
             val fetchedFolder = folderRepository.getFolderById(folderId)
             val subFolders = folderRepository.getSubFolders(folderId).first()
-            val notes = noteRepository.getAllNotes().first()
+            val notes = noteRepository.getAllNotes().map { notes -> notes.map { it.toListItemUiModel() } }.first()
             _uiState.value = NoteScreenUiState.Success(
                 note = Note(folderId = folderId),
                 notes = notes,

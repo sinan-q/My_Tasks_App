@@ -17,13 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.utils.formatDate
 
 @Composable
 fun NoteItem(
     modifier: Modifier = Modifier,
-    note: Note,
+    note: NoteListItemUiModel,
     path: String? = null,
     onClick: () -> Unit,
     onHold: () -> Unit,
@@ -52,16 +50,9 @@ fun NoteItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Text(
-                text = note.content,
-                style = MaterialTheme.typography.bodySmall,
-                color = LocalContentColor.current.copy(alpha = 0.7f),
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis
-            )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = note.timestamp.formatDate(),
+                text = note.lastModified,
                 style = MaterialTheme.typography.labelSmall,
                 color = LocalContentColor.current.copy(alpha = 0.4f)
             )

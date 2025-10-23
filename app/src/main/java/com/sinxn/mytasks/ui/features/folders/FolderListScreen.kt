@@ -42,6 +42,8 @@ import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
@@ -67,7 +69,7 @@ fun FolderListScreen(
     val selectedFolders by folderViewModel.selectedFolders.collectAsState()
     val selectedNotes by folderViewModel.selectedNotes.collectAsState()
     val selectionAction by folderViewModel.selectedAction.collectAsState()
-    val selectionCount = folderViewModel.selectionCount.collectAsState()
+    val selectionCount by folderViewModel.selectionCount.collectAsState()
 
     val context = LocalContext.current
     LaunchedEffect(folderId) {
@@ -127,7 +129,7 @@ fun FolderListScreen(
                 bottomBar = { BottomBar(navController = navController) },
                 floatingActionButton = {
                     Column(horizontalAlignment = Alignment.End) {
-                        if (selectionCount.value != 0) {
+                        if (selectionCount != 0) {
                             ShowActionsFAB(
                                 onPaste = {
                                     folderViewModel.onAction(FolderAction.PasteSelection)
@@ -237,38 +239,38 @@ fun FolderListScreen(
                             ) { folderViewModel.onAction(FolderAction.AddFolder(it)) }
                         }
                     }
-                    items(folders, key = { "folder_${it.folderId}" }) { folder ->
+                    items(folders, key = { "folder_${it.id}" }) { folder ->
                         FolderItem(
                             folder = folder,
-                            onClick = { folderViewModel.onAction(FolderAction.GetSubFolders(folder.folderId)) },
-                            onDelete = { folderViewModel.onAction(FolderAction.DeleteFolder(folder)) },
-                            onLock = { folderViewModel.onAction(FolderAction.LockFolder(folder)) },
-                            onHold = { folderViewModel.onSelectionFolder(folder) },
-                            selected = folder in selectedFolders,
+                            onClick = { folderViewModel.onAction(FolderAction.GetSubFolders(folder.id)) },
+                            onDelete = { folderViewModel.onAction(FolderAction.DeleteFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked))) },
+                            onLock = { folderViewModel.onAction(FolderAction.LockFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked))) },
+                            onHold = { folderViewModel.onSelectionFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked)) },
+                            selected = selectedFolders.any { it.folderId == folder.id },
                             modifier = Modifier.animateItem()
                         )
                     }
                     items(
                         items = tasks,
-                        key = { "task_${it.id!!}" },
+                        key = { "task_${it.id}" },
                         span = { StaggeredGridItemSpan.FullLine },
                     ) { task ->
                         TaskItem(
                             task = task,
                             onClick = { navController.navigate(Routes.Task.get(task.id)) },
-                            onHold = { folderViewModel.onSelectionTask(task) },
-                            onUpdate = { status -> folderViewModel.onAction(FolderAction.UpdateTaskStatus(task.id!!, status)) },
+                            onHold = { folderViewModel.onSelectionTask(Task(id=task.id, title = task.title, isCompleted = task.isCompleted, due = null, description = "", folderId = 0)) },
+                            onUpdate = { status -> folderViewModel.onAction(FolderAction.UpdateTaskStatus(task.id, status)) },
                             path = null,
-                            selected = task in selectedTasks,
+                            selected = selectedTasks.any { it.id == task.id },
                             modifier = Modifier.animateItem()
                         )
                     }
-                    items(notes, key = { "note_${it.id!!}" }) { note ->
+                    items(notes, key = { "note_${it.id}" }) { note ->
                         NoteItem(
                             note = note,
                             onClick = { navController.navigate(Routes.Note.get(note.id)) },
-                            onHold = { folderViewModel.onSelectionNote(note) },
-                            selected = note in selectedNotes,
+                            onHold = { folderViewModel.onSelectionNote(Note(id=note.id, title = note.title, content = "", folderId = 0)) },
+                            selected = selectedNotes.any { it.id == note.id },
                             modifier = Modifier.animateItem()
                         )
                     }
@@ -297,7 +299,7 @@ fun FolderListScreen(
                     folderViewModel.deleteSelection()
                 },
                 title = stringResource(R.string.delete_confirmation_title),
-                message = "Sure want to delete ${selectionCount.value} items?" //TODO
+                message = "Sure want to delete $selectionCount items?" //TODO
             )
         }
     }

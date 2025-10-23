@@ -108,7 +108,7 @@ fun AddEditEventScreen(
         }
         val initialDate = if (date != -1L) fromMillis(date) else LocalDateTime.now().plusDays(1)
         (uiState as? EventScreenUiState.Success)?.let {
-            eventViewModel.onAction(AddEditEventAction.UpdateEvent(it.event.copy(
+            eventViewModel.onAction(AddEditEventAction.UpdateEvent(it.uiModel.event.copy(
                 start = initialDate.withHour(10).withMinute(0),
                 end = initialDate.withHour(11).withMinute(0),
             )))
@@ -125,9 +125,9 @@ fun AddEditEventScreen(
         }
 
         is EventScreenUiState.Success -> {
-            val eventInputState = state.event
-            val folder = state.folder
-            val folders = state.folders
+            val eventInputState = state.uiModel.event
+            val folder = state.uiModel.folder
+            val folders = state.uiModel.folders
 
             LaunchedEffect(Unit) {
                 if (eventId == -1L) {
@@ -294,18 +294,17 @@ fun AddEditEventScreen(
                                 isDatePickerForStart = null
                             },
                             onConfirm = {
-                                if (isDatePickerForStart == true) {
-                                    eventViewModel.onAction(AddEditEventAction.UpdateEvent(eventInputState.copy(
-                                        start = eventInputState.start?.addTimerPickerState(timePickerState),
-                                    )))
-                                    if (eventInputState.end!!.isBefore(eventInputState.start))
-                                        eventViewModel.onAction(AddEditEventAction.UpdateEvent(eventInputState.copy(
-                                            end = eventInputState.start?.plusHours(1),
-                                        )))
-                                } else if (isDatePickerForStart == false)
-                                    eventViewModel.onAction(AddEditEventAction.UpdateEvent(eventInputState.copy(
-                                        end = eventInputState.end?.addTimerPickerState(timePickerState)
-                                    )))
+                                val newEvent = if (isDatePickerForStart == true) {
+                                    val newStart = eventInputState.start?.addTimerPickerState(timePickerState)
+                                    if (eventInputState.end?.isBefore(newStart) == true) {
+                                        eventInputState.copy(start = newStart, end = newStart?.plusHours(1))
+                                    } else {
+                                        eventInputState.copy(start = newStart)
+                                    }
+                                } else {
+                                    eventInputState.copy(end = eventInputState.end?.addTimerPickerState(timePickerState))
+                                }
+                                eventViewModel.onAction(AddEditEventAction.UpdateEvent(newEvent))
                                 isDatePickerForStart = null
                                 showTimePicker = false
                             }

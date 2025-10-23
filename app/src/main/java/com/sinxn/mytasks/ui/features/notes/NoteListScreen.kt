@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
@@ -139,14 +140,14 @@ fun NoteListScreen(
                     contentPadding = paddingValues,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
-                    items(notes, key = { it.id!! }) { note ->
+                    items(notes, key = { it.id }) { note ->
                         var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state
                         var isLoadingPath by remember { mutableStateOf(true) }
 
                         // Launch a coroutine for each item to get its path
-                        LaunchedEffect(key1 = note.folderId, key2 = hideLocked) {
+                        LaunchedEffect(key1 = note.id, key2 = hideLocked) {
                             isLoadingPath = true
-                            path = viewModel.getPath(note.folderId, hideLocked)
+                            path = viewModel.getPath(note.id, hideLocked)
                             isLoadingPath = false
                         }
 
@@ -157,8 +158,8 @@ fun NoteListScreen(
                                     note = note,
                                     path = path,
                                     onClick = { navController.navigate(Routes.Note.get(note.id)) },
-                                    onHold = { viewModel.onSelectionNote(note) },
-                                    selected = note in selectedNotes,
+                                    onHold = { viewModel.onSelectionNote(Note(id=note.id, title = note.title, content = "", folderId = 0)) },
+                                    selected = selectedNotes.any { it.id == note.id },
                                     modifier = Modifier.animateItem()
                                 )
                             }

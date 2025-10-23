@@ -49,7 +49,7 @@ import showBiometricsAuthentication
 @Composable
 fun FolderItem(
     modifier: Modifier = Modifier,
-    folder: Folder,
+    folder: FolderListItemUiModel,
     onClick: () -> Unit,
     onDelete: () -> Unit,
     onLock: () -> Unit,

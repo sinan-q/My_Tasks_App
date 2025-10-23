@@ -1,8 +1,9 @@
 package com.sinxn.mytasks.data.repository
 
-import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
+import android.util.Log
 import com.sinxn.mytasks.data.local.dao.FolderDao
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -26,8 +27,9 @@ class FolderRepository @Inject constructor(
     override suspend fun lockFolder(folder: Folder) = folderDao.lockFolder(folder.folderId)
 
     override suspend fun getFolderById(folderId: Long): Folder {
+        Log.d("TAG", "getFolderById: $folderId  ")
         if (folderId == 0L) return Folder(name = "Root", folderId = 0L)
-        return folderDao.getFolderById(folderId)
+        return folderDao.getFolderById(folderId)?: Folder(name = "Unknown", folderId = -1L)
     }
 
     override suspend fun updateFolderName(folderId: Long, newName: String) = folderDao.updateFolderName(folderId, newName)

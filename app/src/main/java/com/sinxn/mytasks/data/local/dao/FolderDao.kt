@@ -35,7 +35,7 @@ interface FolderDao {
     fun getSubFolders(parentId: Long?): Flow<List<Folder>>
 
     @Query("SELECT * FROM folders WHERE folderId = :folderId")
-    suspend fun getFolderById(folderId: Long): Folder
+    suspend fun getFolderById(folderId: Long): Folder?
 
     @Query("UPDATE folders SET name = :newName WHERE folderId = :folderId")
     suspend fun updateFolderName(folderId: Long, newName: String)

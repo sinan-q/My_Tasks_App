@@ -93,7 +93,7 @@ fun HomeScreen(
         bottomBar = { BottomBar(navController = navController) },
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End){
-                if (selectionCount != 0) {
+                if (selectionCount  != 0) {
                     ShowActionsFAB(
                         onPaste = {
                             viewModel.pasteSelection()
@@ -158,11 +158,11 @@ fun HomeScreen(
                 Text(state.message)
             }
             is HomeScreenUiState.Success -> {
-                val folders = state.folders
-                val upcomingEvents = state.upcomingEvents
-                val pendingTasks = state.pendingTasks
-                val tasks = state.tasks
-                val notes = state.notes
+                val folders = state.homeUiModel.folders
+                val upcomingEvents = state.homeUiModel.upcomingEvents
+                val pendingTasks = state.homeUiModel.pendingTasks
+                val tasks = state.homeUiModel.tasks
+                val notes = state.homeUiModel.notes
 
                 LazyVerticalStaggeredGrid(
                     verticalItemSpacing = 4.dp,
@@ -179,7 +179,7 @@ fun HomeScreen(
                         }
                     }
 
-                    items(upcomingEvents, key = { "event_${it.id!!}" }) { event ->
+                    items(upcomingEvents, key = { "event_${it.id}" }) { event ->
                         EventSmallItem(event, modifier = Modifier.animateItem()) {
                             navController.navigate(Event.get(event.id))
                         }
@@ -197,17 +197,17 @@ fun HomeScreen(
 
                     items (
                         items = pendingTasks,
-                        key = { task -> "pendingTask_${task.id!!}" },
+                        key = { task -> "pendingTask_${task.id}" },
                         span = { StaggeredGridItemSpan.FullLine },
                         contentType = { "pendingTask" }
                     ) { task ->
                         TaskItem(
                             task = task,
                             onClick = { navController.navigate(Task.get(task.id)) },
-                            onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
-                            onHold = { viewModel.onSelectionTask(task) },
+                            onUpdate = { status -> viewModel.updateStatusTask(task.id, status) },
+                            onHold = { viewModel.onSelectionTask(task.id) },
                             path = null,
-                            selected = task in selectedTasks,
+                            selected = selectedTasks.any { it.id == task.id },
                             modifier = Modifier.animateItem()
                         )
                     }
@@ -240,38 +240,38 @@ fun HomeScreen(
                             ) { viewModel.addFolder(it) }
                         }
                     }
-                    items(folders, key = { "folder_${it.folderId}" }) { folder ->
+                    items(folders, key = { "folder_${it.id}" }) { folder ->
                         FolderItem(
                             folder = folder,
-                            onClick = { navController.navigate(Routes.Folder.get(folder.folderId)) },
-                            onDelete = { viewModel.deleteFolder(folder) },
-                            onLock = { viewModel.lockFolder(folder) },
-                            onHold = { viewModel.onSelectionFolder(folder) },
-                            selected = folder in selectedFolders,
+                            onClick = { navController.navigate(Routes.Folder.get(folder.id)) },
+                            onDelete = { viewModel.deleteFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked)) },
+                            onLock = { viewModel.lockFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked)) },
+                            onHold = { viewModel.onSelectionFolder(folder.id) },
+                            selected = selectedFolders.any { it.folderId == folder.id },
                             modifier = Modifier.animateItem()
                         )
                     }
                     items (
-                        key = { "task_${it.id!!}" },
+                        key = { "task_${it.id}" },
                         span = { StaggeredGridItemSpan.FullLine },
                         items = tasks,
                     ) { task ->
                         TaskItem(
                             task = task,
                             onClick = { navController.navigate(Task.get(task.id))},
-                            onUpdate = { status -> viewModel.updateStatusTask(task.id!!, status) },
-                            onHold = { viewModel.onSelectionTask(task) },
+                            onUpdate = { status -> viewModel.updateStatusTask(task.id, status) },
+                            onHold = { viewModel.onSelectionTask(task.id) },
                             path = null,
-                            selected = task in selectedTasks,
+                            selected = selectedTasks.any { it.id == task.id },
                             modifier = Modifier.animateItem()
                         )
                     }
-                    items(notes, key = { "note_${it.id!!}" }) { note ->
+                    items(notes, key = { "note_${it.id}" }) { note ->
                         NoteItem(
                             note = note,
                             onClick = { navController.navigate(Note.get(note.id)) },
-                            onHold = { viewModel.onSelectionNote(note) },
-                            selected = note in selectedNotes,
+                            onHold = { viewModel.onSelectionNote(note.id) },
+                            selected = selectedNotes.any { it.id == note.id },
                             modifier = Modifier.animateItem()
                         )
 

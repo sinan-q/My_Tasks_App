@@ -32,6 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
@@ -137,14 +138,14 @@ fun TaskListScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
-                    items(state.tasks, key = { it.id!! }) { task ->
+                    items(state.tasks, key = { it.id }) { task ->
                         var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state
                         var isLoadingPath by remember { mutableStateOf(true) }
 
                         // Launch a coroutine for each item to get its path
-                        LaunchedEffect(key1 = task.folderId, key2 = hideLocked) {
+                        LaunchedEffect(key1 = task.id, key2 = hideLocked) {
                             isLoadingPath = true
-                            path = viewModel.getPath(task.folderId, hideLocked)
+                            path = viewModel.getPath(task.id, hideLocked)
                             isLoadingPath = false
                         }
 
@@ -154,9 +155,9 @@ fun TaskListScreen(
                                     task = task,
                                     path = path,
                                     onClick = { navController.navigate(Routes.Task.get(task.id)) },
-                                    onUpdate = { task.id?.let { it1 -> viewModel.onAction(AddEditTaskAction.UpdateStatusTask(it1, it)) } },
-                                    onHold = { viewModel.onSelectionTask(task) },
-                                    selected = task in selectedTasks,
+                                    onUpdate = { task.id.let { it1 -> viewModel.onAction(AddEditTaskAction.UpdateStatusTask(it1, it)) } },
+                                    onHold = { viewModel.onSelectionTask(Task(id=task.id, title = task.title, isCompleted = task.isCompleted, due = null, description = "", folderId = 0)) },
+                                    selected = selectedTasks.any { it.id == task.id },
                                     modifier = Modifier.animateItem()
                                 )
                         }

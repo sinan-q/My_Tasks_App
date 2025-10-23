@@ -8,6 +8,8 @@ import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
+import com.sinxn.mytasks.ui.features.tasks.TaskListItemUiModel
+import com.sinxn.mytasks.ui.features.tasks.toListItemUiModel
 import com.sinxn.mytasks.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -19,18 +21,25 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+data class EventScreenUiModel(
+    val events: List<Event>,
+    val eventListItems: List<EventListItemUiModel>,
+    val tasks: List<Task>,
+    val taskListItems: List<TaskListItemUiModel>,
+    val folders: List<Folder>,
+    val folder: Folder?,
+    val event: Event,
+)
+
 sealed class EventScreenUiState {
     object Loading : EventScreenUiState()
     data class Success(
-        val events: List<Event>,
-        val tasks: List<Task>,
-        val folders: List<Folder>,
-        val folder: Folder?,
-        val event: Event,
+        val uiModel: EventScreenUiModel
     ) : EventScreenUiState()
     data class Error(val message: String) : EventScreenUiState()
 }
@@ -42,7 +51,7 @@ class EventViewModel @Inject constructor(
     private val folderRepository: FolderRepositoryInterface,
 ) : ViewModel() {
 
-    val upcomingEvents = repository.getUpcomingEvents(10).stateIn(
+    val upcomingEvents = repository.getUpcomingEvents(10).map { events -> events.map { it.toListItemUiModel() } }.stateIn(
         viewModelScope,
         SharingStarted.Lazily,
         emptyList()
@@ -73,7 +82,7 @@ class EventViewModel @Inject constructor(
     private fun onUpdateEvent(event: Event) {
         val currentState = _uiState.value
         if (currentState is EventScreenUiState.Success) {
-            _uiState.value = currentState.copy(event = event)
+            _uiState.value = currentState.copy(uiModel = currentState.uiModel.copy(event = event))
         }
     }
 
@@ -82,9 +91,9 @@ class EventViewModel @Inject constructor(
             repository.getAllEvents().collectLatest { events ->
                 val currentState = _uiState.value
                 if (currentState is EventScreenUiState.Success) {
-                    _uiState.value = currentState.copy(events = events)
+                    _uiState.value = currentState.copy(uiModel = currentState.uiModel.copy(events = events, eventListItems = events.map { it.toListItemUiModel() }))
                 } else {
-                    _uiState.value = EventScreenUiState.Success(events, emptyList(), emptyList(), null, Event())
+                    _uiState.value = EventScreenUiState.Success(EventScreenUiModel(events, events.map { it.toListItemUiModel() }, emptyList(), emptyList(), emptyList(), null, Event()))
                 }
             }
         }
@@ -92,7 +101,7 @@ class EventViewModel @Inject constructor(
             taskRepository.getAllTasks().collectLatest { tasks ->
                 val currentState = _uiState.value
                 if (currentState is EventScreenUiState.Success) {
-                    _uiState.value = currentState.copy(tasks = tasks)
+                    _uiState.value = currentState.copy(uiModel = currentState.uiModel.copy(tasks = tasks, taskListItems = tasks.map { it.toListItemUiModel() }))
                 }
             }
         }
@@ -106,17 +115,23 @@ class EventViewModel @Inject constructor(
             val currentState = _uiState.value
             if (currentState is EventScreenUiState.Success) {
                 _uiState.value = currentState.copy(
-                    folder = fetchedFolder,
-                    folders = subFolders,
-                    event = currentState.event.copy(folderId = folderId)
+                    uiModel = currentState.uiModel.copy(
+                        folder = fetchedFolder,
+                        folders = subFolders,
+                        event = currentState.uiModel.event.copy(folderId = folderId)
+                    )
                 )
             } else {
                 _uiState.value = EventScreenUiState.Success(
-                    events = emptyList(),
-                    tasks = emptyList(),
-                    folders = subFolders,
-                    folder = fetchedFolder,
-                    event = Event(folderId = folderId)
+                    EventScreenUiModel(
+                        events = emptyList(),
+                        eventListItems = emptyList(),
+                        tasks = emptyList(),
+                        taskListItems = emptyList(),
+                        folders = subFolders,
+                        folder = fetchedFolder,
+                        event = Event(folderId = folderId)
+                    )
                 )
             }
         }
@@ -132,16 +147,20 @@ class EventViewModel @Inject constructor(
             }
             val currentState = _uiState.value
             if (currentState is EventScreenUiState.Success) {
-                _uiState.value = currentState.copy(event = fetchedEvent)
+                _uiState.value = currentState.copy(uiModel = currentState.uiModel.copy(event = fetchedEvent))
             } else {
                 val fetchedFolder = folderRepository.getFolderById(fetchedEvent.folderId)
                 val subFolders = folderRepository.getSubFolders(fetchedEvent.folderId).first()
                 _uiState.value = EventScreenUiState.Success(
-                    events = emptyList(),
-                    tasks = emptyList(),
-                    folders = subFolders,
-                    folder = fetchedFolder,
-                    event = fetchedEvent
+                    EventScreenUiModel(
+                        events = emptyList(),
+                        eventListItems = emptyList(),
+                        tasks = emptyList(),
+                        taskListItems = emptyList(),
+                        folders = subFolders,
+                        folder = fetchedFolder,
+                        event = fetchedEvent
+                    )
                 )
             }
             fetchFolderById(fetchedEvent.folderId)
