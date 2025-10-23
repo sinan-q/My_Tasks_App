@@ -1,296 +1,200 @@
-# MyTasks - Android Task Management Application Documentation
+# My Tasks - Project Documentation
 
 ## Project Summary
 
 ### Application Name and Primary Function
-MyTasks is a comprehensive task and note management Android application that provides users with the ability to manage tasks, notes, events, and reminders with folder organization and biometric security features.
+**My Tasks** is a comprehensive productivity application for Android that helps users organize their daily activities. It provides a unified platform for managing tasks, notes, and events, with a focus on simplicity and ease of use.
 
 ### Target User/Audience
-- Individual users seeking a unified solution for task, note, and event management
-- Users who need secure storage of sensitive notes/tasks with biometric protection
-- Users requiring calendar-based event tracking and task scheduling
-- Users who want quick access to their tasks/notes through home screen widgets
+The application is designed for individuals seeking an all-in-one solution to manage personal and professional responsibilities, reminders, and ideas.
 
 ### Core Business Value/Problem Solved
-- Unified management of tasks, notes, and events in a single application
-- Secure information storage with biometric authentication
-- Organized content management through hierarchical folder structure
-- Flexible reminder system with customizable notifications
-- Quick access through home screen widgets
+My Tasks addresses the need for a centralized, secure, and easily accessible tool for personal organization. It helps users keep track of their to-do lists, important notes, and upcoming events, ensuring that nothing is forgotten. The inclusion of alarms, home-screen widgets, and optional biometric security enhances its value as a reliable productivity companion.
 
 ## Technical Stack & Environment
 
-### Android Configuration
-- **Minimum SDK**: 34 (Android 14)
-- **Target SDK**: 35 (Android 15)
-- **Compile SDK**: 36
+*   **Minimum SDK Version**: 34
+*   **Target SDK Version**: 35
+*   **Kotlin Version**: 2.0.21
+*   **Gradle Plugin Version**: 8.10.1
+*   **Java Version**: 19
+*   **Build Configuration Variants**:
+    *   `debug`: Includes a `.debug` application ID suffix for easy identification.
+    *   `release`: Configured for production, with minification disabled. ProGuard rules are applied from `proguard-android-optimize.txt` and `proguard-rules.pro`.
 
-### Language & Build Tools
-- **Kotlin Version**: 2.0.21
-- **Java Compatibility**: Version 19
-- **Gradle Plugin Version**: 8.10.1
-- **Kotlin Compiler Extension Version**: 1.5.15
+## Dependency Manifest (Rebuild Checklist)
 
-### Build Configuration
-```groovy
-buildTypes {
-    release {
-        isMinifyEnabled = false
-        proguardFiles(
-            getDefaultProguardFile("proguard-android-optimize.txt"),
-            "proguard-rules.pro"
-        )
-    }
-    debug {
-        applicationIdSuffix = ".debug"
-    }
-}
-```
+### Core & UI
+*   `androidx.core:core-ktx:1.16.0`
+*   `androidx.lifecycle:lifecycle-runtime-ktx:2.9.1`
+*   `androidx.activity:activity-compose:1.10.1`
+*   `androidx.compose:compose-bom:2025.06.01`
+*   `androidx.compose.ui:ui`
+*   `androidx.compose.ui:ui-graphics`
+*   `androidx.compose.ui:ui-tooling-preview`
+*   `androidx.compose.material3:material3`
+*   `androidx.navigation:navigation-compose:2.9.1`
+*   `io.github.jeziellago:compose-markdown:0.5.7`
 
-## Dependency Manifest
+### Dependency Injection (Hilt)
+*   `com.google.dagger:hilt-android:2.55`
+*   `com.google.dagger:hilt-compiler:2.55` (ksp)
+*   `androidx.hilt:hilt-navigation-compose:1.2.0`
 
-### Core Android & Jetpack
-- AndroidX Core KTX: 1.16.0
-- Lifecycle Runtime KTX: 2.9.1
-- Activity Compose: 1.10.1
-- Navigation Compose: 2.9.1
+### Database (Room)
+*   `androidx.room:room-runtime:2.7.2`
+*   `androidx.room:room-ktx:2.7.2`
+*   `androidx.room:room-compiler:2.7.2` (ksp)
 
-### UI Framework
-- Jetpack Compose BOM: 2025.06.01
-  - compose-ui
-  - compose-ui-graphics
-  - compose-ui-tooling
-  - compose-material3
+### Biometric Authentication
+*   `androidx.biometric:biometric:1.2.0-alpha05`
+*   `androidx.appcompat:appcompat:1.7.1`
 
-### Dependency Injection
-- Hilt Android: 2.55
-- Hilt Navigation Compose: 1.2.0
-- Hilt Compiler KSP
+### Widget (Glance)
+*   `androidx.glance:glance-appwidget:1.1.1`
+*   `androidx.glance:glance-material3:1.1.1`
 
-### Database & Persistence
-- Room Runtime: 2.7.2
-- Room KTX
-- Room Compiler
+### JSON Serialization (Gson)
+*   `com.google.code.gson:gson:2.11.0`
 
-### Security
-- Biometric: 1.2.0-alpha05
-- AppCompat: 1.7.1
+### Testing
+*   `junit:junit:4.13.2` (test)
+*   `androidx.test.ext:junit:1.2.1` (androidTest)
+*   `androidx.test.espresso:espresso-core:3.6.1` (androidTest)
+*   `androidx.compose.ui:ui-test-junit4` (androidTest)
+*   `io.mockk:mockk:1.13.5` (test)
+*   `org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3` (test)
+alisa.sinan.mytasks.test/com.sinan.turbine:turbine:0.13.0` (test)
 
-### Widget Support
-- Glance AppWidget: 1.1.1
-- Glance Material3: 1.1.1
-
-### Additional Libraries
-- Gson: 2.11.0
-- Compose Markdown: 0.5.7
-
-### Testing Dependencies
-- JUnit: 4.13.2
-- Espresso Core: 3.6.1
-- MockK: 1.13.5
-- Turbine: 0.13.0
-- Coroutines Test: 1.7.3
+### Plugins
+*   `com.android.application`: 8.10.1
+*   `org.jetbrains.kotlin.android`: 2.0.21
+*   `org.jetbrains.kotlin.plugin.compose`: 2.0.21
+*   `com.google.dagger.hilt.android`: 2.55
+*   `com.google.devtools.ksp`: 2.0.21-1.0.27
+*   `androidx.room`: 2.7.2
 
 ## Application Architecture & Structure
 
 ### Primary Architectural Pattern
-The application follows MVVM (Model-View-ViewModel) with Clean Architecture principles:
-- **Presentation Layer**: Jetpack Compose UI + ViewModels
-- **Domain Layer**: Use Cases & Repository Interfaces
-- **Data Layer**: Room Database + Repository Implementations
+The application follows the **MVVM (Model-View-ViewModel)** pattern, integrated with the principles of **Clean Architecture**. This layered approach promotes a separation of concerns, which enhances maintainability, scalability, and testability.
 
-### Data Models
+*   **UI Layer (View)**: Composable functions that observe `StateFlow` from ViewModels to render the UI. User interactions are captured and forwarded to the ViewModel.
+*   **ViewModel**: Manages and exposes UI state using `StateFlow`. It communicates with the domain layer (use cases) to execute business logic and update the state.
+*   **Domain Layer**: Contains business logic encapsulated in use cases. This layer is independent of the UI and data layers and relies on repository interfaces.
+*   **Data Layer**: Implements the repository interfaces defined in the domain layer. It is responsible for managing data from local sources (Room database).
 
-#### Database Entities
-1. **Note Entity**
-```kotlin
-@Entity(tableName = "notes")
-data class Note(
-    @PrimaryKey(autoGenerate = true) val id: Long? = null,
-    val folderId: Long = 0L,
-    val title: String = "",
-    val content: String = "",
-    val timestamp: LocalDateTime = LocalDateTime.now()
-)
-```
+### Module Breakdown
+While the project is organized within a single `:app` module, it is logically structured into packages that reflect the Clean Architecture principles:
 
-2. **Task Entity**
-```kotlin
-@Entity(tableName = "tasks")
-data class Task(
-    @PrimaryKey(autoGenerate = true) val id: Long? = null,
-    val folderId: Long = 0L,
-    val title: String = "",
-    val description: String = "",
-    val isCompleted: Boolean = false,
-    val timestamp: LocalDateTime = LocalDateTime.now(),
-    val due: LocalDateTime? = null
-)
-```
+*   `ui`: Contains all UI-related components, including Composable screens, ViewModels, and navigation logic.
+*   `domain`: Includes use cases and repository interfaces, defining the core business rules.
+*   `data`: Consists of repository implementations, Room database definitions (DAOs, entities), and data models.
+*   `di`: Contains Hilt modules for dependency injection, which wire together the different layers of the application.
 
-3. **Event Entity**
-```kotlin
-@Entity(tableName = "events")
-data class Event(
-    @PrimaryKey(autoGenerate = true) val id: Long? = null,
-    val folderId: Long = 0L,
-    val title: String = "",
-    val description: String = "",
-    val timestamp: LocalDateTime = LocalDateTime.now(),
-    val start: LocalDateTime? = null,
-    val end: LocalDateTime? = null
-)
-```
+### Data/Control Flow Diagram
+1.  **UI (View)**: A user action (e.g., clicking a button to add a task) triggers a function call in the corresponding **ViewModel**.
+2.  **ViewModel**: The ViewModel invokes a specific **Use Case** from the domain layer (e.g., `AddTaskUseCase`).
+3.  **Use Case**: The use case executes its business logic and communicates with one or more **Repository Interfaces**.
+4.  **Repository (Implementation)**: The repository implementation in the data layer interacts with the **Room Database** to perform the requested operation (e.g., inserting a new task).
+5.  **Data Flow Back**: The data flows back through the layers: `Room Database` → `Repository` → `Use Case` → `ViewModel`. The ViewModel then updates its `StateFlow`, which causes the UI to be recomposed with the new state.
 
-4. **Folder Entity**
-```kotlin
-@Entity(tableName = "folders")
-data class Folder(
-    @PrimaryKey(autoGenerate = true) val folderId: Long = 0L,
-    val name: String,
-    val parentFolderId: Long? = 0L,
-    @ColumnInfo(defaultValue = "0")
-    val isLocked: Boolean = false
-)
-```
+## Data Layer Details
 
-5. **Alarm Entity**
-```kotlin
-@Entity(tableName = "alarm")
-data class Alarm(
-    @PrimaryKey(autoGenerate = true) val alarmId: Long = 0L,
-    val isTask: Boolean,
-    val taskId: Long,
-    val time: Long
-)
-```
+### API Specification
+The application does not consume any remote APIs. All data is stored locally on the device.
 
-### Key Components
+### Persistence Schema
+The application uses Room for local persistence. The database schema is defined as follows:
 
-#### Database
-- Room Database (AppDatabase) version 4
-- Uses TypeConverters for LocalDateTime serialization
-- Implements auto-migrations
-- Includes DAOs for all entities:
-  - NoteDao
-  - TaskDao
-  - FolderDao
-  - EventDao
-  - AlarmDao
+*   **`notes` Table (`Note.kt`)**: Stores user-created notes.
+    *   `id`: `Long` (Primary Key, Auto-generated)
+    *   `folderId`: `Long` (Foreign key to the `folders` table)
+    *   `title`: `String`
+    *   `content`: `String`
+    *   `timestamp`: `LocalDateTime`
 
-#### Repositories
-All repositories follow interface-based design with concrete implementations:
-- NoteRepository
-- TaskRepository
-- EventRepository
-- FolderRepository
-- AlarmRepository
+*   **`tasks` Table (`Task.kt`)**: Stores to-do items.
+    *   `id`: `Long` (Primary Key, Auto-generated)
+    *   `folderId`: `Long` (Foreign key to the `folders` table)
+    *   `title`: `String`
+    *   `description`: `String`
+    *   `isCompleted`: `Boolean`
+    *   `timestamp`: `LocalDateTime`
+    *   `due`: `LocalDateTime?`
 
-#### ViewModels
-- NoteViewModel
-- TaskViewModel
-- EventViewModel
-- AlarmViewModel
-- BackupViewModel
+*   **`events` Table (`Event.kt`)**: Stores calendar events.
+    *   `id`: `Long` (Primary Key, Auto-generated)
+    *   `folderId`: `Long` (Foreign key to the `folders` table)
+    *   `title`: `String`
+    *   `description`: `String`
+    *   `timestamp`: `LocalDateTime`
+    *   `start`: `LocalDateTime?`
+    *   `end`: `LocalDateTime?`
 
-#### Core Features
-1. **Folder Management**
-   - Hierarchical folder structure
-   - Folder locking with biometric authentication
-   - Copy and delete operations with content
+*   **`folders` Table (`Folder.kt`)**: Organizes notes, tasks, and events.
+    *   `folderId`: `Long` (Primary Key, Auto-generated)
+    *   `name`: `String`
+    *   `parentFolderId`: `Long?` (Self-referencing for nested folders)
+    *   `isLocked`: `Boolean`
 
-2. **Task Management**
-   - Task creation and editing
-   - Due date setting
-   - Completion status tracking
-   - Multiple reminders per task
+*   **`alarm` Table (`Alarm.kt`)**: Stores alarms associated with tasks or events.
+    *   `alarmId`: `Long` (Primary Key, Auto-generated)
+    *   `isTask`: `Boolean` (True if the alarm is for a task, false for an event)
+    *   `taskId`: `Long` (Foreign key to the `tasks` or `events` table)
+    *   `time`: `Long`
 
-3. **Note Management**
-   - Text note creation and editing
-   - Markdown support
-   - Timestamp tracking
+### Domain Models
+The domain models are represented by the same data classes used for the Room entities (`Note`, `Task`, `Event`, `Folder`, `Alarm`). These models are used consistently across all layers of the application, from the database to the UI.
 
-4. **Event Management**
-   - Event scheduling with start/end times
-   - Calendar view
-   - Event reminders
+## Presentation & UI Layer
 
-5. **Reminder System**
-   - Alarm scheduling
-   - Notification management
-   - Snooze functionality
+### Navigation Graph
+The application uses Jetpack Compose Navigation to manage screen transitions. The navigation graph is defined in `NavGraph.kt` and includes the following primary destinations:
 
-6. **Widget Support**
-   - Quick access toolbar widget
-   - Task/Note creation shortcuts
-   - Configurable layout based on size
+*   **Home Screen (`HomeScreen`)**: The main entry point, providing access to notes, tasks, events, and folders.
+*   **Note List (`NoteListScreen`)**: Displays a list of all notes.
+*   **Add/Edit Note (`AddEditNoteScreen`)**: A screen for creating or modifying a note. It is accessed with a `noteId` and an optional `folderId`.
+*   **Task List (`TaskListScreen`)**: Displays a list of all tasks.
+*   **Add/Edit Task (`AddEditTaskScreen`)**: A screen for creating or modifying a task. It is accessed with a `taskId` and an optional `folderId`.
+*   **Event List (`EventListScreen`)**: Displays a calendar view of events.
+*   **Add/Edit Event (`AddEditEventScreen`)**: A screen for creating or modifying an event. It is accessed with an `eventId`, an optional `folderId`, and an optional `date`.
+*   **Folder List (`FolderListScreen`)**: Displays a list of folders and their contents. It is accessed with a `folderId` to support nested folders.
+*   **Backup/Restore (`BackupScreen`)**: A screen for backing up and restoring application data.
 
-7. **Backup System**
-   - JSON-based export/import
-   - All entities included in backup
-   - Preserves relationships between entities
+The application also supports deep linking for adding new notes, tasks, and events, as well as navigating to the home screen.
+
+### State Management
+UI state is managed using **ViewModels**, which follow the MVVM architectural pattern. Each screen has a corresponding ViewModel that holds the UI state as a `StateFlow` and exposes it to the Composables. User events are handled by the ViewModel, which communicates with the domain layer to perform business logic and updates the state accordingly.
+
+### Key Custom Components
+*   **Markdown Editor/Viewer**: The application includes a custom markdown editor for creating and editing notes, which are then rendered as styled text.
+*   **Biometric Authentication Prompt**: A reusable function (`showBiometricsAuthentication`) that wraps the BiometricPrompt API to provide a consistent way of authenticating users before granting access to locked content.
+*   **Glance Widget**: A home screen widget (`MyGlanceWidget`) that provides quick actions to create new notes, tasks, and events.
+*   **Alarm Scheduler**: A custom scheduler (`AlarmScheduler`) that uses `AlarmManager` to set and cancel alarms for tasks and events.
 
 ## Build & Deployment
 
-### Prerequisites
-1. Android Studio Hedgehog or newer
-2. JDK 19
-3. Android SDK with API 34-36
+### Build Instructions
+To build the application, execute the following Gradle task from the project's root directory:
 
-### Build Steps
-1. Clone the repository
-2. Open in Android Studio
-3. Sync Gradle files
-4. Build the project using Gradle wrapper:
 ```bash
-./gradlew assembleDebug   # For debug build
-./gradlew assembleRelease # For release build
+./gradlew assembleRelease
 ```
 
-### ProGuard Configuration
-- MinifyEnabled is currently set to false
-- Default Android ProGuard rules are included
-- Additional ProGuard rules can be added in proguard-rules.pro
+This will generate a release-signed APK in the `app/build/outputs/apk/release` directory.
 
-## Testing Strategy
+### Signing Information
+To sign the release build, you will need to create a `keystore.properties` file in the root directory with the following template:
 
-### Unit Tests
-- JUnit 4 for unit testing
-- MockK for mocking
-- Turbine for Flow testing
-- Coroutines test utilities for suspend functions
+```properties
+storePassword=<YOUR_STORE_PASSWORD>
+keyAlias=<YOUR_KEY_ALIAS>
+keyPassword=<YOUR_KEY_PASSWORD>
+storeFile=<PATH_TO_YOUR_KEYSTORE_FILE>
+```
 
-### UI Tests
-- Compose UI testing with AndroidJUnit4
-- Espresso for Android UI testing
-- Screenshot testing (planned)
+The `app/build.gradle.kts` file must be configured to read these properties and apply them to the `release` build type.
 
-### Integration Tests
-- Room database testing
-- Repository integration tests
-- ViewModel integration tests
-
-### Test Coverage
-Currently includes:
-- Basic instrumented tests
-- Room database operations
-- Repository operations
-
-## Additional Notes
-
-### Security Considerations
-- Biometric authentication for locked folders
-- No sensitive data stored in plain text
-- Secure backup/restore functionality
-
-### Performance Considerations
-- Lazy loading of data
-- Efficient database queries with Room
-- Coroutines for async operations
-- Compose recomposition optimization
-
-### Future Enhancements
-- Enhanced widget customization
-- Cloud backup integration
-- Dark/Light theme support
-- Multi-language support
+### ProGuard/R8 Rules
+The project is configured to use ProGuard for code shrinking and obfuscation in the `release` build type. The default Android optimization rules (`proguard-android-optimize.txt`) are applied, along with a project-specific `proguard-rules.pro` file. No custom rules have been added, so the default configuration is used.
