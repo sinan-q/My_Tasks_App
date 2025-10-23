@@ -6,11 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
-import com.sinxn.mytasks.data.interfaces.AlarmRepositoryInterface
-import com.sinxn.mytasks.data.interfaces.EventRepositoryInterface
-import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
-import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
-import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
+import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
+import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
+import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
+import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
+import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.data.local.entities.Folder

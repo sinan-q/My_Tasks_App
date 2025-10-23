@@ -15,6 +15,11 @@ import com.sinxn.mytasks.data.repository.NoteRepository
 import com.sinxn.mytasks.data.repository.TaskRepository
 import com.sinxn.mytasks.data.usecase.folder.CopyFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
+import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
+import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
+import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
+import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
+import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
 import dagger.Module
 import dagger.Provides
@@ -45,16 +50,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideNoteRepository(appDatabase: AppDatabase): NoteRepository = NoteRepository(appDatabase.noteDao())
-
-    @Provides
-    @Singleton
     fun provideTaskDao(database: AppDatabase): TaskDao = database.taskDao()
-
-
-    @Provides
-    @Singleton
-    fun provideTaskRepository(appDatabase: AppDatabase): TaskRepository = TaskRepository(appDatabase.taskDao())
 
     @Provides
     @Singleton
@@ -62,15 +58,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFolderRepository(appDatabase: AppDatabase): FolderRepository = FolderRepository(appDatabase.folderDao())
-
-    @Provides
-    @Singleton
     fun provideEventDao(database: AppDatabase): EventDao = database.eventDao()
-
-    @Provides
-    @Singleton
-    fun provideEventRepository(appDatabase: AppDatabase): EventRepository = EventRepository(appDatabase.eventDao())
 
     @Provides
     @Singleton
@@ -78,11 +66,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAlarmRepository(@ApplicationContext context: Context,appDatabase: AppDatabase): AlarmRepository =
-        AlarmRepository(
-            appDatabase.alarmDao(),
-            AlarmScheduler(context)
-        )
+    fun provideAlarmScheduler(@ApplicationContext context: Context): AlarmScheduler = AlarmScheduler(context)
 
     @Provides
     @Singleton

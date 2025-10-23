@@ -1,7 +1,7 @@
 // com.sinxn.mytasks.data.respository.FakeAlarmRepository.kt
 package com.sinxn.mytasks.data.respository
 
-import com.sinxn.mytasks.data.interfaces.AlarmRepositoryInterface
+import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.utils.toMillis
 import java.time.LocalDateTime

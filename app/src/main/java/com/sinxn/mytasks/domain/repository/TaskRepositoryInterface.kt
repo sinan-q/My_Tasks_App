@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.data.interfaces
+package com.sinxn.mytasks.domain.repository
 
 import com.sinxn.mytasks.data.local.entities.Task
 import kotlinx.coroutines.flow.Flow

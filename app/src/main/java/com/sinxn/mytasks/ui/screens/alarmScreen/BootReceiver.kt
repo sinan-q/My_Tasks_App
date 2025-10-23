@@ -3,7 +3,7 @@ package com.sinxn.mytasks.ui.screens.alarmScreen
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.sinxn.mytasks.data.interfaces.AlarmRepositoryInterface
+import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

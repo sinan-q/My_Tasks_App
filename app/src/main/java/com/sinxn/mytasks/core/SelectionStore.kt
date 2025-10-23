@@ -3,11 +3,11 @@ package com.sinxn.mytasks.core
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.data.repository.FolderRepository
-import com.sinxn.mytasks.data.repository.NoteRepository
-import com.sinxn.mytasks.data.repository.TaskRepository
 import com.sinxn.mytasks.data.usecase.folder.CopyFolderAndItsContentsUseCase
 import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
+import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
+import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
+import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,9 +16,9 @@ import kotlinx.coroutines.flow.update
 
 @Singleton
 class SelectionStore @Inject constructor(
-    private val taskRepository: TaskRepository,
-    private val noteRepository: NoteRepository,
-    private val folderRepository: FolderRepository,
+    private val taskRepository: TaskRepositoryInterface,
+    private val noteRepository: NoteRepositoryInterface,
+    private val folderRepository: FolderRepositoryInterface,
     private val copyFolderAndItsContentsUseCase: CopyFolderAndItsContentsUseCase,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase
 ) {

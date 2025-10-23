@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.data.repository
 
-import com.sinxn.mytasks.data.interfaces.EventRepositoryInterface
+import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
 import com.sinxn.mytasks.data.local.dao.EventDao
 import com.sinxn.mytasks.data.local.entities.Event
 import kotlinx.coroutines.flow.Flow

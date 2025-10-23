@@ -4,8 +4,8 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.data.interfaces.AlarmRepositoryInterface
-import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
+import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
+import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel

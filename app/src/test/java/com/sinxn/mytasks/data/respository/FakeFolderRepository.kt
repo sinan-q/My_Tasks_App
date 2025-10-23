@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.data.respository
 
-import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
+import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

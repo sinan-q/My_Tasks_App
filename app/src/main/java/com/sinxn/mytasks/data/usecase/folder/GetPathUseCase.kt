@@ -1,7 +1,6 @@
 package com.sinxn.mytasks.data.usecase.folder
 
-import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
-import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
