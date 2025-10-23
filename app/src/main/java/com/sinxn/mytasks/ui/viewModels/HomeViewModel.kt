@@ -11,9 +11,9 @@ import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.data.usecase.folder.AddFolderUseCase
-import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
-import com.sinxn.mytasks.data.usecase.folder.LockFolderUseCase
+import com.sinxn.mytasks.domain.usecase.folder.AddFolderUseCase
+import com.sinxn.mytasks.domain.usecase.folder.DeleteFolderAndItsContentsUseCase
+import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow

@@ -2,24 +2,11 @@ package com.sinxn.mytasks.di
 
 import android.content.Context
 import androidx.room.Room
-import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.local.dao.AlarmDao
 import com.sinxn.mytasks.data.local.dao.EventDao
 import com.sinxn.mytasks.data.local.dao.FolderDao
 import com.sinxn.mytasks.data.local.dao.TaskDao
 import com.sinxn.mytasks.data.local.database.AppDatabase
-import com.sinxn.mytasks.data.repository.AlarmRepository
-import com.sinxn.mytasks.data.repository.EventRepository
-import com.sinxn.mytasks.data.repository.FolderRepository
-import com.sinxn.mytasks.data.repository.NoteRepository
-import com.sinxn.mytasks.data.repository.TaskRepository
-import com.sinxn.mytasks.data.usecase.folder.CopyFolderAndItsContentsUseCase
-import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
-import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
-import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
-import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
-import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
-import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.ui.screens.alarmScreen.AlarmScheduler
 import dagger.Module
 import dagger.Provides
@@ -67,19 +54,5 @@ object AppModule {
     @Provides
     @Singleton
     fun provideAlarmScheduler(@ApplicationContext context: Context): AlarmScheduler = AlarmScheduler(context)
-
-    @Provides
-    @Singleton
-    fun provideSelectionStore(
-        taskRepository: TaskRepository,
-        noteRepository: NoteRepository,
-        folderRepository: FolderRepository,
-        copyFolderAndItsContentsUseCase: CopyFolderAndItsContentsUseCase,
-        deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase
-    ): SelectionStore {
-        return SelectionStore(
-            taskRepository, noteRepository, folderRepository, copyFolderAndItsContentsUseCase, deleteFolderAndItsContentsUseCase
-        )
-    }
 
 }

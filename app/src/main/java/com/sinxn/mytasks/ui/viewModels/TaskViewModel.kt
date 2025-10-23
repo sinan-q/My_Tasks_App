@@ -10,7 +10,7 @@ import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.data.usecase.folder.GetPathUseCase
+import com.sinxn.mytasks.domain.usecase.folder.GetPathUseCase
 import com.sinxn.mytasks.utils.Constants
 import com.sinxn.mytasks.utils.differenceSeconds
 import com.sinxn.mytasks.utils.fromMillis

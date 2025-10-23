@@ -3,24 +3,18 @@ package com.sinxn.mytasks.core
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
-import com.sinxn.mytasks.data.usecase.folder.CopyFolderAndItsContentsUseCase
-import com.sinxn.mytasks.data.usecase.folder.DeleteFolderAndItsContentsUseCase
-import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
-import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
-import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
+import com.sinxn.mytasks.domain.usecase.selection.DeleteSelectionUseCase
+import com.sinxn.mytasks.domain.usecase.selection.PasteSelectionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class SelectionStore @Inject constructor(
-    private val taskRepository: TaskRepositoryInterface,
-    private val noteRepository: NoteRepositoryInterface,
-    private val folderRepository: FolderRepositoryInterface,
-    private val copyFolderAndItsContentsUseCase: CopyFolderAndItsContentsUseCase,
-    private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase
+    private val pasteSelectionUseCase: PasteSelectionUseCase,
+    private val deleteSelectionUseCase: DeleteSelectionUseCase
 ) {
     private val _selectedTasks = MutableStateFlow<Set<Task>>(emptySet())
     val selectedTasks: StateFlow<Set<Task>> = _selectedTasks
@@ -28,59 +22,41 @@ class SelectionStore @Inject constructor(
     private val _selectedNotes = MutableStateFlow<Set<Note>>(emptySet())
     val selectedNotes: StateFlow<Set<Note>> = _selectedNotes
 
-    // Add StateFlow for Folders if you don't have one
     private val _selectedFolders = MutableStateFlow<Set<Folder>>(emptySet())
     val selectedFolders: StateFlow<Set<Folder>> = _selectedFolders
 
-    private val _action = MutableStateFlow<SelectionActions>(SelectionActions.NONE)
+    private val _action = MutableStateFlow(SelectionActions.NONE)
     val action: StateFlow<SelectionActions> = _action
 
     private val _selectionCount = MutableStateFlow(0)
     val selectionCount: StateFlow<Int> = _selectionCount
 
-    // Specific toggle function for Task
-    fun toggleTask(task: Task) = _selectedTasks.update { current ->
-        if (task in current) current - task else current + task
+    private fun <T> toggle(item: T, flow: MutableStateFlow<Set<T>>) {
+        flow.update { current ->
+            if (item in current) current - item else current + item
+        }
+        updateSelectionCount()
+    }
 
-    }.also { updateSelectionCount() }
+    fun toggleTask(task: Task) = toggle(task, _selectedTasks)
 
-    // Specific toggle function for Note
-    fun toggleNote(note: Note) = _selectedNotes.update { current ->
-        if (note in current) current - note else current + note
-    }.also { updateSelectionCount() }
+    fun toggleNote(note: Note) = toggle(note, _selectedNotes)
 
-    // Specific toggle function for Folder
-    fun toggleFolder(folder: Folder) = _selectedFolders.update { current ->
-        if (folder in current) current - folder else current + folder
-    }.also { updateSelectionCount() }
+    fun toggleFolder(folder: Folder) = toggle(folder, _selectedFolders)
+
 
     fun setAction(action: SelectionActions) {
         _action.update { action }
     }
 
     suspend fun pasteSelection(folderId: Long) {
-        if (action.value == SelectionActions.COPY){
-            selectedFolders.value.forEach {
-                copyFolderAndItsContentsUseCase(it, parentId = folderId)
-            }
-            selectedTasks.value.forEach {
-                taskRepository.insertTask(it.copy(id = null, folderId = folderId ))
-            }
-            selectedNotes.value.forEach {
-                noteRepository.insertNote(it.copy(id = null, folderId = folderId))
-            }
-
-        } else if (action.value == SelectionActions.CUT) {
-            selectedTasks.value.forEach {
-                taskRepository.updateTask(it.copy(folderId = folderId))
-            }
-            selectedNotes.value.forEach {
-                noteRepository.updateNote(it.copy(folderId = folderId))
-            }
-            selectedFolders.value.forEach {
-                folderRepository.updateFolder(it.copy(parentFolderId = folderId))
-            }
-        }
+        pasteSelectionUseCase(
+            action = action.value,
+            selectedTasks = selectedTasks.value,
+            selectedNotes = selectedNotes.value,
+            selectedFolders = selectedFolders.value,
+            destinationFolderId = folderId
+        )
         clearSelection()
     }
 
@@ -98,11 +74,11 @@ class SelectionStore @Inject constructor(
     }
 
     suspend fun deleteSelection() {
-        taskRepository.deleteTasks(selectedTasks.value.toList())
-        noteRepository.deleteNotes(selectedNotes.value.toList())
-        selectedFolders.value.forEach {
-            deleteFolderAndItsContentsUseCase(it)
-        }
+        deleteSelectionUseCase(
+            selectedTasks = selectedTasks.value,
+            selectedNotes = selectedNotes.value,
+            selectedFolders = selectedFolders.value
+        )
         clearSelection()
     }
 }
