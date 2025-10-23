@@ -2,11 +2,13 @@ package com.sinxn.mytasks.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.core.FolderStore
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.core.SelectionStore
+import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
+import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.data.usecase.folder.GetPathUseCase
 import com.sinxn.mytasks.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -14,6 +16,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,19 +25,23 @@ import javax.inject.Inject
 @HiltViewModel
 class NoteViewModel @Inject constructor(
     private val noteRepository: NoteRepositoryInterface,
-    private val folderStore: FolderStore,
-    private val selectionStore: SelectionStore
+    private val folderRepository: FolderRepositoryInterface,
+    private val selectionStore: SelectionStore,
+    private val getPathUseCase: GetPathUseCase
 ) : ViewModel() {
 
     val selectedNotes = selectionStore.selectedNotes
     val selectedAction = selectionStore.action
     val selectionCount = selectionStore.selectionCount
 
-    val folders = folderStore.folders
-    val folder = folderStore.parentFolder
+    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
+    val folders: StateFlow<List<Folder>> = _folders.asStateFlow()
+
+    private val _folder = MutableStateFlow<Folder?>(null)
+    val folder: StateFlow<Folder?> = _folder.asStateFlow()
 
     suspend fun getPath(folderId: Long, hideLocked: Boolean): String? {
-            return folderStore.getPath(folderId, hideLocked)
+            return getPathUseCase(folderId, hideLocked)
     }
     fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
 
@@ -107,7 +115,10 @@ class NoteViewModel @Inject constructor(
 
     fun fetchFolderById(folderId: Long) {
         viewModelScope.launch {
-            folderStore.fetchFolderById(folderId)
+            val fetchedFolder = folderRepository.getFolderById(folderId)
+            val subFolders = folderRepository.getSubFolders(folderId).first()
+            _folder.value = fetchedFolder
+            _folders.value = subFolders
             _note.value = note.value.copy(
                 folderId = folderId,
             )

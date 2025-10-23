@@ -2,7 +2,6 @@ package com.sinxn.mytasks.di
 
 import android.content.Context
 import androidx.room.Room
-import com.sinxn.mytasks.core.FolderStore
 import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.local.dao.AlarmDao
 import com.sinxn.mytasks.data.local.dao.EventDao
@@ -99,13 +98,4 @@ object AppModule {
         )
     }
 
-    @Provides
-    @Singleton
-    fun provideFolderStore(
-        folderRepository: FolderRepository
-    ): FolderStore {
-        return FolderStore(
-            folderRepository
-        )
-    }
 }

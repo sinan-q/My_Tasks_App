@@ -2,9 +2,9 @@ package com.sinxn.mytasks.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.core.FolderStore
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.core.SelectionStore
+import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,13 +28,12 @@ import javax.inject.Inject
 class FolderViewModel @Inject constructor(
     private val noteRepository: NoteRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
+    private val folderRepository: FolderRepositoryInterface,
     private val addFolderUseCase: AddFolderUseCase,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
-    private val selectionStore: SelectionStore,
-    private val folderStore: FolderStore
-
-    ) : ViewModel() {
+    private val selectionStore: SelectionStore
+) : ViewModel() {
 
     val selectedTasks = selectionStore.selectedTasks
     val selectedNotes = selectionStore.selectedNotes
@@ -41,15 +41,19 @@ class FolderViewModel @Inject constructor(
     val selectedAction = selectionStore.action
     val selectionCount = selectionStore.selectionCount
 
-
     fun onSelectionTask(task: Task) = selectionStore.toggleTask(task)
     fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
     fun onSelectionFolder(folder: Folder) = selectionStore.toggleFolder(folder)
 
-    val folder = folderStore.parentFolder
-    val folders = folderStore.folders
+    private val _folder = MutableStateFlow<Folder?>(null)
+    val folder: StateFlow<Folder?> = _folder.asStateFlow()
+
+    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
+    val folders: StateFlow<List<Folder>> = _folders.asStateFlow()
+
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
     val notes: StateFlow<List<Note>> = _notes.asStateFlow()
+
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
@@ -98,7 +102,7 @@ class FolderViewModel @Inject constructor(
 
     fun updateFolderName(folderId: Long, newName: String) {
         viewModelScope.launch {
-            folderStore.folderRepository.updateFolderName(folderId, newName)
+            folderRepository.updateFolderName(folderId, newName)
         }
     }
 
@@ -110,7 +114,10 @@ class FolderViewModel @Inject constructor(
 
     fun getSubFolders(folderId: Long) {
         viewModelScope.launch {
-            folderStore.fetchFolderById(folderId)
+            val fetchedFolder = folderRepository.getFolderById(folderId)
+            val subFolders = folderRepository.getSubFolders(folderId).first()
+            _folder.value = fetchedFolder
+            _folders.value = subFolders
         }
         viewModelScope.launch {
             taskRepository.getTasksByFolderId(folderId).collectLatest { taskList ->
@@ -128,7 +135,7 @@ class FolderViewModel @Inject constructor(
 
     fun pasteSelection() {
         viewModelScope.launch {
-            val folderId = folderStore.parentFolder.value?.folderId?:0L
+            val folderId = folder.value?.folderId?:0L
             selectionStore.pasteSelection(folderId)
         }
 

@@ -2,10 +2,11 @@ package com.sinxn.mytasks.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.core.FolderStore
 import com.sinxn.mytasks.data.interfaces.EventRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Event
+import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,7 +27,7 @@ import javax.inject.Inject
 class EventViewModel @Inject constructor(
     private val repository: EventRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
-    private val folderStore: FolderStore,
+    private val folderRepository: FolderRepositoryInterface,
 ) : ViewModel() {
 
     val upcomingEvents = repository.getUpcomingEvents(10).stateIn(
@@ -34,8 +36,11 @@ class EventViewModel @Inject constructor(
         emptyList()
     )
 
-    val folders = folderStore.folders
-    val folder = folderStore.parentFolder
+    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
+    val folders: StateFlow<List<Folder>> = _folders.asStateFlow()
+
+    private val _folder = MutableStateFlow<Folder?>(null)
+    val folder: StateFlow<Folder?> = _folder.asStateFlow()
 
     private val _events = MutableStateFlow<List<Event>>(emptyList())
     val events: StateFlow<List<Event>> = _events.asStateFlow()
@@ -75,7 +80,10 @@ class EventViewModel @Inject constructor(
 
     fun fetchFolderById(folderId: Long) {
         viewModelScope.launch {
-            folderStore.fetchFolderById(folderId = folderId)
+            val fetchedFolder = folderRepository.getFolderById(folderId)
+            val subFolders = folderRepository.getSubFolders(folderId).first()
+            _folder.value = fetchedFolder
+            _folders.value = subFolders
             _event.value = event.value.copy(
                 folderId = folderId,
             )

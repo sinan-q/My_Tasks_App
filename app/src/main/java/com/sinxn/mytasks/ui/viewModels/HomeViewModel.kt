@@ -2,10 +2,10 @@ package com.sinxn.mytasks.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.core.FolderStore
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.interfaces.EventRepositoryInterface
+import com.sinxn.mytasks.data.interfaces.FolderRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.NoteRepositoryInterface
 import com.sinxn.mytasks.data.interfaces.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.entities.Folder
@@ -17,8 +17,12 @@ import com.sinxn.mytasks.data.usecase.folder.LockFolderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,12 +31,12 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     noteRepository: NoteRepositoryInterface,
     private val taskRepository: TaskRepositoryInterface,
+    private val folderRepository: FolderRepositoryInterface,
     eventRepository: EventRepositoryInterface,
     private val addFolderUseCase: AddFolderUseCase,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
-    private val selectionStore: SelectionStore,
-    folderStore: FolderStore
+    private val selectionStore: SelectionStore
     ) : ViewModel() {
 
     val selectedTasks = selectionStore.selectedTasks
@@ -57,8 +61,11 @@ class HomeViewModel @Inject constructor(
         selectionStore.deleteSelection()
     }}
 
-    val parentFolder = folderStore.parentFolder
-    val folders = folderStore.folders
+    private val _parentFolder = MutableStateFlow<Folder?>(null)
+    val parentFolder: StateFlow<Folder?> = _parentFolder.asStateFlow()
+
+    private val _folders = MutableStateFlow<List<Folder>>(emptyList())
+    val folders: StateFlow<List<Folder>> = _folders.asStateFlow()
 
     val upcomingEvents = eventRepository.getUpcomingEvents(4).stateIn(
         viewModelScope,
@@ -72,7 +79,7 @@ class HomeViewModel @Inject constructor(
         emptyList()
     )
 
-    val mainFolders = folderStore.folderRepository.getSubFolders(0).stateIn(
+    val mainFolders = folderRepository.getSubFolders(0).stateIn(
         viewModelScope,
         SharingStarted.Lazily,
         emptyList()
@@ -92,7 +99,10 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            folderStore.fetchFolderById(folderId = 0L)
+            val fetchedFolder = folderRepository.getFolderById(0L)
+            val subFolders = folderRepository.getSubFolders(0L).first()
+            _parentFolder.value = fetchedFolder
+            _folders.value = subFolders
         }
     }
     fun addFolder(folder: Folder) {
