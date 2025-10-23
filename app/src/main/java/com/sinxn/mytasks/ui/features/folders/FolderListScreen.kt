@@ -3,6 +3,7 @@ package com.sinxn.mytasks.ui.features.folders
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,8 +43,6 @@ import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
@@ -55,7 +54,7 @@ import com.sinxn.mytasks.ui.features.tasks.TaskItem
 import com.sinxn.mytasks.ui.navigation.Routes
 import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FolderListScreen(
     folderViewModel: FolderViewModel = hiltViewModel(),
@@ -239,37 +238,38 @@ fun FolderListScreen(
                             ) { folderViewModel.onAction(FolderAction.AddFolder(it)) }
                         }
                     }
-                    items(folders, key = { "folder_${it.id}" }) { folder ->
+                    items(items = folders, key = { folder -> "folder_${folder.id}" }) { folder ->
                         FolderItem(
                             folder = folder,
                             onClick = { folderViewModel.onAction(FolderAction.GetSubFolders(folder.id)) },
                             onDelete = { folderViewModel.onAction(FolderAction.DeleteFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked))) },
                             onLock = { folderViewModel.onAction(FolderAction.LockFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked))) },
-                            onHold = { folderViewModel.onSelectionFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked)) },
+                            onHold = { folderViewModel.onSelectionFolder(folder.id) },
                             selected = selectedFolders.any { it.folderId == folder.id },
                             modifier = Modifier.animateItem()
                         )
                     }
+
                     items(
                         items = tasks,
-                        key = { "task_${it.id}" },
-                        span = { StaggeredGridItemSpan.FullLine },
+                        key = { task -> "task_${task.id}" },
+                        span = { StaggeredGridItemSpan.FullLine }
                     ) { task ->
                         TaskItem(
                             task = task,
                             onClick = { navController.navigate(Routes.Task.get(task.id)) },
-                            onHold = { folderViewModel.onSelectionTask(Task(id=task.id, title = task.title, isCompleted = task.isCompleted, due = null, description = "", folderId = 0)) },
+                            onHold = { folderViewModel.onSelectionTask(task.id) },
                             onUpdate = { status -> folderViewModel.onAction(FolderAction.UpdateTaskStatus(task.id, status)) },
                             path = null,
                             selected = selectedTasks.any { it.id == task.id },
                             modifier = Modifier.animateItem()
                         )
                     }
-                    items(notes, key = { "note_${it.id}" }) { note ->
+                    items(items = notes, key = { note -> "note_${note.id}" }) { note ->
                         NoteItem(
                             note = note,
                             onClick = { navController.navigate(Routes.Note.get(note.id)) },
-                            onHold = { folderViewModel.onSelectionNote(Note(id=note.id, title = note.title, content = "", folderId = 0)) },
+                            onHold = { folderViewModel.onSelectionNote(note.id) },
                             selected = selectedNotes.any { it.id == note.id },
                             modifier = Modifier.animateItem()
                         )

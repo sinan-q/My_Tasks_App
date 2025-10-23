@@ -33,7 +33,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
-import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
@@ -158,7 +157,7 @@ fun NoteListScreen(
                                     note = note,
                                     path = path,
                                     onClick = { navController.navigate(Routes.Note.get(note.id)) },
-                                    onHold = { viewModel.onSelectionNote(Note(id=note.id, title = note.title, content = "", folderId = 0)) },
+                                    onHold = { viewModel.onSelectionNote(note.id) },
                                     selected = selectedNotes.any { it.id == note.id },
                                     modifier = Modifier.animateItem()
                                 )

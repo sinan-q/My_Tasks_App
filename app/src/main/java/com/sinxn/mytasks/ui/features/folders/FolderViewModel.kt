@@ -5,8 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
@@ -57,9 +55,15 @@ class FolderViewModel @Inject constructor(
     val selectedAction = selectionStore.action
     val selectionCount = selectionStore.selectionCount
 
-    fun onSelectionTask(task: Task) = selectionStore.toggleTask(task)
-    fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
-    fun onSelectionFolder(folder: Folder) = selectionStore.toggleFolder(folder)
+    fun onSelectionTask(id: Long) = viewModelScope.launch {
+        taskRepository.getTaskById(id)?.let { selectionStore.toggleTask(it) }
+    }
+    fun onSelectionNote(id: Long) = viewModelScope.launch {
+        noteRepository.getNoteById(id)?.let { selectionStore.toggleNote(it) }
+    }
+    fun onSelectionFolder(id: Long) = viewModelScope.launch {
+        folderRepository.getFolderById(id)?.let { selectionStore.toggleFolder(it) }
+    }
 
     private val _uiState = MutableStateFlow<FolderScreenUiState>(FolderScreenUiState.Loading)
     val uiState: StateFlow<FolderScreenUiState> = _uiState.asStateFlow()

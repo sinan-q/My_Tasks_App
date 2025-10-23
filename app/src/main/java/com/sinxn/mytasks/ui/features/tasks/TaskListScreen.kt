@@ -32,7 +32,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionActions
-import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
@@ -156,7 +155,7 @@ fun TaskListScreen(
                                     path = path,
                                     onClick = { navController.navigate(Routes.Task.get(task.id)) },
                                     onUpdate = { task.id.let { it1 -> viewModel.onAction(AddEditTaskAction.UpdateStatusTask(it1, it)) } },
-                                    onHold = { viewModel.onSelectionTask(Task(id=task.id, title = task.title, isCompleted = task.isCompleted, due = null, description = "", folderId = 0)) },
+                                    onHold = { viewModel.onSelectionTask(task.id) },
                                     selected = selectedTasks.any { it.id == task.id },
                                     modifier = Modifier.animateItem()
                                 )

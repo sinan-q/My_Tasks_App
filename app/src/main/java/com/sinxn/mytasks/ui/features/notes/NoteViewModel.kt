@@ -75,7 +75,9 @@ class NoteViewModel @Inject constructor(
     suspend fun getPath(folderId: Long, hideLocked: Boolean): String? {
             return getPathUseCase(folderId, hideLocked)
     }
-    fun onSelectionNote(note: Note) = selectionStore.toggleNote(note)
+    fun onSelectionNote(id: Long) = viewModelScope.launch {
+        noteRepository.getNoteById(id)?.let { selectionStore.toggleNote(it) }
+    }
 
     fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
 

@@ -89,7 +89,9 @@ class TaskViewModel @Inject constructor(
          return getPathUseCase(folderId, hideLocked)
     }
 
-    fun onSelectionTask(task: Task) = selectionStore.toggleTask(task)
+    fun onSelectionTask(id: Long) = viewModelScope.launch {
+        repository.getTaskById(id)?.let { selectionStore.toggleTask(it) }
+    }
 
     fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
 
