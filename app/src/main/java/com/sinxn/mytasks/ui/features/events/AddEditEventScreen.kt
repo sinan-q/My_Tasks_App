@@ -100,18 +100,25 @@ fun AddEditEventScreen(
             showToast(message)
         }
     }
-    LaunchedEffect(eventId, folderId, date) {
+    LaunchedEffect(eventId, folderId, date, uiState) {
         if (eventId != -1L) {
             eventViewModel.onAction(AddEditEventAction.FetchEventById(eventId))
-        } else if (folderId != 0L) {
-            eventViewModel.onAction(AddEditEventAction.FetchFolderById(folderId))
-        }
-        val initialDate = if (date != -1L) fromMillis(date) else LocalDateTime.now().plusDays(1)
-        (uiState as? EventScreenUiState.Success)?.let {
-            eventViewModel.onAction(AddEditEventAction.UpdateEvent(it.uiModel.event.copy(
-                start = initialDate.withHour(10).withMinute(0),
-                end = initialDate.withHour(11).withMinute(0),
-            )))
+        } else {
+            if (folderId != 0L) {
+                eventViewModel.onAction(AddEditEventAction.FetchFolderById(folderId))
+            }
+            val currentState = uiState
+            if (currentState is EventScreenUiState.Success) {
+                val initialDate = if (date != -1L) fromMillis(date) else LocalDateTime.now().plusDays(1)
+                eventViewModel.onAction(
+                    AddEditEventAction.UpdateEvent(
+                        currentState.uiModel.event.copy(
+                            start = initialDate.withHour(10).withMinute(0),
+                            end = initialDate.withHour(11).withMinute(0),
+                        )
+                    )
+                )
+            }
         }
     }
 

@@ -51,7 +51,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".ui.screens.widgetScreen.MyWidgetReceiver"
+            android:name=".ui.features.widgets.MyWidgetReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

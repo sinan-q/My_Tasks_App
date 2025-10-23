@@ -85,11 +85,11 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val parentFolder = folderRepository.getFolderById(0L) ?: Folder(folderId = 0, name = "Root", parentFolderId = null, isLocked = false)
+            val parentFolder = folderRepository.getFolderById(0L)
             combine(
                 folderRepository.getSubFolders(0).map { folders -> folders.map { it.toListItemUiModel() } },
                 eventRepository.getUpcomingEvents(4).map { events -> events.map { it.toListItemUiModel() } },
-                taskRepository.getPendingTasks(4).map { tasks -> tasks.map { it.toListItemUiModel() } },
+                taskRepository.getTasksWithDueDate().map { tasks -> tasks.map { it.toListItemUiModel() } },
                 noteRepository.getNotesByFolderId(0).map { notes -> notes.map { it.toListItemUiModel() } },
                 taskRepository.getTasksByFolderId(0).map { tasks -> tasks.map { it.toListItemUiModel() } },
             ) { folders, upcomingEvents, pendingTasks, notes, tasks ->
