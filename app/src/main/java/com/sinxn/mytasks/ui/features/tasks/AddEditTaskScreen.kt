@@ -86,7 +86,7 @@ fun AddEditTaskScreen(
 
     val context = LocalContext.current
 
-    val uiState by taskViewModel.uiState.collectAsState()
+    val uiState by taskViewModel.taskScreenUiState.collectAsState()
     var reminder by remember { mutableStateOf("0") }
     var reminderType by remember { mutableStateOf(ReminderTypes.MINUTE) }
 
@@ -118,228 +118,224 @@ fun AddEditTaskScreen(
         }
     }
 
-    when (val state = uiState) {
-        is TaskScreenUiState.Loading -> {
-            Text("Loading...")
-        }
-        is TaskScreenUiState.Error -> {
-            Text(state.message)
-        }
-        is TaskScreenUiState.Success -> {
-            val taskInputState = state.task
-            val reminders = state.reminders
-            val folder = state.folder
-            val folders = state.folders
+    if (uiState.isLoading) {
+        Text("Loading...")
+    } else if (uiState.errorMessage != null) {
+        Text(uiState.errorMessage!!)
+    } else {
+        val taskInputState = uiState.task
+        val reminders = uiState.reminders
+        val folder = uiState.folder
+        val folders = uiState.folders
 
-            LaunchedEffect(Unit) {
-                if (taskId == -1L) {
-                    focusRequester.requestFocus()
-                    keyboardController?.show()
-                }
+        LaunchedEffect(Unit) {
+            if (taskId == -1L) {
+                focusRequester.requestFocus()
+                keyboardController?.show()
             }
+        }
 
-            Scaffold(
-                floatingActionButton = {
-                    RectangleFAB(
-                        onClick = {
-                            if (isEditing) {
-                                taskViewModel.onAction(AddEditTaskAction.InsertTask(taskInputState, reminders))
-                                isEditing = false
-                            } else {
-                                isEditing = true
+        Scaffold(
+            floatingActionButton = {
+                RectangleFAB(
+                    onClick = {
+                        if (isEditing) {
+                            taskViewModel.onAction(AddEditTaskAction.InsertTask(taskInputState, reminders))
+                            isEditing = false
+                        } else {
+                            isEditing = true
+                        }
+                    }
+                ) {
+                    Icon(
+                        if (!isEditing) Icons.Default.Edit else Icons.Default.Check,
+                        contentDescription = if (!isEditing) "Edit Task" else "Save Task"
+                    )
+                }
+            },
+            topBar = {
+                MyTasksTopAppBar(
+                    onNavigateUp = handleBackPressAttempt,
+                    actions = {
+                        if (taskId != -1L) {
+                            IconButton(onClick = {
+                                showDeleteConfirmationDialog = true
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete"
+                                )
+                            }
+                        }
+                    }
+                )
+            },
+            modifier = Modifier.imePadding()
+        ) { innerPadding ->
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                MyTextField(
+                    value = taskInputState.title,
+                    onValueChange = { taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(title = it))) },
+                    placeholder = "Title",
+                    readOnly = !isEditing,
+                    singleLine = true,
+                    textStyle = TextStyle.Default.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 18.sp
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider()
+                FolderDropDown(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    onClick = {folderId ->
+                        taskViewModel.onAction(AddEditTaskAction.FetchFolderById(folderId))
+                    },
+                    isEditing = isEditing,
+                    folder = folder,
+                    folders = folders
+                )
+                HorizontalDivider()
+                MyTextField(
+                    value = taskInputState.description,
+                    onValueChange = { taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(description = it))) },
+                    placeholder = "Description",
+                    readOnly = !isEditing,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                )
+                OutlinedTextField(
+                    value = taskInputState.due?.formatDate() ?: "No Due",
+                    onValueChange = {},
+                    label = { Text("Due Date") },
+                    readOnly = true,
+                    trailingIcon = {
+                        IconButton(onClick = { showDatePicker = isEditing }) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "Select Due Date"
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
+                )
+                taskInputState.due?.let { dueDate ->
+                    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
+                        Text(text = "Reminders on " )
+                        if (reminders.isEmpty())
+                            Text(text = "No Remainders set")
+
+                        reminders.forEach { option ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (isEditing) {
+                                    IconButton(onClick = { taskViewModel.onAction(AddEditTaskAction.RemoveReminder(option)) }) {
+                                        Icon(Icons.Default.Close, contentDescription = "Delete Reminder")
+                                    }
+                                }
+                                Text(text = "${option.first} ${option.second.name}")
+                            }
+                        }
+                        if (isEditing) {
+                            Row {
+                                val itemHeight = 50.dp
+                                RectangleButton(
+                                    modifier = Modifier.height(itemHeight),
+                                    onClick = {
+                                        taskViewModel.onAction(AddEditTaskAction.AddReminder(Pair(reminder.toInt(), reminderType.unit)))
+                                    }
+                                ) {
+                                    Icon(Icons.Default.Add, "Add Reminder")
+                                }
+                                ScrollablePicker(
+                                    values = (0..60).toList(),
+                                    defaultValue = 0,
+                                    height = itemHeight,
+                                    modifier = Modifier
+                                        .width(70.dp)
+                                        .height(itemHeight)
+                                ) {
+                                    reminder = it.toString()
+                                }
+                                ScrollablePicker(
+                                    values = ReminderTypes.entries.toList(),
+                                    defaultValue = ReminderTypes.MINUTE,
+                                    height = itemHeight,
+                                    modifier = Modifier
+                                        .width(100.dp)
+                                        .height(itemHeight)
+                                ) {
+                                    reminderType = it
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (showDatePicker) {
+                    val datePickerState = rememberDatePickerState(
+                        initialSelectedDateMillis = taskInputState.due?.toMillis() ?: LocalDateTime.now().plusDays(1).toMillis()
+                    )
+
+                    DatePickerDialog(
+                        onDismissRequest = { showDatePicker = false },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(
+                                        due = datePickerState.selectedDateMillis?.let { fromMillis(it) }
+                                    )))
+                                    showDatePicker = false
+                                    showTimePicker = true
+                                }
+                            ) {
+                                Text("OK")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDatePicker = false }) {
+                                Text("Cancel")
                             }
                         }
                     ) {
-                        Icon(
-                            if (!isEditing) Icons.Default.Edit else Icons.Default.Check,
-                            contentDescription = if (!isEditing) "Edit Task" else "Save Task"
+                        DatePicker(state = datePickerState)
+                    }
+                }
+                if (showTimePicker) {
+                    val timePickerState = rememberTimePickerState()
+
+                    TimePickerDialog(
+                        onDismiss = { showTimePicker = false },
+                        onConfirm = {
+                            taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(
+                                due = taskInputState.due?.addTimerPickerState(timePickerState))))
+                            showTimePicker = false
+                        }
+                    ) {
+                        TimePicker(
+                            state = timePickerState,
                         )
-                    }
-                },
-                topBar = {
-                    MyTasksTopAppBar(
-                        onNavigateUp = handleBackPressAttempt,
-                        actions = {
-                            if (taskId != -1L) {
-                                IconButton(onClick = {
-                                    showDeleteConfirmationDialog = true
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete"
-                                    )
-                                }
-                            }
-                        }
-                    )
-                },
-                modifier = Modifier.imePadding()
-            ) { innerPadding ->
-                Column(
-                    modifier = modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                ) {
-                    MyTextField(
-                        value = taskInputState.title,
-                        onValueChange = { taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(title = it))) },
-                        placeholder = "Title",
-                        readOnly = !isEditing,
-                        singleLine = true,
-                        textStyle = TextStyle.Default.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 18.sp
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    HorizontalDivider()
-                    FolderDropDown(
-                        modifier = Modifier.padding(horizontal = 20.dp),
-                        onClick = {folderId ->
-                            taskViewModel.onAction(AddEditTaskAction.FetchFolderById(folderId))
-                        },
-                        isEditing = isEditing,
-                        folder = folder,
-                        folders = folders
-                    )
-                    HorizontalDivider()
-                    MyTextField(
-                        value = taskInputState.description,
-                        onValueChange = { taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(description = it))) },
-                        placeholder = "Description",
-                        readOnly = !isEditing,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                    )
-                    OutlinedTextField(
-                        value = taskInputState.due?.formatDate() ?: "No Due",
-                        onValueChange = {},
-                        label = { Text("Due Date") },
-                        readOnly = true,
-                        trailingIcon = {
-                            IconButton(onClick = { showDatePicker = isEditing }) {
-                                Icon(
-                                    imageVector = Icons.Default.DateRange,
-                                    contentDescription = "Select Due Date"
-                                )
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
-                    )
-                    taskInputState.due?.let { dueDate ->
-                        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
-                            Text(text = "Reminders on " )
-                            if (reminders.isEmpty())
-                                Text(text = "No Remainders set")
-
-                            reminders.forEach { option ->
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    if (isEditing) {
-                                        IconButton(onClick = { taskViewModel.onAction(AddEditTaskAction.RemoveReminder(option)) }) {
-                                            Icon(Icons.Default.Close, contentDescription = "Delete Reminder")
-                                        }
-                                    }
-                                    Text(text = "${option.first} ${option.second.name}")
-                                }
-                            }
-                            if (isEditing) {
-                                Row {
-                                    val itemHeight = 50.dp
-                                    RectangleButton(
-                                        modifier = Modifier.height(itemHeight),
-                                        onClick = {
-                                            taskViewModel.onAction(AddEditTaskAction.AddReminder(Pair(reminder.toInt(), reminderType.unit)))
-                                        }
-                                    ) {
-                                        Icon(Icons.Default.Add, "Add Reminder")
-                                    }
-                                    ScrollablePicker(
-                                        values = (0..60).toList(),
-                                        defaultValue = 0,
-                                        height = itemHeight,
-                                        modifier = Modifier
-                                            .width(70.dp)
-                                            .height(itemHeight)
-                                    ) {
-                                        reminder = it.toString()
-                                    }
-                                    ScrollablePicker(
-                                        values = ReminderTypes.entries.toList(),
-                                        defaultValue = ReminderTypes.MINUTE,
-                                        height = itemHeight,
-                                        modifier = Modifier
-                                            .width(100.dp)
-                                            .height(itemHeight)
-                                    ) {
-                                        reminderType = it
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (showDatePicker) {
-                        val datePickerState = rememberDatePickerState(
-                            initialSelectedDateMillis = taskInputState.due?.toMillis() ?: LocalDateTime.now().plusDays(1).toMillis()
-                        )
-
-                        DatePickerDialog(
-                            onDismissRequest = { showDatePicker = false },
-                            confirmButton = {
-                                TextButton(
-                                    onClick = {
-                                        taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(
-                                            due = datePickerState.selectedDateMillis?.let { fromMillis(it) }
-                                        )))
-                                        showDatePicker = false
-                                        showTimePicker = true
-                                    }
-                                ) {
-                                    Text("OK")
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { showDatePicker = false }) {
-                                    Text("Cancel")
-                                }
-                            }
-                        ) {
-                            DatePicker(state = datePickerState)
-                        }
-                    }
-                    if (showTimePicker) {
-                        val timePickerState = rememberTimePickerState()
-
-                        TimePickerDialog(
-                            onDismiss = { showTimePicker = false },
-                            onConfirm = {
-                                taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(
-                                    due = taskInputState.due?.addTimerPickerState(timePickerState))))
-                                showTimePicker = false
-                            }
-                        ) {
-                            TimePicker(
-                                state = timePickerState,
-                            )
-                        }
                     }
                 }
             }
-
-            ConfirmationDialog(
-                showDialog = showDeleteConfirmationDialog,
-                onDismiss = { showDeleteConfirmationDialog = false },
-                onConfirm = {
-                    taskViewModel.onAction(AddEditTaskAction.DeleteTask(taskInputState))
-                    showDeleteConfirmationDialog = false
-                    onFinish()
-                },
-                title = stringResource(R.string.delete_confirmation_title),
-                message = stringResource(R.string.delete_item_message)
-            )
         }
+
+        ConfirmationDialog(
+            showDialog = showDeleteConfirmationDialog,
+            onDismiss = { showDeleteConfirmationDialog = false },
+            onConfirm = {
+                taskViewModel.onAction(AddEditTaskAction.DeleteTask(taskInputState))
+                showDeleteConfirmationDialog = false
+                onFinish()
+            },
+            title = stringResource(R.string.delete_confirmation_title),
+            message = stringResource(R.string.delete_item_message)
+        )
     }
 }
 
