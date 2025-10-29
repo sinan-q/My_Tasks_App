@@ -50,6 +50,7 @@ import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTextField
 import com.sinxn.mytasks.ui.components.RectangleFAB
+import com.sinxn.mytasks.ui.components.RecurrenceComponent
 import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.features.folders.FolderDropDown
@@ -100,25 +101,27 @@ fun AddEditEventScreen(
             showToast(message)
         }
     }
-    LaunchedEffect(eventId, folderId, date, uiState) {
+    LaunchedEffect(key1 = Unit) {
         if (eventId != -1L) {
             eventViewModel.onAction(AddEditEventAction.FetchEventById(eventId))
         } else {
             if (folderId != 0L) {
                 eventViewModel.onAction(AddEditEventAction.FetchFolderById(folderId))
             }
-            val currentState = uiState
-            if (currentState is EventScreenUiState.Success) {
-                val initialDate = if (date != -1L) fromMillis(date) else LocalDateTime.now().plusDays(1)
-                eventViewModel.onAction(
-                    AddEditEventAction.UpdateEvent(
-                        currentState.uiModel.event.copy(
-                            start = initialDate.withHour(10).withMinute(0),
-                            end = initialDate.withHour(11).withMinute(0),
-                        )
+        }
+    }
+
+    LaunchedEffect(uiState) {
+        if (eventId == -1L && uiState is EventScreenUiState.Success && (uiState as EventScreenUiState.Success).uiModel.event.start == null) {
+            val initialDate = if (date != -1L) fromMillis(date) else LocalDateTime.now().plusDays(1)
+            eventViewModel.onAction(
+                AddEditEventAction.UpdateEvent(
+                    (uiState as EventScreenUiState.Success).uiModel.event.copy(
+                        start = initialDate.withHour(10).withMinute(0),
+                        end = initialDate.withHour(11).withMinute(0),
                     )
                 )
-            }
+            )
         }
     }
 
@@ -243,6 +246,12 @@ fun AddEditEventScreen(
                             }
                         },
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
+                    )
+                    RecurrenceComponent(
+                        recurrenceRule = eventInputState.recurrenceRule,
+                        onRecurrenceRuleChange = {
+                            eventViewModel.onAction(AddEditEventAction.UpdateEvent(eventInputState.copy(recurrenceRule = it)))
+                        }
                     )
                     HorizontalDivider()
                     MyTextField(

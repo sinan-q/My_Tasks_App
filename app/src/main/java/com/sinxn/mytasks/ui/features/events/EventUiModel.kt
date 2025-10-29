@@ -20,7 +20,7 @@ data class EventListItemUiModel(
 fun Event.toListItemUiModel(): EventListItemUiModel {
     val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
     return EventListItemUiModel(
-        id = this.id!!, // Assuming id is never null for an event in a list
+        id = this.id ?: 0, // Assuming id is never null for an event in a list
         title = this.title,
         formattedStartDate = this.start?.format(formatter) ?: ""
     )

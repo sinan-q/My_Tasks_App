@@ -235,7 +235,8 @@ private fun Task.toUiState(): TaskUiState {
         title = title,
         description = description,
         isCompleted = isCompleted,
-        due = due
+        due = due,
+        recurrenceRule = recurrenceRule
     )
 }
 
@@ -246,6 +247,7 @@ private fun TaskUiState.toDomain(): Task {
         title = title,
         description = description,
         isCompleted = isCompleted,
-        due = due
+        due = due,
+        recurrenceRule = recurrenceRule
     )
 }

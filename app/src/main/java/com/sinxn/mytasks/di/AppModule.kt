@@ -7,6 +7,7 @@ import com.sinxn.mytasks.data.local.dao.EventDao
 import com.sinxn.mytasks.data.local.dao.FolderDao
 import com.sinxn.mytasks.data.local.dao.TaskDao
 import com.sinxn.mytasks.data.local.database.AppDatabase
+import com.sinxn.mytasks.data.local.database.MIGRATION_4_5
 import com.sinxn.mytasks.ui.features.alarms.broadcastReceivers.AlarmScheduler
 import dagger.Module
 import dagger.Provides
@@ -28,7 +29,7 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "app_database"
-        ).build()
+        ).addMigrations(MIGRATION_4_5).build()
     }
 
     @Provides

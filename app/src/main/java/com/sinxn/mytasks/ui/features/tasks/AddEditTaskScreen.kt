@@ -57,6 +57,7 @@ import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTextField
 import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.components.RectangleFAB
+import com.sinxn.mytasks.ui.components.RecurrenceComponent
 import com.sinxn.mytasks.ui.components.ScrollablePicker
 import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
@@ -224,6 +225,12 @@ fun AddEditTaskScreen(
                         }
                     },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
+                )
+                RecurrenceComponent(
+                    recurrenceRule = taskInputState.recurrenceRule,
+                    onRecurrenceRuleChange = {
+                        taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(recurrenceRule = it)))
+                    }
                 )
                 taskInputState.due?.let { dueDate ->
                     Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {

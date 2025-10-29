@@ -89,9 +89,11 @@ fun EventListScreen(
             is EventScreenUiState.Loading -> {
                 Text("Loading...")
             }
+
             is EventScreenUiState.Error -> {
                 Text(state.message)
             }
+
             is EventScreenUiState.Success -> {
                 val events = state.uiModel.events
                 val tasks = state.uiModel.tasks

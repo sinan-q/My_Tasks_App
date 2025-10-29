@@ -99,6 +99,8 @@ dependencies {
     //implementation(libs.twain)
     implementation(libs.compose.markdown)
 
+    implementation(libs.lib.recur)
+
 
 
 }

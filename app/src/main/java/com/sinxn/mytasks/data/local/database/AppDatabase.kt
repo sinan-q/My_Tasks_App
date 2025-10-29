@@ -1,6 +1,5 @@
 package com.sinxn.mytasks.data.local.database
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -16,13 +15,10 @@ import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.utils.Converters
 
-const val DB_VERSION = 4
+const val DB_VERSION = 5
 @Database(entities = [Note::class, Task::class, Folder::class, Event::class, Alarm::class],
     version = DB_VERSION,
-    exportSchema = true,
-    autoMigrations = [
-        AutoMigration(from = DB_VERSION - 1, to = DB_VERSION)
-    ])
+    exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao

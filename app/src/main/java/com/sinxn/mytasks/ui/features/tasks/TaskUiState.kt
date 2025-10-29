@@ -10,6 +10,7 @@ data class TaskUiState(
     val description: String = "",
     val isCompleted: Boolean = false,
     val due: java.time.LocalDateTime? = null,
+    val recurrenceRule: String? = null
 )
 
 data class TasksListUiState(

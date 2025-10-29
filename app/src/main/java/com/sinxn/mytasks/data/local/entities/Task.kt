@@ -13,5 +13,6 @@ data class Task(
     val description: String = "",
     val isCompleted: Boolean = false,
     val timestamp: LocalDateTime = LocalDateTime.now(),
-    val due: LocalDateTime? = null
+    val due: LocalDateTime? = null,
+    val recurrenceRule: String? = null
 )
