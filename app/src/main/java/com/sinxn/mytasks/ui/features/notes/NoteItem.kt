@@ -52,6 +52,14 @@ fun NoteItem(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
+                text = note.content,
+                style = MaterialTheme.typography.bodySmall,
+                color = LocalContentColor.current.copy(alpha = 0.7f),
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
                 text = note.lastModified,
                 style = MaterialTheme.typography.labelSmall,
                 color = LocalContentColor.current.copy(alpha = 0.4f)

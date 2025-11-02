@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter
 data class NoteListItemUiModel(
     val id: Long,
     val title: String,
+    val content: String,
     val lastModified: String,
 )
 
@@ -22,6 +23,7 @@ fun Note.toListItemUiModel(): NoteListItemUiModel {
     return NoteListItemUiModel(
         id = this.id!!, // Assuming id is never null for a note in a list
         title = this.title.ifEmpty { "Untitled Note" },
+        content = this.content,
         lastModified = this.timestamp.format(formatter)
     )
 }
