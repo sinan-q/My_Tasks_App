@@ -23,5 +23,6 @@ data class HomeUiModel(
     val upcomingEvents: List<EventListItemUiModel>,
     val pendingTasks: List<TaskListItemUiModel>,
     val notes: List<NoteListItemUiModel>,
-    val tasks: List<TaskListItemUiModel>
+    val tasks: List<TaskListItemUiModel>,
+    val pinnedItems: List<Any>
 )
