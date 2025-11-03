@@ -14,5 +14,6 @@ data class Event(
     val timestamp: LocalDateTime = LocalDateTime.now(),
     val start: LocalDateTime? = null,
     val end: LocalDateTime? = null,
-    val recurrenceRule: String? = null
+    val recurrenceRule: String? = null,
+    val isArchived: Boolean = false
 )

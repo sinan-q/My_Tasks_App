@@ -12,10 +12,10 @@ import java.time.LocalDateTime
 
 @Dao
 interface EventDao {
-    @Query("SELECT * FROM events ORDER BY start DESC")
+    @Query("SELECT * FROM events WHERE isArchived = 0 ORDER BY start DESC")
     fun getAlLEvents(): Flow<List<Event>>
 
-    @Query("SELECT * FROM events WHERE start BETWEEN :startOfMonth AND :endOfMonth ORDER BY timestamp ASC")
+    @Query("SELECT * FROM events WHERE isArchived = 0 AND start BETWEEN :startOfMonth AND :endOfMonth ORDER BY timestamp ASC")
     fun getEventsByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Event>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -33,13 +33,13 @@ interface EventDao {
     @Update
     suspend fun updateEvent(event: Event)
 
-    @Query("SELECT * FROM events WHERE id = :eventId LIMIT 1")
+    @Query("SELECT * FROM events WHERE id = :eventId AND isArchived = 0 LIMIT 1")
     suspend fun getEventById(eventId: Long): Event?
 
-    @Query("SELECT * FROM events WHERE folderId = :folderId")
+    @Query("SELECT * FROM events WHERE folderId = :folderId AND isArchived = 0")
     fun getEventsByFolderId(folderId: Long?): Flow<List<Event>>
 
-    @Query("SELECT * FROM events WHERE `end` > :now ORDER BY `end` ASC LIMIT :limit")
+    @Query("SELECT * FROM events WHERE isArchived = 0 AND `end` > :now ORDER BY `end` ASC LIMIT :limit")
     fun getUpcomingEvents(now: LocalDateTime, limit: Int): Flow<List<Event>>
 
 

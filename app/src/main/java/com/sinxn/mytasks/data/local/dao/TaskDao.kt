@@ -12,15 +12,15 @@ import java.time.LocalDateTime
 
 @Dao
 interface TaskDao {
-    @Query("SELECT * FROM tasks")
+    @Query("SELECT * FROM tasks WHERE isArchived = 0")
     fun getAllTasks(): Flow<List<Task>>
 
-    @Query("SELECT * FROM tasks ORDER BY isCompleted = true, due DESC, timestamp DESC")
+    @Query("SELECT * FROM tasks WHERE isArchived = 0 ORDER BY isCompleted = true, due DESC, timestamp DESC")
     fun getAllTasksSorted(): Flow<List<Task>>
 
-    @Query("SELECT * FROM tasks WHERE due BETWEEN :startOfMonth AND :endOfMonth ORDER BY due ASC")
+    @Query("SELECT * FROM tasks WHERE isArchived = 0 AND due BETWEEN :startOfMonth AND :endOfMonth ORDER BY due ASC")
     fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>>
-    @Query("SELECT * FROM tasks WHERE isCompleted = 0 AND due IS NOT NULL")
+    @Query("SELECT * FROM tasks WHERE isArchived = 0 AND isCompleted = 0 AND due IS NOT NULL")
     fun getTasksWithDueDate(): Flow<List<Task>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -41,12 +41,12 @@ interface TaskDao {
     @Update
     suspend fun updateTask(task: Task)
 
-    @Query("SELECT * FROM tasks WHERE id = :taskId LIMIT 1")
+    @Query("SELECT * FROM tasks WHERE id = :taskId AND isArchived = 0 LIMIT 1")
     suspend fun getTaskById(taskId: Long): Task?
 
     @Query("UPDATE tasks SET isCompleted = :status WHERE id = :taskId")
     suspend fun updateStatusTask(taskId: Long, status: Boolean)
 
-    @Query("SELECT * FROM tasks WHERE folderId = :folderId ORDER BY isCompleted = true, due DESC, timestamp DESC")
+    @Query("SELECT * FROM tasks WHERE folderId = :folderId AND isArchived = 0 ORDER BY isCompleted = true, due DESC, timestamp DESC")
     fun getTasksByFolderId(folderId: Long?): Flow<List<Task>>
 }

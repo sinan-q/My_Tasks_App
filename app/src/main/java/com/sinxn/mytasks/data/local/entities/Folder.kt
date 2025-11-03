@@ -11,4 +11,5 @@ data class Folder(
     val parentFolderId: Long? = 0L,
     @ColumnInfo(defaultValue = "0")
     val isLocked: Boolean = false,
+    val isArchived: Boolean = false
 )

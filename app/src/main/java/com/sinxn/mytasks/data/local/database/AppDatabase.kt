@@ -17,7 +17,7 @@ import com.sinxn.mytasks.data.local.entities.Pinned
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.utils.Converters
 
-const val DB_VERSION = 6
+const val DB_VERSION = 7
 @Database(entities = [Note::class, Task::class, Folder::class, Event::class, Alarm::class, Pinned::class],
     version = DB_VERSION,
     exportSchema = true)

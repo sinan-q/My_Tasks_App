@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FolderDao {
-    @Query("SELECT * FROM folders")
+    @Query("SELECT * FROM folders WHERE isArchived = 0")
     fun getAllFolders(): Flow<List<Folder>>
 
     @Insert
@@ -31,10 +31,10 @@ interface FolderDao {
     @Query("UPDATE folders SET isLocked = NOT isLocked WHERE folderId = :folderId")
     suspend fun lockFolder(folderId: Long)
 
-    @Query("SELECT * FROM folders WHERE parentFolderId = :parentId")
+    @Query("SELECT * FROM folders WHERE parentFolderId = :parentId AND isArchived = 0")
     fun getSubFolders(parentId: Long?): Flow<List<Folder>>
 
-    @Query("SELECT * FROM folders WHERE folderId = :folderId")
+    @Query("SELECT * FROM folders WHERE folderId = :folderId AND isArchived = 0")
     suspend fun getFolderById(folderId: Long): Folder?
 
     @Query("UPDATE folders SET name = :newName WHERE folderId = :folderId")

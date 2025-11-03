@@ -11,6 +11,7 @@ import com.sinxn.mytasks.data.local.database.AppDatabase
 import com.sinxn.mytasks.data.local.database.MIGRATION_3_4
 import com.sinxn.mytasks.data.local.database.MIGRATION_4_5
 import com.sinxn.mytasks.data.local.database.MIGRATION_5_6
+import com.sinxn.mytasks.data.local.database.MIGRATION_6_7
 import com.sinxn.mytasks.data.repository.PinnedRepository
 import com.sinxn.mytasks.domain.repository.PinnedRepositoryInterface
 import com.sinxn.mytasks.domain.usecase.pinned.DeletePinned
@@ -41,7 +42,7 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "app_database"
-        ).addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).build()
+        ).addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7).build()
     }
 
     @Provides
