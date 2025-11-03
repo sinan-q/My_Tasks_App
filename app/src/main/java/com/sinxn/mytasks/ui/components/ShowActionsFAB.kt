@@ -42,6 +42,7 @@ fun ShowActionsFAB(
                 onCloseOptions = { isOptionsVisible = false },
                 onAction = onAction,
                 action = action,
+                pasteDisabled = pasteDisabled
             )
         }
 
@@ -59,6 +60,7 @@ fun ShowActionsFAB(
 
 @Composable
 fun OptionsColumn2(
+    pasteDisabled: Boolean,
     folderId: Long,
     onCloseOptions: () -> Unit,
     onAction: (SelectionAction) -> Unit,
@@ -105,7 +107,7 @@ fun OptionsColumn2(
 //                contentDescription = "Lock",
 //                text = "Lock"
 //            )
-        } else if (action == SelectionAction.Copy || action == SelectionAction.Cut) {
+        } else if (!pasteDisabled && action == SelectionAction.Copy || action == SelectionAction.Cut) {
             OptionButton(
                 onClick = { onCloseOptions(); onAction(SelectionAction.Paste(folderId)) },
                 icon = R.drawable.ic_paste,
