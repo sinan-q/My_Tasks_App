@@ -10,4 +10,5 @@ sealed class FolderAction {
     data class GetSubFolders(val folderId: Long) : FolderAction()
     data class UpdateTaskStatus(val taskId: Long, val status: Boolean) : FolderAction()
     object PasteSelection : FolderAction()
+    object PinSelection : FolderAction()
 }

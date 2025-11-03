@@ -85,6 +85,13 @@ class NoteViewModel @Inject constructor(
         selectionStore.clearSelection()
     }
 
+    fun pinSelection() {
+        viewModelScope.launch {
+            selectionStore.pinSelection()
+        }
+    }
+
+
     fun deleteSelection() {
         viewModelScope.launch {
             selectionStore.deleteSelection()

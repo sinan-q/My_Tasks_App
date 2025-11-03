@@ -80,6 +80,7 @@ class FolderViewModel @Inject constructor(
             is FolderAction.GetSubFolders -> getSubFolders(action.folderId)
             is FolderAction.UpdateTaskStatus -> updateTaskStatus(action.taskId, action.status)
             is FolderAction.PasteSelection -> pasteSelection()
+            is FolderAction.PinSelection -> pinSelection()
         }
     }
 
@@ -170,6 +171,13 @@ class FolderViewModel @Inject constructor(
                 val folderId = currentState.folder?.folderId ?: 0L
                 selectionStore.pasteSelection(folderId)
             }
+        }
+    }
+
+    private fun pinSelection() {
+        viewModelScope.launch {
+            selectionStore.pinSelection()
+            showToast("Items pinned")
         }
     }
 

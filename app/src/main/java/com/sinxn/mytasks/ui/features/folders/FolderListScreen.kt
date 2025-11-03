@@ -139,6 +139,9 @@ fun FolderListScreen(
                                 },
                                 onClearSelection = {
                                     folderViewModel.clearSelection()
+                                },
+                                onPinSelection = {
+                                    folderViewModel.onAction(FolderAction.PinSelection)
                                 }
                             )
                         }

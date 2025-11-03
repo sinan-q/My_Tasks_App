@@ -166,6 +166,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun pinSelection() {
+        viewModelScope.launch {
+            selectionStore.pinSelection()
+            showToast("Items pinned")
+            clearSelection()
+        }
+    }
+
     fun updateStatusTask(taskId: Long, status: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             taskRepository.updateStatusTask(taskId, status)

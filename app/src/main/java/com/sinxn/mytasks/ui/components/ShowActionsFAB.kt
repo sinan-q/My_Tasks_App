@@ -25,6 +25,7 @@ import com.sinxn.mytasks.core.SelectionActions
 fun ShowActionsFAB(
     onPaste: () -> Unit,
     onClearSelection: () -> Unit,
+    onPinSelection: () -> Unit,
     action: SelectionActions,
     setActions: (SelectionActions) -> Unit
 ) {
@@ -42,7 +43,8 @@ fun ShowActionsFAB(
                 onPaste = onPaste,
                 onClearSelection = onClearSelection,
                 action = action,
-                setActions = setActions
+                setActions = setActions,
+                onPinSelection = onPinSelection
             )
         }
 
@@ -62,6 +64,7 @@ fun ShowActionsFAB(
 fun OptionsColumn2(
     onPaste: () -> Unit,
     setActions: (SelectionActions) -> Unit,
+    onPinSelection: () -> Unit,
     onCloseOptions: () -> Unit,
     onClearSelection: () -> Unit,
     action: SelectionActions
@@ -73,10 +76,16 @@ fun OptionsColumn2(
         OptionButton(
             onClick = { onCloseOptions(); onClearSelection() },
             icon = R.drawable.ic_cancel,
-            contentDescription = "Clear",
+            contentDescription = "Clear the selection",
             text = "Clear"
         )
         if (action == SelectionActions.NONE) {
+            OptionButton(
+                onClick = { onCloseOptions(); onPinSelection() },
+                icon = R.drawable.ic_delete,
+                contentDescription = "Add to pin",
+                text = "Pin"
+            )
             OptionButton(
                 onClick = { onCloseOptions(); setActions(SelectionActions.DELETE) },
                 icon = R.drawable.ic_delete,

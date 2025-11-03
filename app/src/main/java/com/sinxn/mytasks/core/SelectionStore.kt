@@ -1,8 +1,11 @@
 package com.sinxn.mytasks.core
 
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.data.local.entities.ItemType
 import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.data.local.entities.Pinned
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.usecase.pinned.PinnedUseCases
 import com.sinxn.mytasks.domain.usecase.selection.DeleteSelectionUseCase
 import com.sinxn.mytasks.domain.usecase.selection.PasteSelectionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +17,8 @@ import javax.inject.Singleton
 @Singleton
 class SelectionStore @Inject constructor(
     private val pasteSelectionUseCase: PasteSelectionUseCase,
-    private val deleteSelectionUseCase: DeleteSelectionUseCase
+    private val deleteSelectionUseCase: DeleteSelectionUseCase,
+    private val pinnedUseCases: PinnedUseCases
 ) {
     private val _selectedTasks = MutableStateFlow<Set<Task>>(emptySet())
     val selectedTasks: StateFlow<Set<Task>> = _selectedTasks
@@ -58,6 +62,24 @@ class SelectionStore @Inject constructor(
             destinationFolderId = folderId
         )
         clearSelection()
+    }
+
+    suspend fun pinSelection() {
+        val itemsToPin = mutableListOf<Pinned>()
+
+        _selectedNotes.value.forEach { note ->
+            note.id != null && itemsToPin.add(Pinned(itemId = note.id, itemType = ItemType.NOTE))
+        }
+        _selectedTasks.value.forEach { task ->
+            task.id != null && itemsToPin.add(Pinned(itemId = task.id, itemType = ItemType.TASK))
+        }
+        _selectedFolders.value.forEach { folder ->
+            itemsToPin.add(Pinned(itemId = folder.folderId, itemType = ItemType.FOLDER))
+        }
+
+        if (itemsToPin.isNotEmpty()) {
+            pinnedUseCases.insertPinnedItems(itemsToPin)
+        }
     }
 
     private fun updateSelectionCount() {

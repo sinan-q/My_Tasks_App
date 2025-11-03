@@ -14,6 +14,9 @@ interface PinnedDao {
     @Upsert
     suspend fun upsertPinned(pinned: Pinned)
 
+    @Upsert
+    suspend fun upsertPinnedItems(pinnedList: List<Pinned>)
+
     @Delete
     suspend fun deletePinned(pinned: Pinned)
 

@@ -108,6 +108,9 @@ fun HomeScreen(
                         },
                         onClearSelection = {
                             viewModel.clearSelection()
+                        },
+                        onPinSelection = {
+                            viewModel.pinSelection()
                         }
                     )
                 }

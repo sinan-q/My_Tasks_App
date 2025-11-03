@@ -84,6 +84,9 @@ fun NoteListScreen(
                         },
                         onClearSelection = {
                             viewModel.clearSelection()
+                        },
+                        onPinSelection = {
+                            viewModel.pinSelection()
                         }
                     )
                 }

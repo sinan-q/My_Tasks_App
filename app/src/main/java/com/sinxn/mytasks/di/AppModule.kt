@@ -16,6 +16,7 @@ import com.sinxn.mytasks.domain.repository.PinnedRepositoryInterface
 import com.sinxn.mytasks.domain.usecase.pinned.DeletePinned
 import com.sinxn.mytasks.domain.usecase.pinned.GetPinnedItems
 import com.sinxn.mytasks.domain.usecase.pinned.InsertPinned
+import com.sinxn.mytasks.domain.usecase.pinned.InsertPinnedItems
 import com.sinxn.mytasks.domain.usecase.pinned.IsPinned
 import com.sinxn.mytasks.domain.usecase.pinned.PinnedUseCases
 import com.sinxn.mytasks.ui.features.alarms.broadcastReceivers.AlarmScheduler
@@ -79,7 +80,8 @@ object AppModule {
             getPinnedItems = GetPinnedItems(repository),
             isPinned = IsPinned(repository),
             insertPinned = InsertPinned(repository),
-            deletePinned = DeletePinned(repository)
+            deletePinned = DeletePinned(repository),
+            insertPinnedItems = InsertPinnedItems(repository)
         )
     }
 

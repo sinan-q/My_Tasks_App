@@ -85,6 +85,9 @@ fun TaskListScreen(
                         },
                         onClearSelection = {
                             viewModel.clearSelection()
+                        },
+                        onPinSelection = {
+                            viewModel.pinSelection()
                         }
                     )
                 }
