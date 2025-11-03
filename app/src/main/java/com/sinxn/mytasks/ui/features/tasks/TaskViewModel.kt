@@ -86,6 +86,7 @@ class TaskViewModel @Inject constructor(
     fun pinSelection() {
         viewModelScope.launch {
             selectionStore.togglePinSelection()
+            showToast("Items pinned")
         }
     }
 

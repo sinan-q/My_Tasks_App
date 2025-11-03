@@ -90,6 +90,7 @@ class SelectionStore @Inject constructor(
         if (itemsToUnpin.isNotEmpty()) {
             pinnedUseCases.deletePinnedItems(itemsToUnpin)
         }
+        clearSelection()
     }
 
     private fun updateSelectionCount() {
