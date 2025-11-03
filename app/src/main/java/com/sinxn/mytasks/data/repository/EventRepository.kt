@@ -14,6 +14,8 @@ class EventRepository @Inject constructor(
 ) : EventRepositoryInterface {
     override fun getAllEvents(): Flow<List<Event>> = eventDao.getAlLEvents()
 
+    override fun getArchivedEvents(): Flow<List<Event>> = eventDao.getArchivedEvents()
+
     override fun getEventsByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Event>> {
         return eventDao.getEventsByMonth(startOfMonth, endOfMonth)
     }
@@ -46,4 +48,12 @@ class EventRepository @Inject constructor(
         return eventDao.getUpcomingEvents(LocalDateTime.now(), limit)
 
     }
+
+    override suspend fun archiveEvent(eventId: Long) = eventDao.archiveEvent(eventId)
+
+    override suspend fun unarchiveEvent(eventId: Long) = eventDao.unarchiveEvent(eventId)
+
+    override suspend fun archiveEvents(eventIds: List<Long>) = eventDao.archiveEvents(eventIds)
+
+    override suspend fun unarchiveEvents(eventIds: List<Long>) = eventDao.unarchiveEvents(eventIds)
 }

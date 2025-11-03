@@ -15,6 +15,8 @@ class TaskRepository @Inject constructor(
 ) : TaskRepositoryInterface {
     override fun getAllTasks(): Flow<List<Task>> = taskDao.getAllTasks()
 
+    override fun getArchivedTasks(): Flow<List<Task>> = taskDao.getArchivedTasks()
+
     override fun getAllTasksSorted(): Flow<List<Task>> = taskDao.getAllTasksSorted()
     override fun getTasksWithDueDate(): Flow<List<Task>> {
         return taskDao.getAllTasks().map { tasks ->
@@ -53,4 +55,12 @@ class TaskRepository @Inject constructor(
     override fun getTasksByFolderId(folderId: Long?): Flow<List<Task>> {
         return taskDao.getTasksByFolderId(folderId)
     }
+
+    override suspend fun archiveTask(taskId: Long) = taskDao.archiveTask(taskId)
+
+    override suspend fun unarchiveTask(taskId: Long) = taskDao.unarchiveTask(taskId)
+
+    override suspend fun archiveTasks(taskIds: List<Long>) = taskDao.archiveTasks(taskIds)
+
+    override suspend fun unarchiveTasks(taskIds: List<Long>) = taskDao.unarchiveTasks(taskIds)
 }

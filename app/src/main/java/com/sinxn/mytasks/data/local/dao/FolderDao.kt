@@ -13,6 +13,9 @@ interface FolderDao {
     @Query("SELECT * FROM folders WHERE isArchived = 0")
     fun getAllFolders(): Flow<List<Folder>>
 
+    @Query("SELECT * FROM folders WHERE isArchived = 1")
+    fun getArchivedFolders(): Flow<List<Folder>>
+
     @Insert
     suspend fun insertFolder(folder: Folder): Long
 
@@ -40,4 +43,15 @@ interface FolderDao {
     @Query("UPDATE folders SET name = :newName WHERE folderId = :folderId")
     suspend fun updateFolderName(folderId: Long, newName: String)
 
+    @Query("UPDATE folders SET isArchived = 1 WHERE folderId = :folderId")
+    suspend fun archiveFolder(folderId: Long)
+
+    @Query("UPDATE folders SET isArchived = 0 WHERE folderId = :folderId")
+    suspend fun unarchiveFolder(folderId: Long)
+
+    @Query("UPDATE folders SET isArchived = 1 WHERE folderId IN (:folderIds)")
+    suspend fun archiveFolders(folderIds: List<Long>)
+
+    @Query("UPDATE folders SET isArchived = 0 WHERE folderId IN (:folderIds)")
+    suspend fun unarchiveFolders(folderIds: List<Long>)
 }

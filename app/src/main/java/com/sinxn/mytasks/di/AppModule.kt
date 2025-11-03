@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import com.sinxn.mytasks.data.local.dao.AlarmDao
 import com.sinxn.mytasks.data.local.dao.EventDao
+import com.sinxn.mytasks.data.local.dao.ExpiredTaskDao
 import com.sinxn.mytasks.data.local.dao.FolderDao
+import com.sinxn.mytasks.data.local.dao.NoteDao
 import com.sinxn.mytasks.data.local.dao.PinnedDao
 import com.sinxn.mytasks.data.local.dao.TaskDao
 import com.sinxn.mytasks.data.local.database.AppDatabase
@@ -12,15 +14,7 @@ import com.sinxn.mytasks.data.local.database.MIGRATION_3_4
 import com.sinxn.mytasks.data.local.database.MIGRATION_4_5
 import com.sinxn.mytasks.data.local.database.MIGRATION_5_6
 import com.sinxn.mytasks.data.local.database.MIGRATION_6_7
-import com.sinxn.mytasks.data.repository.PinnedRepository
-import com.sinxn.mytasks.domain.repository.PinnedRepositoryInterface
-import com.sinxn.mytasks.domain.usecase.pinned.DeletePinned
-import com.sinxn.mytasks.domain.usecase.pinned.DeletePinnedItems
-import com.sinxn.mytasks.domain.usecase.pinned.GetPinnedItems
-import com.sinxn.mytasks.domain.usecase.pinned.InsertPinned
-import com.sinxn.mytasks.domain.usecase.pinned.InsertPinnedItems
-import com.sinxn.mytasks.domain.usecase.pinned.IsPinned
-import com.sinxn.mytasks.domain.usecase.pinned.PinnedUseCases
+import com.sinxn.mytasks.data.local.database.MIGRATION_7_8
 import com.sinxn.mytasks.ui.features.alarms.broadcastReceivers.AlarmScheduler
 import dagger.Module
 import dagger.Provides
@@ -42,12 +36,12 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "app_database"
-        ).addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7).build()
+        ).addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8).build()
     }
 
     @Provides
     @Singleton
-    fun provideNoteDao(appDatabase: AppDatabase) = appDatabase.noteDao()
+    fun provideNoteDao(appDatabase: AppDatabase): NoteDao = appDatabase.noteDao()
 
     @Provides
     @Singleton
@@ -71,22 +65,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providePinnedRepository(dao: PinnedDao): PinnedRepositoryInterface {
-        return PinnedRepository(dao)
-    }
-
-    @Provides
-    @Singleton
-    fun providePinnedUseCases(repository: PinnedRepositoryInterface): PinnedUseCases {
-        return PinnedUseCases(
-            getPinnedItems = GetPinnedItems(repository),
-            isPinned = IsPinned(repository),
-            insertPinned = InsertPinned(repository),
-            deletePinned = DeletePinned(repository),
-            insertPinnedItems = InsertPinnedItems(repository),
-            deletePinnedItems = DeletePinnedItems(repository)
-        )
-    }
+    fun provideExpiredTaskDao(database: AppDatabase): ExpiredTaskDao = database.expiredTaskDao()
 
     @Provides
     @Singleton

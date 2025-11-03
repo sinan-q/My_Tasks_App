@@ -14,6 +14,8 @@ class NoteRepository @Inject constructor(
 
     override fun getAllNotes(): Flow<List<Note>> = noteDao.getAllNotes()
 
+    override fun getArchivedNotes(): Flow<List<Note>> = noteDao.getArchivedNotes()
+
     override suspend fun insertNote(note: Note) = noteDao.insertNote(note)
     override suspend fun insertNotes(notes: List<Note>) = noteDao.insertNotes(notes)
 
@@ -28,4 +30,12 @@ class NoteRepository @Inject constructor(
     override suspend fun getNoteById(noteId: Long): Note? = noteDao.getNoteById(noteId)
 
     override fun getNotesByFolderId(folderId: Long): Flow<List<Note>> = noteDao.getNotesByFolderId(folderId)
+
+    override suspend fun archiveNote(noteId: Long) = noteDao.archiveNote(noteId)
+
+    override suspend fun unarchiveNote(noteId: Long) = noteDao.unarchiveNote(noteId)
+
+    override suspend fun archiveNotes(noteIds: List<Long>) = noteDao.archiveNotes(noteIds)
+
+    override suspend fun unarchiveNotes(noteIds: List<Long>) = noteDao.unarchiveNotes(noteIds)
 }

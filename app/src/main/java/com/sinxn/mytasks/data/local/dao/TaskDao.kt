@@ -15,6 +15,9 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE isArchived = 0")
     fun getAllTasks(): Flow<List<Task>>
 
+    @Query("SELECT * FROM tasks WHERE isArchived = 1")
+    fun getArchivedTasks(): Flow<List<Task>>
+
     @Query("SELECT * FROM tasks WHERE isArchived = 0 ORDER BY isCompleted = true, due DESC, timestamp DESC")
     fun getAllTasksSorted(): Flow<List<Task>>
 
@@ -49,4 +52,16 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE folderId = :folderId AND isArchived = 0 ORDER BY isCompleted = true, due DESC, timestamp DESC")
     fun getTasksByFolderId(folderId: Long?): Flow<List<Task>>
+
+    @Query("UPDATE tasks SET isArchived = 1 WHERE id = :taskId")
+    suspend fun archiveTask(taskId: Long)
+
+    @Query("UPDATE tasks SET isArchived = 0 WHERE id = :taskId")
+    suspend fun unarchiveTask(taskId: Long)
+
+    @Query("UPDATE tasks SET isArchived = 1 WHERE id IN (:taskIds)")
+    suspend fun archiveTasks(taskIds: List<Long>)
+
+    @Query("UPDATE tasks SET isArchived = 0 WHERE id IN (:taskIds)")
+    suspend fun unarchiveTasks(taskIds: List<Long>)
 }

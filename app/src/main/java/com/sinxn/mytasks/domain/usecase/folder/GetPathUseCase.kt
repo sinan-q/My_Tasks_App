@@ -13,10 +13,10 @@ class GetPathUseCase @Inject constructor(
         var curr = folderId
         while (curr != 0L) {
             val folder = allFolders.find { it.folderId == curr } ?: folderRepository.getFolderById(curr)
-            path.insert(0, folder.name)
+            path.insert(0, folder?.name)
             path.insert(0, "/")
-            curr = folder.parentFolderId ?: 0L
-            if (folder.isLocked == true && hideLocked) return null
+            curr = folder?.parentFolderId ?: 0L
+            if (folder?.isLocked == true && hideLocked) return null
         }
         return path.toString()
     }

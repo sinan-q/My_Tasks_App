@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 
 interface TaskRepositoryInterface {
     fun getAllTasks(): Flow<List<Task>>
+    fun getArchivedTasks(): Flow<List<Task>>
     fun getAllTasksSorted(): Flow<List<Task>>
     fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>>
     fun getTasksWithDueDate(): Flow<List<Task>>
@@ -18,4 +19,8 @@ interface TaskRepositoryInterface {
     suspend fun getTaskById(taskId: Long): Task?
     suspend fun updateStatusTask(taskId: Long, status: Boolean)
     fun getTasksByFolderId(folderId: Long?): Flow<List<Task>>
+    suspend fun archiveTask(taskId: Long)
+    suspend fun unarchiveTask(taskId: Long)
+    suspend fun archiveTasks(taskIds: List<Long>)
+    suspend fun unarchiveTasks(taskIds: List<Long>)
 }

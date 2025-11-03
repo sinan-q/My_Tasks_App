@@ -62,7 +62,7 @@ My Tasks addresses the need for a centralized, secure, and easily accessible too
 *   `androidx.compose.ui:ui-test-junit4` (androidTest)
 *   `io.mockk:mockk:1.13.5` (test)
 *   `org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3` (test)
-alisa.sinan.mytasks.test/com.sinan.turbine:turbine:0.13.0` (test)
+*   `alisa.sinan.mytasks.test/com.sinan.turbine:turbine:0.13.0` (test)
 
 ### Plugins
 *   `com.android.application`: 8.10.1
@@ -112,6 +112,7 @@ The application uses Room for local persistence. The database schema is defined 
     *   `title`: `String`
     *   `content`: `String`
     *   `timestamp`: `LocalDateTime`
+    *   `isArchived`: `Boolean`
 
 *   **`tasks` Table (`Task.kt`)**: Stores to-do items.
     *   `id`: `Long` (Primary Key, Auto-generated)
@@ -121,6 +122,7 @@ The application uses Room for local persistence. The database schema is defined 
     *   `isCompleted`: `Boolean`
     *   `timestamp`: `LocalDateTime`
     *   `due`: `LocalDateTime?`
+    *   `isArchived`: `Boolean`
 
 *   **`events` Table (`Event.kt`)**: Stores calendar events.
     *   `id`: `Long` (Primary Key, Auto-generated)
@@ -130,12 +132,14 @@ The application uses Room for local persistence. The database schema is defined 
     *   `timestamp`: `LocalDateTime`
     *   `start`: `LocalDateTime?`
     *   `end`: `LocalDateTime?`
+    *   `isArchived`: `Boolean`
 
 *   **`folders` Table (`Folder.kt`)**: Organizes notes, tasks, and events.
     *   `folderId`: `Long` (Primary Key, Auto-generated)
     *   `name`: `String`
     *   `parentFolderId`: `Long?` (Self-referencing for nested folders)
     *   `isLocked`: `Boolean`
+    *   `isArchived`: `Boolean`
 
 *   **`alarm` Table (`Alarm.kt`)**: Stores alarms associated with tasks or events.
     *   `alarmId`: `Long` (Primary Key, Auto-generated)
@@ -147,8 +151,12 @@ The application uses Room for local persistence. The database schema is defined 
     *   `itemId`: `Long` (Composite Primary Key with `itemType`)
     *   `itemType`: `String` (Enum: `NOTE`, `TASK`, `FOLDER`, `EVENT`. Composite Primary Key with `itemId`)
 
+*   **`expired_tasks` Table (`ExpiredTask.kt`)**: Stores rules for tasks that should be auto-archived after their due date.
+    *   `taskId`: `Long` (Primary Key, Foreign key to the `tasks` table)
+    *   `expireAfterDueDate`: `Boolean`
+
 ### Domain Models
-The domain models are represented by the same data classes used for the Room entities (`Note`, `Task`, `Event`, `Folder`, `Alarm`, `Pinned`). These models are used consistently across all layers of the application, from the database to the UI.
+The domain models are represented by the same data classes used for the Room entities (`Note`, `Task`, `Event`, `Folder`, `Alarm`, `Pinned`, `ExpiredTask`). These models are used consistently across all layers of the application, from the database to the UI.
 
 ## Presentation & UI Layer
 
@@ -184,13 +192,20 @@ Multi-item selection state across different screens is managed centrally by the 
 
 ### Build Instructions
 To build the application, execute the following Gradle task from the project's root directory:
-bash ./gradlew assembleReleaseKotlinThis will generate a release-signed APK in the `app/build/outputs/apk/release` directory.
+```bash
+./gradlew assembleRelease
+```
+This will generate a release-signed APK in the `app/build/outputs/apk/release` directory.
 
 ### Signing Information
 To sign the release build, you will need to create a `keystore.properties` file in the root directory with the following template:
-properties storePassword=<YOUR_STORE_PASSWORD> keyAlias=<YOUR_KEY_ALIAS> keyPassword=<YOUR_KEY_PASSWORD> storeFile=<PATH_TO_YOUR_KEYSTORE_FILE>
-
+```properties
+storePassword=<YOUR_STORE_PASSWORD>
+keyAlias=<YOUR_KEY_ALIAS>
+keyPassword=<YOUR_KEY_PASSWORD>
+storeFile=<PATH_TO_YOUR_KEYSTORE_FILE>
+```
 The `app/build.gradle.kts` file must be configured to read these properties and apply them to the `release` build type.
 
 ### ProGuard/R8 Rules
-The project is configured to use ProGuard for code shrinking and obfuscation in the `release` build type. The default Android optimization rules (`proguard-android-optimize.txt`) are applied, along with a project-specific `proguard-rules.pro` file. No custom rules have been added, so the default configuration is used.
+The project is configured to use ProGuard for code shrinking and obfuscation in the `release` build type. The default Android optimization rules (`proguard-android-optimize.txt`) and `proguard-rules.pro` are applied.

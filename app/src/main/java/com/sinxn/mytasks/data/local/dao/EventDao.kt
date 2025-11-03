@@ -15,6 +15,9 @@ interface EventDao {
     @Query("SELECT * FROM events WHERE isArchived = 0 ORDER BY start DESC")
     fun getAlLEvents(): Flow<List<Event>>
 
+    @Query("SELECT * FROM events WHERE isArchived = 1 ORDER BY start DESC")
+    fun getArchivedEvents(): Flow<List<Event>>
+
     @Query("SELECT * FROM events WHERE isArchived = 0 AND start BETWEEN :startOfMonth AND :endOfMonth ORDER BY timestamp ASC")
     fun getEventsByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Event>>
 
@@ -42,5 +45,15 @@ interface EventDao {
     @Query("SELECT * FROM events WHERE isArchived = 0 AND `end` > :now ORDER BY `end` ASC LIMIT :limit")
     fun getUpcomingEvents(now: LocalDateTime, limit: Int): Flow<List<Event>>
 
+    @Query("UPDATE events SET isArchived = 1 WHERE id = :eventId")
+    suspend fun archiveEvent(eventId: Long)
 
+    @Query("UPDATE events SET isArchived = 0 WHERE id = :eventId")
+    suspend fun unarchiveEvent(eventId: Long)
+
+    @Query("UPDATE events SET isArchived = 1 WHERE id IN (:eventIds)")
+    suspend fun archiveEvents(eventIds: List<Long>)
+
+    @Query("UPDATE events SET isArchived = 0 WHERE id IN (:eventIds)")
+    suspend fun unarchiveEvents(eventIds: List<Long>)
 }

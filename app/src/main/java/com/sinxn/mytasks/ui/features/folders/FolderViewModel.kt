@@ -61,7 +61,7 @@ class FolderViewModel @Inject constructor(
         noteRepository.getNoteById(id)?.let { selectionStore.toggleNote(it) }
     }
     fun onSelectionFolder(id: Long) = viewModelScope.launch {
-        folderRepository.getFolderById(id).let { selectionStore.toggleFolder(it) }
+        folderRepository.getFolderById(id).let { it?.let {folder -> selectionStore.toggleFolder(folder) }}
     }
 
     private val _uiState = MutableStateFlow<FolderScreenUiState>(FolderScreenUiState.Loading)

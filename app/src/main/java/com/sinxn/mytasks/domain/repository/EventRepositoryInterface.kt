@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 
 interface EventRepositoryInterface {
     fun getAllEvents(): Flow<List<Event>>
+    fun getArchivedEvents(): Flow<List<Event>>
     fun getEventsByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Event>>
     suspend fun insertEvent(event: Event)
     suspend fun insertEvents(events: List<Event>)
@@ -15,4 +16,8 @@ interface EventRepositoryInterface {
     suspend fun getEventById(eventId: Long): Event?
     fun getEventsByFolderId(folderId: Long?): Flow<List<Event>>
     fun getUpcomingEvents(limit: Int): Flow<List<Event>>
+    suspend fun archiveEvent(eventId: Long)
+    suspend fun unarchiveEvent(eventId: Long)
+    suspend fun archiveEvents(eventIds: List<Long>)
+    suspend fun unarchiveEvents(eventIds: List<Long>)
 }

@@ -12,7 +12,9 @@ import javax.inject.Singleton
 class FolderRepository @Inject constructor(
     private val folderDao: FolderDao
 ) : FolderRepositoryInterface {
-    override suspend fun getAllFolders(): Flow<List<Folder>> = folderDao.getAllFolders()
+    override fun getAllFolders(): Flow<List<Folder>> = folderDao.getAllFolders()
+
+    override fun getArchivedFolders(): Flow<List<Folder>> = folderDao.getArchivedFolders()
 
     override fun getSubFolders(parentId: Long?): Flow<List<Folder>> = folderDao.getSubFolders(parentId)
 
@@ -24,13 +26,21 @@ class FolderRepository @Inject constructor(
 
     override suspend fun deleteFolder(folder: Folder) = folderDao.deleteFolder(folder)
 
-    override suspend fun lockFolder(folder: Folder) = folderDao.lockFolder(folder.folderId)
+    override suspend fun lockFolder(folderId: Long) = folderDao.lockFolder(folderId)
 
-    override suspend fun getFolderById(folderId: Long): Folder {
+    override suspend fun getFolderById(folderId: Long): Folder? {
         Log.d("TAG", "getFolderById: $folderId  ")
         if (folderId == 0L) return Folder(name = "Root", folderId = 0L)
-        return folderDao.getFolderById(folderId)?: Folder(name = "Unknown", folderId = -1L)
+        return folderDao.getFolderById(folderId)
     }
 
     override suspend fun updateFolderName(folderId: Long, newName: String) = folderDao.updateFolderName(folderId, newName)
+
+    override suspend fun archiveFolder(folderId: Long) = folderDao.archiveFolder(folderId)
+
+    override suspend fun unarchiveFolder(folderId: Long) = folderDao.unarchiveFolder(folderId)
+
+    override suspend fun archiveFolders(folderIds: List<Long>) = folderDao.archiveFolders(folderIds)
+
+    override suspend fun unarchiveFolders(folderIds: List<Long>) = folderDao.unarchiveFolders(folderIds)
 }

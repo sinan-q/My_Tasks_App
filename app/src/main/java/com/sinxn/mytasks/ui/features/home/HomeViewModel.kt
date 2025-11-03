@@ -68,7 +68,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onSelectionFolder(id: Long) = viewModelScope.launch {
-        folderRepository.getFolderById(id).let { selectionStore.toggleFolder(it) }
+        folderRepository.getFolderById(id).let { it?.let{ folder->  selectionStore.toggleFolder(folder)} }
     }
 
     fun onAction(action: SelectionAction) = viewModelScope.launch {
@@ -97,7 +97,7 @@ class HomeViewModel @Inject constructor(
                             ItemType.TASK -> taskRepository.getTaskById(pinned.itemId)?.toListItemUiModel()
                             ItemType.EVENT -> eventRepository.getEventById(pinned.itemId)!!.toListItemUiModel()
 
-                            ItemType.FOLDER -> folderRepository.getFolderById(pinned.itemId).toListItemUiModel()
+                            ItemType.FOLDER -> folderRepository.getFolderById(pinned.itemId)?.toListItemUiModel()
                         }
                     }},
             ) { folders, upcomingEvents, pendingTasks, notes, tasks, pinned ->

@@ -11,7 +11,13 @@ interface NoteRepositoryInterface {
     suspend fun clearAllNotes()
     suspend fun getNoteById(noteId: Long): Note?
     fun getAllNotes(): Flow<List<Note>>
+    fun getArchivedNotes(): Flow<List<Note>>
 
     suspend fun updateNote(note: Note)
     fun getNotesByFolderId(folderId: Long): Flow<List<Note>>
+
+    suspend fun archiveNote(noteId: Long)
+    suspend fun unarchiveNote(noteId: Long)
+    suspend fun archiveNotes(noteIds: List<Long>)
+    suspend fun unarchiveNotes(noteIds: List<Long>)
 }

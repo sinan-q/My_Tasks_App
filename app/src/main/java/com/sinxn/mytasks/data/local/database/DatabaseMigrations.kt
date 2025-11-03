@@ -24,3 +24,9 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
         database.execSQL("ALTER TABLE folders ADD COLUMN isArchived INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("CREATE TABLE IF NOT EXISTS `expired_tasks` (`taskId` INTEGER NOT NULL, `expireAfterDueDate` INTEGER NOT NULL DEFAULT 1, PRIMARY KEY(`taskId`))")
+    }
+}
