@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.features.tasks
 
+import com.sinxn.mytasks.core.SelectionAction
 import java.time.temporal.ChronoUnit
 
 sealed class AddEditTaskAction {
@@ -11,4 +12,5 @@ sealed class AddEditTaskAction {
     data class AddReminder(val reminder: Pair<Int, ChronoUnit>) : AddEditTaskAction()
     data class RemoveReminder(val reminder: Pair<Int, ChronoUnit>) : AddEditTaskAction()
     data class UpdateStatusTask(val taskId: Long, val status: Boolean) : AddEditTaskAction()
+    data class OnSelectionAction(val action: SelectionAction) : AddEditTaskAction()
 }

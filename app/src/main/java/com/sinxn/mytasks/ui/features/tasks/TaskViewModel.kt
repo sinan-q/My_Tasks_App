@@ -2,7 +2,7 @@ package com.sinxn.mytasks.ui.features.tasks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.data.local.entities.Task
@@ -66,6 +66,7 @@ class TaskViewModel @Inject constructor(
             is AddEditTaskAction.AddReminder -> addReminder(action.reminder)
             is AddEditTaskAction.RemoveReminder -> removeReminder(action.reminder)
             is AddEditTaskAction.UpdateStatusTask -> updateStatusTask(action.taskId, action.status)
+            is AddEditTaskAction.OnSelectionAction -> onSelectionAction(action.action)
         }
     }
 
@@ -77,23 +78,8 @@ class TaskViewModel @Inject constructor(
         repository.getTaskById(id)?.let { selectionStore.toggleTask(it) }
     }
 
-    fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
-
-    fun clearSelection() {
-        selectionStore.clearSelection()
-    }
-
-    fun pinSelection() {
-        viewModelScope.launch {
-            selectionStore.togglePinSelection()
-            showToast("Items pinned")
-        }
-    }
-
-    fun deleteSelection() {
-        viewModelScope.launch {
-            selectionStore.deleteSelection()
-        }
+    fun onSelectionAction(action: SelectionAction) = viewModelScope.launch {
+        selectionStore.onAction(action)
     }
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()

@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.features.folders
 
+import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.data.local.entities.Folder
 
 sealed class FolderAction {
@@ -9,6 +10,5 @@ sealed class FolderAction {
     data class UpdateFolderName(val folderId: Long, val newName: String) : FolderAction()
     data class GetSubFolders(val folderId: Long) : FolderAction()
     data class UpdateTaskStatus(val taskId: Long, val status: Boolean) : FolderAction()
-    object PasteSelection : FolderAction()
-    object PinSelection : FolderAction()
+    data class OnSelectionAction(val action: SelectionAction) : FolderAction()
 }

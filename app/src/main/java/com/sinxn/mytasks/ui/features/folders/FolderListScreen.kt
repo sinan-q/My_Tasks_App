@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
@@ -130,19 +130,12 @@ fun FolderListScreen(
                     Column(horizontalAlignment = Alignment.End) {
                         if (selectionCount != 0) {
                             ShowActionsFAB(
-                                onPaste = {
-                                    folderViewModel.onAction(FolderAction.PasteSelection)
-                                },
+                                folderId = currentFolder?.folderId ?: 0L,
                                 action = selectionAction,
-                                setActions = {
-                                    folderViewModel.setSelectionAction(it)
+                                onAction = {
+                                    folderViewModel.onAction(FolderAction.OnSelectionAction(it))
                                 },
-                                onClearSelection = {
-                                    folderViewModel.clearSelection()
-                                },
-                                onPinSelection = {
-                                    folderViewModel.onAction(FolderAction.PinSelection)
-                                }
+
                             )
                         }
                         currentFolder?.let {
@@ -294,12 +287,12 @@ fun FolderListScreen(
                 )
             }
             ConfirmationDialog(
-                showDialog = selectionAction == SelectionActions.DELETE,
+                showDialog = selectionAction == SelectionAction.Delete,
                 onDismiss = {
-                    folderViewModel.setSelectionAction(SelectionActions.NONE)
+                    folderViewModel.onAction(FolderAction.OnSelectionAction(SelectionAction.None))
                 },
                 onConfirm = {
-                    folderViewModel.deleteSelection()
+                    folderViewModel.onAction(FolderAction.OnSelectionAction(SelectionAction.DeleteConfirm(true)))
                 },
                 title = stringResource(R.string.delete_confirmation_title),
                 message = "Sure want to delete $selectionCount items?" //TODO

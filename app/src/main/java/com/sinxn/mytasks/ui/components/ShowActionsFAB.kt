@@ -18,16 +18,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.core.SelectionAction
 
 
 @Composable
 fun ShowActionsFAB(
-    onPaste: () -> Unit,
-    onClearSelection: () -> Unit,
-    onPinSelection: () -> Unit,
-    action: SelectionActions,
-    setActions: (SelectionActions) -> Unit
+    folderId: Long = 0L,
+    onAction: (SelectionAction) -> Unit,
+    action: SelectionAction,
+    pasteDisabled: Boolean = false,
 ) {
     var isOptionsVisible by remember { mutableStateOf(false) }
 
@@ -39,12 +38,10 @@ fun ShowActionsFAB(
             visible = isOptionsVisible,
         ) {
             OptionsColumn2(
+                folderId = folderId,
                 onCloseOptions = { isOptionsVisible = false },
-                onPaste = onPaste,
-                onClearSelection = onClearSelection,
+                onAction = onAction,
                 action = action,
-                setActions = setActions,
-                onPinSelection = onPinSelection
             )
         }
 
@@ -62,44 +59,42 @@ fun ShowActionsFAB(
 
 @Composable
 fun OptionsColumn2(
-    onPaste: () -> Unit,
-    setActions: (SelectionActions) -> Unit,
-    onPinSelection: () -> Unit,
+    folderId: Long,
     onCloseOptions: () -> Unit,
-    onClearSelection: () -> Unit,
-    action: SelectionActions
+    onAction: (SelectionAction) -> Unit,
+    action: SelectionAction
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.End
     ) {
         OptionButton(
-            onClick = { onCloseOptions(); onClearSelection() },
+            onClick = { onCloseOptions();  onAction(SelectionAction.None)},
             icon = R.drawable.ic_cancel,
             contentDescription = "Clear the selection",
             text = "Clear"
         )
-        if (action == SelectionActions.NONE) {
+        if (action == SelectionAction.None) {
             OptionButton(
-                onClick = { onCloseOptions(); onPinSelection() },
+                onClick = { onCloseOptions(); onAction(SelectionAction.Pin)  },
                 icon = R.drawable.ic_delete,
                 contentDescription = "Add to pin",
                 text = "Pin"
             )
             OptionButton(
-                onClick = { onCloseOptions(); setActions(SelectionActions.DELETE) },
+                onClick = { onCloseOptions(); onAction(SelectionAction.Delete) },
                 icon = R.drawable.ic_delete,
                 contentDescription = "Delete",
                 text = "Delete"
             )
             OptionButton(
-                onClick = { onCloseOptions(); setActions(SelectionActions.COPY) },
+                onClick = { onCloseOptions(); onAction(SelectionAction.Copy) },
                 icon = R.drawable.ic_copy,
                 contentDescription = "Copy",
                 text = "Copy"
             )
             OptionButton(
-                onClick = { onCloseOptions(); setActions(SelectionActions.CUT) },
+                onClick = { onCloseOptions(); onAction(SelectionAction.Cut) },
                 icon = R.drawable.ic_move,
                 contentDescription = "Move",
                 text = "Move"
@@ -110,9 +105,9 @@ fun OptionsColumn2(
 //                contentDescription = "Lock",
 //                text = "Lock"
 //            )
-        } else if (action == SelectionActions.COPY || action == SelectionActions.CUT) {
+        } else if (action == SelectionAction.Copy || action == SelectionAction.Cut) {
             OptionButton(
-                onClick = { onCloseOptions(); onPaste() },
+                onClick = { onCloseOptions(); onAction(SelectionAction.Paste(folderId)) },
                 icon = R.drawable.ic_paste,
                 contentDescription = "Paste",
                 text = "Paste"

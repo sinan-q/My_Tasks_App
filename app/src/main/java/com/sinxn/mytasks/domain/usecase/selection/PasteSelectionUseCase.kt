@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.usecase.selection
 
-import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Task
@@ -17,13 +17,13 @@ class PasteSelectionUseCase @Inject constructor(
     private val copyFolderAndItsContentsUseCase: CopyFolderAndItsContentsUseCase
 ) {
     suspend operator fun invoke(
-        action: SelectionActions,
+        action: SelectionAction,
         selectedTasks: Set<Task>,
         selectedNotes: Set<Note>,
         selectedFolders: Set<Folder>,
         destinationFolderId: Long
     ) {
-        if (action == SelectionActions.COPY) {
+        if (action == SelectionAction.Copy) {
             selectedFolders.forEach {
                 copyFolderAndItsContentsUseCase(it, parentId = destinationFolderId)
             }
@@ -33,7 +33,7 @@ class PasteSelectionUseCase @Inject constructor(
             selectedNotes.forEach {
                 noteRepository.insertNote(it.copy(id = null, folderId = destinationFolderId))
             }
-        } else if (action == SelectionActions.CUT) {
+        } else if (action == SelectionAction.Cut) {
             selectedTasks.forEach {
                 taskRepository.updateTask(it.copy(folderId = destinationFolderId))
             }

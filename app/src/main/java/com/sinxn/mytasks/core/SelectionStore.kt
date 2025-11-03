@@ -29,8 +29,8 @@ class SelectionStore @Inject constructor(
     private val _selectedFolders = MutableStateFlow<Set<Folder>>(emptySet())
     val selectedFolders: StateFlow<Set<Folder>> = _selectedFolders
 
-    private val _action = MutableStateFlow(SelectionActions.NONE)
-    val action: StateFlow<SelectionActions> = _action
+    private val _action = MutableStateFlow<SelectionAction>(SelectionAction.None)
+    val action: StateFlow<SelectionAction> = _action
 
     private val _selectionCount = MutableStateFlow(0)
     val selectionCount: StateFlow<Int> = _selectionCount
@@ -49,8 +49,21 @@ class SelectionStore @Inject constructor(
     fun toggleFolder(folder: Folder) = toggle(folder, _selectedFolders)
 
 
-    fun setAction(action: SelectionActions) {
+    private fun setAction(action: SelectionAction) {
         _action.update { action }
+    }
+
+    suspend fun onAction(action: SelectionAction) {
+        when (action) {
+            is SelectionAction.Cut -> setAction(SelectionAction.Cut)
+            is SelectionAction.Copy -> setAction(SelectionAction.Copy)
+            is SelectionAction.Delete -> setAction(SelectionAction.Delete)
+            is SelectionAction.None -> clearSelection()
+            is SelectionAction.Paste -> pasteSelection(action.folderId)
+            is SelectionAction.Pin -> togglePinSelection()
+            is SelectionAction.DeleteConfirm -> deleteSelection(action.confirm)
+
+        }
     }
 
     suspend fun pasteSelection(folderId: Long) {
@@ -101,12 +114,12 @@ class SelectionStore @Inject constructor(
         _selectedTasks.update { emptySet() }
         _selectedNotes.update { emptySet() }
         _selectedFolders.update { emptySet() }
-        _action.update { SelectionActions.NONE }
-        setAction(SelectionActions.NONE)
+        setAction(SelectionAction.None)
         updateSelectionCount()
     }
 
-    suspend fun deleteSelection() {
+    suspend fun deleteSelection(confirmed: Boolean) {
+        if (!confirmed) return // If not confirmed, do nothing
         deleteSelectionUseCase(
             selectedTasks = selectedTasks.value,
             selectedNotes = selectedNotes.value,
@@ -116,6 +129,13 @@ class SelectionStore @Inject constructor(
     }
 }
 
-enum class SelectionActions {
-    CUT, COPY, DELETE, NONE
+sealed class SelectionAction {
+    data object Copy : SelectionAction()
+    data object Cut : SelectionAction()
+    data class Paste(val folderId: Long) : SelectionAction()
+
+    data object Delete : SelectionAction()
+    data class DeleteConfirm(val confirm: Boolean) : SelectionAction()
+    data object None : SelectionAction()
+    data object Pin : SelectionAction()
 }

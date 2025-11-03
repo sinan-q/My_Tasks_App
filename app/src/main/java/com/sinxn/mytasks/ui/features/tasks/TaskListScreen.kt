@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
@@ -78,17 +78,12 @@ fun TaskListScreen(
             Column(horizontalAlignment = Alignment.End) {
                 if (selectionCount.value != 0) {
                     ShowActionsFAB(
-                        onPaste = { viewModel.showToast("cannot paste here") },
+                        pasteDisabled = true,
                         action = selectionAction,
-                        setActions = {
-                            viewModel.setSelectionAction(it)
+                        onAction = {
+                            viewModel.onAction(AddEditTaskAction.OnSelectionAction(it))
                         },
-                        onClearSelection = {
-                            viewModel.clearSelection()
-                        },
-                        onPinSelection = {
-                            viewModel.pinSelection()
-                        }
+
                     )
                 }
                 RectangleFAB(onClick = { navController.navigate(Routes.Task.Add.byFolder(0L)) }) {
@@ -163,12 +158,12 @@ fun TaskListScreen(
                 }
             }
             ConfirmationDialog(
-                showDialog = selectionAction == SelectionActions.DELETE,
+                showDialog = selectionAction == SelectionAction.Delete,
                 onDismiss = {
-                    viewModel.setSelectionAction(SelectionActions.NONE)
+                    viewModel.onAction(AddEditTaskAction.OnSelectionAction(SelectionAction.None))
                 },
                 onConfirm = {
-                    viewModel.deleteSelection()
+                    viewModel.onAction(AddEditTaskAction.OnSelectionAction(SelectionAction.DeleteConfirm(true)))
                 },
                 title = stringResource(R.string.delete_confirmation_title),
                 message = "Sure want to delete ${selectionCount.value} items?"

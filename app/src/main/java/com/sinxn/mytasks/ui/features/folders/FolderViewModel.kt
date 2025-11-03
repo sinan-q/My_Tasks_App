@@ -2,7 +2,6 @@ package com.sinxn.mytasks.ui.features.folders
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.core.SelectionActions
 import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
@@ -62,7 +61,7 @@ class FolderViewModel @Inject constructor(
         noteRepository.getNoteById(id)?.let { selectionStore.toggleNote(it) }
     }
     fun onSelectionFolder(id: Long) = viewModelScope.launch {
-        folderRepository.getFolderById(id)?.let { selectionStore.toggleFolder(it) }
+        folderRepository.getFolderById(id).let { selectionStore.toggleFolder(it) }
     }
 
     private val _uiState = MutableStateFlow<FolderScreenUiState>(FolderScreenUiState.Loading)
@@ -72,16 +71,18 @@ class FolderViewModel @Inject constructor(
     val toastMessage = _toastMessage.asSharedFlow()
 
     fun onAction(action: FolderAction) {
-        when (action) {
-            is FolderAction.AddFolder -> addFolder(action.folder)
-            is FolderAction.DeleteFolder -> deleteFolder(action.folder)
-            is FolderAction.LockFolder -> lockFolder(action.folder)
-            is FolderAction.UpdateFolderName -> updateFolderName(action.folderId, action.newName)
-            is FolderAction.GetSubFolders -> getSubFolders(action.folderId)
-            is FolderAction.UpdateTaskStatus -> updateTaskStatus(action.taskId, action.status)
-            is FolderAction.PasteSelection -> pasteSelection()
-            is FolderAction.PinSelection -> pinSelection()
+        viewModelScope.launch {
+            when (action) {
+                is FolderAction.AddFolder -> addFolder(action.folder)
+                is FolderAction.DeleteFolder -> deleteFolder(action.folder)
+                is FolderAction.LockFolder -> lockFolder(action.folder)
+                is FolderAction.UpdateFolderName -> updateFolderName(action.folderId, action.newName)
+                is FolderAction.GetSubFolders -> getSubFolders(action.folderId)
+                is FolderAction.UpdateTaskStatus -> updateTaskStatus(action.taskId, action.status)
+                is FolderAction.OnSelectionAction -> selectionStore.onAction(action.action)
+            }
         }
+
     }
 
     private fun showToast(message: String) {
@@ -162,32 +163,5 @@ class FolderViewModel @Inject constructor(
         }
     }
 
-    fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
 
-    private fun pasteSelection() {
-        viewModelScope.launch {
-            val currentState = _uiState.value
-            if (currentState is FolderScreenUiState.Success) {
-                val folderId = currentState.folder?.folderId ?: 0L
-                selectionStore.pasteSelection(folderId)
-            }
-        }
-    }
-
-    private fun pinSelection() {
-        viewModelScope.launch {
-            selectionStore.togglePinSelection()
-            showToast("Items pinned")
-        }
-    }
-
-    fun clearSelection() {
-        selectionStore.clearSelection()
-    }
-
-    fun deleteSelection() {
-        viewModelScope.launch {
-            selectionStore.deleteSelection()
-        }
-    }
 }

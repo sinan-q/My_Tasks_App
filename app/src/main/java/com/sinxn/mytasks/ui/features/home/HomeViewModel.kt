@@ -2,7 +2,7 @@ package com.sinxn.mytasks.ui.features.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.ItemType
@@ -68,22 +68,11 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onSelectionFolder(id: Long) = viewModelScope.launch {
-        folderRepository.getFolderById(id)?.let { selectionStore.toggleFolder(it) }
+        folderRepository.getFolderById(id).let { selectionStore.toggleFolder(it) }
     }
 
-    fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
-    fun clearSelection() = selectionStore.clearSelection()
-    fun pasteSelection() {
-        viewModelScope.launch {
-            if (selectedAction.value == SelectionActions.COPY)
-                selectionStore.pasteSelection(folderId = 0L)
-        }
-    }
-
-    fun deleteSelection() {
-        viewModelScope.launch {
-            selectionStore.deleteSelection()
-        }
+    fun onAction(action: SelectionAction) = viewModelScope.launch {
+        selectionStore.onAction(action)
     }
 
     private val _uiState = MutableStateFlow<HomeScreenUiState>(HomeScreenUiState.Loading)
@@ -163,13 +152,6 @@ class HomeViewModel @Inject constructor(
             } catch (e: Exception) {
                 showToast("Error updating folder lock state: ${e.message}")
             }
-        }
-    }
-
-    fun pinSelection() {
-        viewModelScope.launch {
-            selectionStore.togglePinSelection()
-            showToast("Items pinned")
         }
     }
 

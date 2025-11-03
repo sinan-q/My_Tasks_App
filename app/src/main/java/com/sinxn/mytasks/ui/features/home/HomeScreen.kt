@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
@@ -99,19 +99,12 @@ fun HomeScreen(
             Column(horizontalAlignment = Alignment.End) {
                 if (selectionCount != 0) {
                     ShowActionsFAB(
-                        onPaste = {
-                            viewModel.pasteSelection()
-                        },
+                        folderId = 0L,
                         action = selectionAction,
-                        setActions = {
-                            viewModel.setSelectionAction(it)
+                        onAction = {
+                            viewModel.onAction(it)
                         },
-                        onClearSelection = {
-                            viewModel.clearSelection()
-                        },
-                        onPinSelection = {
-                            viewModel.pinSelection()
-                        }
+
                     )
                 }
                 ShowOptionsFAB(
@@ -346,12 +339,12 @@ fun HomeScreen(
                     }
                 }
                 ConfirmationDialog(
-                    showDialog = selectionAction == SelectionActions.DELETE,
+                    showDialog = selectionAction == SelectionAction.Delete,
                     onDismiss = {
-                        viewModel.setSelectionAction(SelectionActions.NONE)
+                        viewModel.onAction(SelectionAction.None)
                     },
                     onConfirm = {
-                        viewModel.deleteSelection()
+                        viewModel.onAction(SelectionAction.DeleteConfirm(true))
                     },
                     title = stringResource(R.string.delete_confirmation_title),
                     message = "Sure want to delete $selectionCount items?"

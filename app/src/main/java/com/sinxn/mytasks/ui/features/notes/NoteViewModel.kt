@@ -2,7 +2,7 @@ package com.sinxn.mytasks.ui.features.notes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.core.SelectionActions
+import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.data.local.entities.Folder
 import com.sinxn.mytasks.data.local.entities.Note
@@ -69,6 +69,7 @@ class NoteViewModel @Inject constructor(
             is AddEditNoteAction.FetchNoteById -> fetchNoteById(action.noteId)
             is AddEditNoteAction.FetchFolderById -> fetchFolderById(action.folderId)
             is AddEditNoteAction.NewNoteByFolder -> newNoteByFolder(action.folderId)
+            is AddEditNoteAction.OnSelectionAction -> onSelectionAction(action.action)
         }
     }
 
@@ -79,25 +80,11 @@ class NoteViewModel @Inject constructor(
         noteRepository.getNoteById(id)?.let { selectionStore.toggleNote(it) }
     }
 
-    fun setSelectionAction(action: SelectionActions) = selectionStore.setAction(action)
-
-    fun clearSelection() {
-        selectionStore.clearSelection()
-    }
-
-    fun pinSelection() {
-        viewModelScope.launch {
-            selectionStore.togglePinSelection()
-            showToast("Items pinned")
-        }
+    private fun onSelectionAction(action: SelectionAction) = viewModelScope.launch {
+        selectionStore.onAction(action)
     }
 
 
-    fun deleteSelection() {
-        viewModelScope.launch {
-            selectionStore.deleteSelection()
-        }
-    }
 
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
