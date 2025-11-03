@@ -20,6 +20,9 @@ interface PinnedDao {
     @Delete
     suspend fun deletePinned(pinned: Pinned)
 
+    @Delete
+    suspend fun deletePinnedItems(pinnedList: List<Pinned>)
+
     @Query("SELECT * FROM pinned")
     fun getPinnedItems(): Flow<List<Pinned>>
 

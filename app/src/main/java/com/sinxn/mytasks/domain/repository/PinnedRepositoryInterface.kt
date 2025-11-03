@@ -13,5 +13,6 @@ interface PinnedRepositoryInterface {
     suspend fun insertPinned(pinned: Pinned)
 
     suspend fun deletePinned(pinned: Pinned)
+    suspend fun deletePinnedItems(pinnedList: List<Pinned>)
     suspend fun insertPinnedItems(pinnedList: List<Pinned>)
 }

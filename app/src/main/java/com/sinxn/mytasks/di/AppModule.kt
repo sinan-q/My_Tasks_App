@@ -14,6 +14,7 @@ import com.sinxn.mytasks.data.local.database.MIGRATION_5_6
 import com.sinxn.mytasks.data.repository.PinnedRepository
 import com.sinxn.mytasks.domain.repository.PinnedRepositoryInterface
 import com.sinxn.mytasks.domain.usecase.pinned.DeletePinned
+import com.sinxn.mytasks.domain.usecase.pinned.DeletePinnedItems
 import com.sinxn.mytasks.domain.usecase.pinned.GetPinnedItems
 import com.sinxn.mytasks.domain.usecase.pinned.InsertPinned
 import com.sinxn.mytasks.domain.usecase.pinned.InsertPinnedItems
@@ -81,7 +82,8 @@ object AppModule {
             isPinned = IsPinned(repository),
             insertPinned = InsertPinned(repository),
             deletePinned = DeletePinned(repository),
-            insertPinnedItems = InsertPinnedItems(repository)
+            insertPinnedItems = InsertPinnedItems(repository),
+            deletePinnedItems = DeletePinnedItems(repository)
         )
     }
 

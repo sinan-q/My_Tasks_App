@@ -26,9 +26,12 @@ class PinnedRepository @Inject constructor(
         dao.upsertPinnedItems(pinnedList)
     }
 
-
     override suspend fun deletePinned(pinned: Pinned) {
         dao.deletePinned(pinned)
+    }
+
+    override suspend fun deletePinnedItems(pinnedList: List<Pinned>) {
+        dao.deletePinnedItems(pinnedList)
     }
 
 }

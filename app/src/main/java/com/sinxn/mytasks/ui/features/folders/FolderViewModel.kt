@@ -176,7 +176,7 @@ class FolderViewModel @Inject constructor(
 
     private fun pinSelection() {
         viewModelScope.launch {
-            selectionStore.pinSelection()
+            selectionStore.togglePinSelection()
             showToast("Items pinned")
         }
     }

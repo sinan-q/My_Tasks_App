@@ -5,5 +5,6 @@ data class PinnedUseCases(
     val isPinned: IsPinned,
     val insertPinned: InsertPinned,
     val deletePinned: DeletePinned,
+    val deletePinnedItems: DeletePinnedItems,
     val insertPinnedItems: InsertPinnedItems
 )

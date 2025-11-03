@@ -64,21 +64,31 @@ class SelectionStore @Inject constructor(
         clearSelection()
     }
 
-    suspend fun pinSelection() {
+    suspend fun togglePinSelection() {
         val itemsToPin = mutableListOf<Pinned>()
+        val itemsToUnpin = mutableListOf<Pinned>()
 
-        _selectedNotes.value.forEach { note ->
-            note.id != null && itemsToPin.add(Pinned(itemId = note.id, itemType = ItemType.NOTE))
-        }
-        _selectedTasks.value.forEach { task ->
-            task.id != null && itemsToPin.add(Pinned(itemId = task.id, itemType = ItemType.TASK))
-        }
+        _selectedNotes.value.forEach { note -> note.id?.let {
+            val pin = Pinned(itemId = note.id, itemType = ItemType.NOTE)
+            val isExisting = pinnedUseCases.isPinned(pin.itemId, pin.itemType)
+            if (isExisting == null ) itemsToPin.add(pin) else itemsToUnpin.add(isExisting)
+        }}
+        _selectedTasks.value.forEach { task -> task.id?.let {
+            val pin = Pinned(itemId = task.id, itemType = ItemType.TASK)
+            val isExisting = pinnedUseCases.isPinned(pin.itemId, pin.itemType)
+            if (isExisting == null ) itemsToPin.add(pin) else itemsToUnpin.add(isExisting)
+        }}
         _selectedFolders.value.forEach { folder ->
-            itemsToPin.add(Pinned(itemId = folder.folderId, itemType = ItemType.FOLDER))
+            val pin = Pinned(itemId = folder.folderId, itemType = ItemType.FOLDER)
+            val isExisting = pinnedUseCases.isPinned(pin.itemId, pin.itemType)
+            if (isExisting == null ) itemsToPin.add(pin) else itemsToUnpin.add(isExisting)
         }
 
         if (itemsToPin.isNotEmpty()) {
             pinnedUseCases.insertPinnedItems(itemsToPin)
+        }
+        if (itemsToUnpin.isNotEmpty()) {
+            pinnedUseCases.deletePinnedItems(itemsToUnpin)
         }
     }
 

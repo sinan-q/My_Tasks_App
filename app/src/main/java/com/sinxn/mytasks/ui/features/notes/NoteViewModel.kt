@@ -87,7 +87,7 @@ class NoteViewModel @Inject constructor(
 
     fun pinSelection() {
         viewModelScope.launch {
-            selectionStore.pinSelection()
+            selectionStore.togglePinSelection()
         }
     }
 

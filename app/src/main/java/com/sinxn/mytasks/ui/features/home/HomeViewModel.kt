@@ -168,7 +168,7 @@ class HomeViewModel @Inject constructor(
 
     fun pinSelection() {
         viewModelScope.launch {
-            selectionStore.pinSelection()
+            selectionStore.togglePinSelection()
             showToast("Items pinned")
             clearSelection()
         }
