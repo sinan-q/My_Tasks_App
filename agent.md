@@ -1,5 +1,3 @@
-# My Tasks - Project Documentation
-
 ## Project Summary
 
 ### Application Name and Primary Function
@@ -91,11 +89,12 @@ While the project is organized within a single `:app` module, it is logically st
 *   `domain`: Includes use cases and repository interfaces, defining the core business rules.
 *   `data`: Consists of repository implementations, Room database definitions (DAOs, entities), and data models.
 *   `di`: Contains Hilt modules for dependency injection, which wire together the different layers of the application.
+*   `core`: Contains core application logic, such as the central `SelectionStore` for managing user selections across the app.
 
 ### Data/Control Flow Diagram
 1.  **UI (View)**: A user action (e.g., clicking a button to add a task) triggers a function call in the corresponding **ViewModel**.
-2.  **ViewModel**: The ViewModel invokes a specific **Use Case** from the domain layer (e.g., `AddTaskUseCase`).
-3.  **Use Case**: The use case executes its business logic and communicates with one or more **Repository Interfaces**.
+2.  **ViewModel**: The ViewModel invokes a specific **Use Case** from the domain layer (e.g., `AddTaskUseCase`) or a method in a core class like `SelectionStore`.
+3.  **Use Case/Core Logic**: The use case or core class executes its business logic and communicates with one or more **Repository Interfaces**.
 4.  **Repository (Implementation)**: The repository implementation in the data layer interacts with the **Room Database** to perform the requested operation (e.g., inserting a new task).
 5.  **Data Flow Back**: The data flows back through the layers: `Room Database` → `Repository` → `Use Case` → `ViewModel`. The ViewModel then updates its `StateFlow`, which causes the UI to be recomposed with the new state.
 
@@ -144,8 +143,12 @@ The application uses Room for local persistence. The database schema is defined 
     *   `taskId`: `Long` (Foreign key to the `tasks` or `events` table)
     *   `time`: `Long`
 
+*   **`pinned` Table (`Pinned.kt`)**: Stores references to pinned items for quick access.
+    *   `itemId`: `Long` (Composite Primary Key with `itemType`)
+    *   `itemType`: `String` (Enum: `NOTE`, `TASK`, `FOLDER`, `EVENT`. Composite Primary Key with `itemId`)
+
 ### Domain Models
-The domain models are represented by the same data classes used for the Room entities (`Note`, `Task`, `Event`, `Folder`, `Alarm`). These models are used consistently across all layers of the application, from the database to the UI.
+The domain models are represented by the same data classes used for the Room entities (`Note`, `Task`, `Event`, `Folder`, `Alarm`, `Pinned`). These models are used consistently across all layers of the application, from the database to the UI.
 
 ## Presentation & UI Layer
 
@@ -167,7 +170,11 @@ The application also supports deep linking for adding new notes, tasks, and even
 ### State Management
 UI state is managed using **ViewModels**, which follow the MVVM architectural pattern. Each screen has a corresponding ViewModel that holds the UI state as a `StateFlow` and exposes it to the Composables. User events are handled by the ViewModel, which communicates with the domain layer to perform business logic and updates the state accordingly.
 
+Multi-item selection state across different screens is managed centrally by the `SelectionStore` singleton. It holds the set of selected items and the current action mode (e.g., Copy, Cut). UI components observe `StateFlow`s from this store and dispatch actions to it.
+
 ### Key Custom Components
+*   **`SelectionStore`**: A singleton class that centralizes all logic for selecting, modifying, and acting upon items (notes, tasks, folders). It manages the state for actions like Copy, Cut, Paste, Delete, and Pin.
+*   **`SelectionAction` Sealed Class**: Replaces a simple enum to provide a more powerful, type-safe representation of user actions, allowing actions like `Paste` to carry a payload (`folderId`).
 *   **Markdown Editor/Viewer**: The application includes a custom markdown editor for creating and editing notes, which are then rendered as styled text.
 *   **Biometric Authentication Prompt**: A reusable function (`showBiometricsAuthentication`) that wraps the BiometricPrompt API to provide a consistent way of authenticating users before granting access to locked content.
 *   **Glance Widget**: A home screen widget (`MyGlanceWidget`) that provides quick actions to create new notes, tasks, and events.
@@ -177,22 +184,11 @@ UI state is managed using **ViewModels**, which follow the MVVM architectural pa
 
 ### Build Instructions
 To build the application, execute the following Gradle task from the project's root directory:
-
-```bash
-./gradlew assembleRelease
-```
-
-This will generate a release-signed APK in the `app/build/outputs/apk/release` directory.
+bash ./gradlew assembleReleaseKotlinThis will generate a release-signed APK in the `app/build/outputs/apk/release` directory.
 
 ### Signing Information
 To sign the release build, you will need to create a `keystore.properties` file in the root directory with the following template:
-
-```properties
-storePassword=<YOUR_STORE_PASSWORD>
-keyAlias=<YOUR_KEY_ALIAS>
-keyPassword=<YOUR_KEY_PASSWORD>
-storeFile=<PATH_TO_YOUR_KEYSTORE_FILE>
-```
+properties storePassword=<YOUR_STORE_PASSWORD> keyAlias=<YOUR_KEY_ALIAS> keyPassword=<YOUR_KEY_PASSWORD> storeFile=<PATH_TO_YOUR_KEYSTORE_FILE>
 
 The `app/build.gradle.kts` file must be configured to read these properties and apply them to the `release` build type.
 

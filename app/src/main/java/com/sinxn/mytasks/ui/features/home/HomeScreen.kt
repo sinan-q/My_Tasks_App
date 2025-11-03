@@ -230,7 +230,7 @@ fun HomeScreen(
                     item(span = StaggeredGridItemSpan.FullLine) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             MyTitle(onClick = { //TODO
-                            }, text = "Favourites")
+                            }, text = "Pinned")
                             HorizontalDivider()
                             if (pinnedItems.isEmpty()) {
                                 Text(

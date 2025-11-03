@@ -79,7 +79,7 @@ fun OptionsColumn2(
         if (action == SelectionAction.None) {
             OptionButton(
                 onClick = { onCloseOptions(); onAction(SelectionAction.Pin)  },
-                icon = R.drawable.ic_delete,
+                icon = R.drawable.ic_pin_add,
                 contentDescription = "Add to pin",
                 text = "Pin"
             )
