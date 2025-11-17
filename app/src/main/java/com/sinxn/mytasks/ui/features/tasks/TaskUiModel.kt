@@ -29,7 +29,7 @@ fun Task.toListItemUiModel(): TaskListItemUiModel {
         title = this.title,
         isCompleted = this.isCompleted,
         formattedDueDate = this.due?.format(formatter),
-        month = YearMonth.from(this.due) ?: YearMonth.now(),
+        month = this.due?.let { YearMonth.from(it) } ?: YearMonth.now(),
         date = this.due?.toLocalDate()
     )
 }
