@@ -11,8 +11,8 @@ import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
 import com.sinxn.mytasks.domain.repository.PinnedRepositoryInterface
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
-import com.sinxn.mytasks.domain.usecase.folder.AddFolderUseCase
 import com.sinxn.mytasks.domain.usecase.folder.DeleteFolderAndItsContentsUseCase
+import com.sinxn.mytasks.domain.usecase.folder.FolderUseCases
 import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
 import com.sinxn.mytasks.ui.features.events.toListItemUiModel
 import com.sinxn.mytasks.ui.features.folders.toListItemUiModel
@@ -47,7 +47,7 @@ class HomeViewModel @Inject constructor(
     private val folderRepository: FolderRepositoryInterface,
     private val eventRepository: EventRepositoryInterface,
     private val pinnedRepository: PinnedRepositoryInterface,
-    private val addFolderUseCase: AddFolderUseCase,
+    private val folderUseCases: FolderUseCases,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
     private val selectionStore: SelectionStore
@@ -87,7 +87,7 @@ class HomeViewModel @Inject constructor(
             combine(
                 flow=folderRepository.getSubFolders(0).map { folders -> folders.map { it.toListItemUiModel() } },
                 flow2=eventRepository.getUpcomingEvents(4).map { events -> events.map { it.toListItemUiModel() } },
-                flow3=taskRepository.getTasksWithDueDate().map { tasks -> tasks.map { it.toListItemUiModel() } },
+                flow3=taskRepository.getTasksWithDueDate(10).map { tasks -> tasks.map { it.toListItemUiModel() } },
                 flow4=noteRepository.getNotesByFolderId(0).map { notes -> notes.map { it.toListItemUiModel() } },
                 flow5=taskRepository.getTasksByFolderId(0).map { tasks -> tasks.map { it.toListItemUiModel() } },
                 flow6=pinnedRepository.getPinnedItems().map { pinnedList -> pinnedList.map { pinned ->
@@ -122,8 +122,8 @@ class HomeViewModel @Inject constructor(
     fun addFolder(folder: Folder) {
         viewModelScope.launch {
             try {
-                addFolderUseCase(folder) // Or addFolderUseCase.invoke(folder)
-                showToast("Folder Added") // From BaseViewModel
+                folderUseCases.addFolder(folder)
+                showToast("Folder Added")
             } catch (e: Exception) {
                 showToast("Error adding folder: ${e.message}")
             }
@@ -134,7 +134,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 deleteFolderAndItsContentsUseCase(folder)
-                showToast("Folder Deleted") // From BaseViewModel
+                showToast("Folder Deleted")
             } catch (e: Exception) {
                 showToast("Error deleting folder: ${e.message}")
             }
@@ -147,7 +147,7 @@ class HomeViewModel @Inject constructor(
                 lockFolderUseCase(
                     folder,
                     !folder.isLocked
-                ) // Assuming use case takes folder and new lock state
+                )
                 showToast(if (!folder.isLocked) "Folder Locked" else "Folder Unlocked")
             } catch (e: Exception) {
                 showToast("Error updating folder lock state: ${e.message}")
@@ -188,3 +188,4 @@ inline fun <T1, T2, T3, T4, T5, T6, R> combine(
         )
     }
 }
+

@@ -4,8 +4,9 @@ import com.sinxn.mytasks.data.local.dao.ExpiredTaskDao
 import com.sinxn.mytasks.data.local.entities.ExpiredTask
 import com.sinxn.mytasks.domain.repository.ExpiredTaskRepositoryInterface
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class ExpiredTaskRepository(
+class ExpiredTaskRepository @Inject constructor(
     private val dao: ExpiredTaskDao
 ) : ExpiredTaskRepositoryInterface {
 

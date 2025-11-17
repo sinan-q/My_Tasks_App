@@ -96,10 +96,14 @@ dependencies {
     implementation(libs.gson)
 
     //Markdown Editor
-    //implementation(libs.twain)
     implementation(libs.compose.markdown)
 
     implementation(libs.lib.recur)
+
+    // WorkManager
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 
 
 

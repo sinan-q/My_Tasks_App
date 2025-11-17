@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -93,23 +93,27 @@ class EventViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.getAllEvents().collectLatest { events ->
+            combine(
+                repository.getAllEvents(),
+                taskRepository.getAllTasks(),
+
+
+            ) { events, tasks ->
                 val generatedEvents = generateRecurringInstances(events)
-                val currentState = _uiState.value
-                if (currentState is EventScreenUiState.Success) {
-                    _uiState.value = currentState.copy(uiModel = currentState.uiModel.copy(events = generatedEvents, eventListItems = generatedEvents.map { it.toListItemUiModel() }))
-                } else {
-                    _uiState.value = EventScreenUiState.Success(EventScreenUiModel(generatedEvents, generatedEvents.map { it.toListItemUiModel() }, emptyList(), emptyList(), emptyList(), null, Event()))
-                }
+                val generatedTasks = generateRecurringInstancesTask(tasks)
+                EventScreenUiModel(generatedEvents, generatedEvents.map { it.toListItemUiModel() }, tasks = generatedTasks, taskListItems = generatedTasks.map { it.toListItemUiModel() }, emptyList(), null, Event())
             }
-        }
-        viewModelScope.launch {
-            taskRepository.getAllTasks().collectLatest { tasks ->
-                val currentState = _uiState.value
-                if (currentState is EventScreenUiState.Success) {
-                    _uiState.value = currentState.copy(uiModel = currentState.uiModel.copy(tasks = tasks, taskListItems = tasks.map { it.toListItemUiModel() }))
+                .collect { eventScreenUiModel ->
+
+                    val currentState = _uiState.value
+
+                    if (currentState is EventScreenUiState.Success) {
+                        _uiState.value = currentState.copy(uiModel = eventScreenUiModel)
+                    } else {
+                        _uiState.value = EventScreenUiState.Success(eventScreenUiModel)
+                    }
                 }
-            }
+
         }
     }
 
@@ -240,6 +244,35 @@ class EventViewModel @Inject constructor(
         }
         return instances
     }
+    private fun generateRecurringInstancesTask(tasks: List<Task>): List<Task> {
+        val instances = mutableListOf<Task>()
+        val now = LocalDateTime.now()
+        val windowStart = now.minusMonths(2)
+        val windowEnd = now.plusMonths(2)
+
+        for (task in tasks) {
+            if (task.recurrenceRule != null && task.due != null) {
+                val rule = RecurrenceRule(task.recurrenceRule)
+                val startMillis = task.due.toMillis()
+                val iterator = rule.iterator(startMillis, TimeZone.getDefault())
+
+                while (iterator.hasNext()) {
+                    val nextMillis = iterator.nextMillis()
+                    if (nextMillis > windowEnd.toMillis()) {
+                        break
+                    }
+                    if (nextMillis >= windowStart.toMillis()) {
+                        val instanceStart = LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(nextMillis), ZoneId.systemDefault())
+                        instances.add(task.copy(id = null, due = instanceStart, recurrenceRule = null))
+                    }
+                }
+            } else {
+                instances.add(task)
+            }
+        }
+        return instances
+    }
+
 
 
 }

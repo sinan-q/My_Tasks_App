@@ -1,10 +1,9 @@
 package com.sinxn.mytasks.data.repository
 
-import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.data.local.dao.TaskDao
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,15 +17,8 @@ class TaskRepository @Inject constructor(
     override fun getArchivedTasks(): Flow<List<Task>> = taskDao.getArchivedTasks()
 
     override fun getAllTasksSorted(): Flow<List<Task>> = taskDao.getAllTasksSorted()
-    override fun getTasksWithDueDate(): Flow<List<Task>> {
-        return taskDao.getAllTasks().map { tasks ->
-            val now = LocalDateTime.now()
-            tasks.filter { it.due != null && !it.isCompleted }
-                .sortedWith(
-                    compareBy<Task> { it.due!! < now }.reversed() 
-                        .thenBy { it.due }
-                )
-        }
+    override fun getTasksWithDueDate(limit: Int): Flow<List<Task>> {
+        return taskDao.getTasksWithDueDate()
     }
 
     override fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>> {

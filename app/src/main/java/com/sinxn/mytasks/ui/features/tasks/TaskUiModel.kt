@@ -21,7 +21,7 @@ data class TaskListItemUiModel(
 fun Task.toListItemUiModel(): TaskListItemUiModel {
     val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
     return TaskListItemUiModel(
-        id = this.id!!, // Assuming id is never null for a task in a list
+        id = this.id?: 0L,
         title = this.title,
         isCompleted = this.isCompleted,
         formattedDueDate = this.due?.format(formatter)

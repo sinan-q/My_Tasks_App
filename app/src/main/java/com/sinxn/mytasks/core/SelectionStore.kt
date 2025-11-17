@@ -5,9 +5,12 @@ import com.sinxn.mytasks.data.local.entities.ItemType
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Pinned
 import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.usecase.folder.FolderUseCases
+import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
 import com.sinxn.mytasks.domain.usecase.pinned.PinnedUseCases
 import com.sinxn.mytasks.domain.usecase.selection.DeleteSelectionUseCase
 import com.sinxn.mytasks.domain.usecase.selection.PasteSelectionUseCase
+import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -18,7 +21,10 @@ import javax.inject.Singleton
 class SelectionStore @Inject constructor(
     private val pasteSelectionUseCase: PasteSelectionUseCase,
     private val deleteSelectionUseCase: DeleteSelectionUseCase,
-    private val pinnedUseCases: PinnedUseCases
+    private val pinnedUseCases: PinnedUseCases,
+    private val noteUseCases: NoteUseCases,
+    private val taskUseCases: TaskUseCases,
+    private val folderUseCases: FolderUseCases
 ) {
     private val _selectedTasks = MutableStateFlow<Set<Task>>(emptySet())
     val selectedTasks: StateFlow<Set<Task>> = _selectedTasks
@@ -61,6 +67,8 @@ class SelectionStore @Inject constructor(
             is SelectionAction.None -> clearSelection()
             is SelectionAction.Paste -> pasteSelection(action.folderId)
             is SelectionAction.Pin -> togglePinSelection()
+            is SelectionAction.Archive -> toggleArchiveSelection(true)
+            is SelectionAction.Unarchive -> toggleArchiveSelection(false)
             is SelectionAction.DeleteConfirm -> deleteSelection(action.confirm)
 
         }
@@ -106,6 +114,24 @@ class SelectionStore @Inject constructor(
         clearSelection()
     }
 
+    private suspend fun toggleArchiveSelection(archive: Boolean) {
+        val noteIds = _selectedNotes.value.mapNotNull { it.id }
+        val taskIds = _selectedTasks.value.mapNotNull { it.id }
+        val folderIds = _selectedFolders.value.map { it.folderId }
+
+        if (archive) {
+            if (noteIds.isNotEmpty()) noteUseCases.archiveNotes(noteIds)
+            if (taskIds.isNotEmpty()) taskUseCases.archiveTasks(taskIds)
+            if (folderIds.isNotEmpty()) folderUseCases.archiveFolders(folderIds)
+        } else {
+            if (noteIds.isNotEmpty()) noteUseCases.unarchiveNotes(noteIds)
+            if (taskIds.isNotEmpty()) taskUseCases.unarchiveTasks(taskIds)
+            if (folderIds.isNotEmpty()) folderUseCases.unarchiveFolders(folderIds)
+        }
+
+        clearSelection()
+    }
+
     private fun updateSelectionCount() {
         _selectionCount.value = _selectedTasks.value.size + _selectedNotes.value.size + _selectedFolders.value.size
     }
@@ -138,4 +164,6 @@ sealed class SelectionAction {
     data class DeleteConfirm(val confirm: Boolean) : SelectionAction()
     data object None : SelectionAction()
     data object Pin : SelectionAction()
+    data object Archive : SelectionAction()
+    data object Unarchive : SelectionAction()
 }

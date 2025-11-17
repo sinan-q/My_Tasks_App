@@ -23,8 +23,8 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE isArchived = 0 AND due BETWEEN :startOfMonth AND :endOfMonth ORDER BY due ASC")
     fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>>
-    @Query("SELECT * FROM tasks WHERE isArchived = 0 AND isCompleted = 0 AND due IS NOT NULL")
-    fun getTasksWithDueDate(): Flow<List<Task>>
+    @Query("SELECT * FROM tasks WHERE isArchived = 0 AND isCompleted = 0 AND due IS NOT NULL ORDER BY due ASC LIMIT :limit ")
+    fun getTasksWithDueDate(limit: Int = 10): Flow<List<Task>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertTask(task: Task): Long
