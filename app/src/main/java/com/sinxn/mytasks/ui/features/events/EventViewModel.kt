@@ -110,13 +110,11 @@ class EventViewModel @Inject constructor(
                     folders = emptyList(),
                     folder =  null,
                     event = Event(),
-                    eventsOnMonth = generatedEvents.filter { it.start?.dayOfMonth == LocalDateTime.now().dayOfMonth }.map { it.toListItemUiModel() },
-                    taskOnMonth = generatedTasks.filter { it.due?.dayOfMonth == LocalDateTime.now().dayOfMonth }.map { it.toListItemUiModel() } ,
-                    month = YearMonth.now()
                 )
             }
             .collect { eventScreenUiModel ->
                 _uiState.value = eventScreenUiModel
+                onMonthChange(YearMonth.now())
             }
         }
     }
