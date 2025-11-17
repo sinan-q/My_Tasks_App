@@ -16,10 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,12 +37,10 @@ fun EventListScreen(
     eventViewModel: EventViewModel = hiltViewModel(),
     navController: NavController,
 ) {
-    val upcomingEvents = eventViewModel.upcomingEvents.collectAsState()
     val uiState by eventViewModel.uiState.collectAsState()
 
     // Define a very large range for "infinite" swiping.
     // Pager works with indices. We'll map these indices to YearMonth.
-    val initialMonth = YearMonth.now()
     val pageCount = Int.MAX_VALUE // Effectively "infinite"
     val initialPage = pageCount / 2 // Start in the middle
     val scope = rememberCoroutineScope()
@@ -55,21 +50,17 @@ fun EventListScreen(
     )
 
     // State to hold the YearMonth derived from the current pager page
-    var currentDisplayMonth by remember { mutableStateOf(initialMonth) }
-
     // Update currentDisplayMonth when the pager's currentPage changes
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }
             .map { pageIndex ->
                 // Calculate month based on page index relative to the initial month
                 val monthOffset = pageIndex - initialPage
-                initialMonth.plusMonths(monthOffset.toLong())
+                YearMonth.now().plusMonths(monthOffset.toLong())
             }
             .distinctUntilChanged()
             .collect { month ->
-                currentDisplayMonth = month
-                // Optional: You might want to trigger data loading for this new month here
-                // homeViewModel.loadDiariesForMonth(month)
+                eventViewModel.onAction(AddEditEventAction.OnMonthChange(month))
             }
     }
     Scaffold(
@@ -85,71 +76,54 @@ fun EventListScreen(
             }
         }
     ) { paddingValues ->
-        when (val state = uiState) {
-            is EventScreenUiState.Loading -> {
-                Text("Loading...")
-            }
-
-            is EventScreenUiState.Error -> {
-                Text(state.message)
-            }
-
-            is EventScreenUiState.Success -> {
-                val events = state.uiModel.events
-                val tasks = state.uiModel.tasks
-                LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxWidth()) {
-                    item {
-                        MonthYearHeader(
-                            currentMonth = currentDisplayMonth,
-                            onPreviousMonth = {
-                                // Animate to previous page
-                                // This requires a coroutine scope
-                                // rememberCoroutineScope().launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
-                                // For simplicity now, direct change, but animation is better
-                                currentDisplayMonth = currentDisplayMonth.minusMonths(1)
-                                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
-                                // You would need to calculate the target page and scroll the pager
-                            },
-                            onNextMonth = {
-                                currentDisplayMonth = currentDisplayMonth.plusMonths(1)
-                                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
-                                // You would need to calculate the target page and scroll the pager
-                            }
-                        )
-
-                        HorizontalPager(
-                            state = pagerState,
-                            //modifier = Modifier.weight(1f) // Ensure Pager takes available space
-                        ) { pageIndex ->
-                            // Calculate the YearMonth for the current page
-                            val monthOffset = pageIndex - initialPage
-                            val pageMonth = initialMonth.plusMonths(monthOffset.toLong())
-
-                            // Pass this specific month to your CalendarGrid
-                            // CalendarGrid will now be responsible for rendering only ONE month
-                            CalendarGrid(
-                                tasks = tasks.filter {
-                                    // Filter diaries for the specific month being displayed by this pager page
-                                    it.due?.let { YearMonth.from(it) == pageMonth } == true
-                                },
-                                events = events.filter {
-                                    // Filter diaries for the specific month being displayed by this pager page
-                                    it.start?.let { YearMonth.from(it) == pageMonth } == true
-                                },
-                                displayMonth = pageMonth, // Pass the month this grid should display
-                                onClick = { navController.navigate(Event.Add.byDate(it)) }
-                            )
-                        }
-                        MyTitle(text = "Upcoming Events")
+        val events = uiState.eventListItems
+        val tasks = uiState.taskListItems
+        LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxWidth()) {
+            item {
+                MonthYearHeader(
+                    currentMonth = uiState.month,
+                    onPreviousMonth = {
+                        // Animate to previous page
+                        // This requires a coroutine scope
+                        // rememberCoroutineScope().launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+                        // For simplicity now, direct change, but animation is better
+                        eventViewModel.onAction(AddEditEventAction.OnMonthChange(uiState.month.minusMonths(1)))
+                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+                        // You would need to calculate the target page and scroll the pager
+                    },
+                    onNextMonth = {
+                        eventViewModel.onAction(AddEditEventAction.OnMonthChange(uiState.month.plusMonths(1)))
+                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                        // You would need to calculate the target page and scroll the pager
                     }
+                )
 
-                    items(upcomingEvents.value) { event ->
-                        EventSmallItem(event = event, modifier = Modifier.animateItem(), onClick = {
-                            event.id.let { navController.navigate(Event.get(it)) }
-                        })
-                    }
+                HorizontalPager(
+                    state = pagerState,
+                    //modifier = Modifier.weight(1f) // Ensure Pager takes available space
+                ) { pageIndex ->
+                    // Calculate the YearMonth for the current page
+                    val monthOffset = pageIndex - initialPage
+                    val pageMonth = YearMonth.now().plusMonths(monthOffset.toLong())
 
+
+
+                    // Pass this specific month to your CalendarGrid
+                    // CalendarGrid will now be responsible for rendering only ONE month
+                    CalendarGrid(
+                        tasks = uiState.taskOnMonth,
+                        events = uiState.eventsOnMonth,
+                        displayMonth = pageMonth, // Pass the month this grid should display
+                        onClick = { navController.navigate(Event.Add.byDate(it)) }
+                    )
                 }
+                MyTitle(text = "Events on this month")
+            }
+
+            items(uiState.eventsOnMonth) { event ->
+                EventSmallItem(event = event, modifier = Modifier.animateItem(), onClick = {
+                    event.id.let { navController.navigate(Event.get(it)) }
+                })
             }
         }
     }

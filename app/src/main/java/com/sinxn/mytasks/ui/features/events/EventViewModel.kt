@@ -16,38 +16,32 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.dmfs.rfc5545.recur.RecurrenceRule
+import java.time.Duration
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.YearMonth
 import java.time.ZoneId
 import java.util.TimeZone
 import javax.inject.Inject
 
 data class EventScreenUiModel(
-    val events: List<Event>,
-    val eventListItems: List<EventListItemUiModel>,
-    val tasks: List<Task>,
-    val taskListItems: List<TaskListItemUiModel>,
-    val folders: List<Folder>,
-    val folder: Folder?,
-    val event: Event,
-)
+    val eventListItems: List<EventListItemUiModel> = emptyList(),
+    val month: YearMonth = YearMonth.now(),
+    val eventsOnMonth: List<EventListItemUiModel> = emptyList(),
+    val taskListItems: List<TaskListItemUiModel> = emptyList(),
+    val taskOnMonth: List<TaskListItemUiModel> = emptyList(),
 
-sealed class EventScreenUiState {
-    object Loading : EventScreenUiState()
-    data class Success(
-        val uiModel: EventScreenUiModel
-    ) : EventScreenUiState()
-    data class Error(val message: String) : EventScreenUiState()
-}
+    val folders: List<Folder> = emptyList(),
+    val folder: Folder? = null,
+    val event: Event = Event(),
+)
 
 @HiltViewModel
 class EventViewModel @Inject constructor(
@@ -56,14 +50,9 @@ class EventViewModel @Inject constructor(
     private val folderRepository: FolderRepositoryInterface,
 ) : ViewModel() {
 
-    val upcomingEvents = repository.getUpcomingEvents(10).map { events -> events.map { it.toListItemUiModel() } }.stateIn(
-        viewModelScope,
-        SharingStarted.Lazily,
-        emptyList()
-    )
 
-    private val _uiState = MutableStateFlow<EventScreenUiState>(EventScreenUiState.Loading)
-    val uiState: StateFlow<EventScreenUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(EventScreenUiModel())
+    val uiState: StateFlow<EventScreenUiModel> = _uiState.asStateFlow()
 
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
@@ -75,6 +64,7 @@ class EventViewModel @Inject constructor(
             is AddEditEventAction.DeleteEvent -> deleteEvent(action.event)
             is AddEditEventAction.FetchEventById -> fetchEventById(action.eventId)
             is AddEditEventAction.FetchFolderById -> fetchFolderById(action.folderId)
+            is AddEditEventAction.OnMonthChange -> onMonthChange(action.month)
         }
     }
 
@@ -84,11 +74,26 @@ class EventViewModel @Inject constructor(
         }
     }
 
+    private fun onMonthChange(month: YearMonth) {
+        val currentState = _uiState.value
+        _uiState.value = currentState.copy(
+            month = month,
+            eventsOnMonth = currentState.eventListItems.filter {
+                it.month == month
+            },
+            taskOnMonth = currentState.taskListItems.filter {
+                it.month == month
+            }
+        )
+
+    }
+
     private fun onUpdateEvent(event: Event) {
         val currentState = _uiState.value
-        if (currentState is EventScreenUiState.Success) {
-            _uiState.value = currentState.copy(uiModel = currentState.uiModel.copy(event = event))
-        }
+        _uiState.value = currentState.copy(
+            event = event,
+        )
+
     }
 
     init {
@@ -96,24 +101,23 @@ class EventViewModel @Inject constructor(
             combine(
                 repository.getAllEvents(),
                 taskRepository.getAllTasks(),
-
-
             ) { events, tasks ->
                 val generatedEvents = generateRecurringInstances(events)
                 val generatedTasks = generateRecurringInstancesTask(tasks)
-                EventScreenUiModel(generatedEvents, generatedEvents.map { it.toListItemUiModel() }, tasks = generatedTasks, taskListItems = generatedTasks.map { it.toListItemUiModel() }, emptyList(), null, Event())
+                EventScreenUiModel(
+                    eventListItems = generatedEvents.map { it.toListItemUiModel() },
+                    taskListItems = generatedTasks.map { it.toListItemUiModel() },
+                    folders = emptyList(),
+                    folder =  null,
+                    event = Event(),
+                    eventsOnMonth = generatedEvents.filter { it.start?.dayOfMonth == LocalDateTime.now().dayOfMonth }.map { it.toListItemUiModel() },
+                    taskOnMonth = generatedTasks.filter { it.due?.dayOfMonth == LocalDateTime.now().dayOfMonth }.map { it.toListItemUiModel() } ,
+                    month = YearMonth.now()
+                )
             }
-                .collect { eventScreenUiModel ->
-
-                    val currentState = _uiState.value
-
-                    if (currentState is EventScreenUiState.Success) {
-                        _uiState.value = currentState.copy(uiModel = eventScreenUiModel)
-                    } else {
-                        _uiState.value = EventScreenUiState.Success(eventScreenUiModel)
-                    }
-                }
-
+            .collect { eventScreenUiModel ->
+                _uiState.value = eventScreenUiModel
+            }
         }
     }
 
@@ -123,27 +127,12 @@ class EventViewModel @Inject constructor(
             val fetchedFolder = folderRepository.getFolderById(folderId)
             val subFolders = folderRepository.getSubFolders(folderId).first()
             val currentState = _uiState.value
-            if (currentState is EventScreenUiState.Success) {
-                _uiState.value = currentState.copy(
-                    uiModel = currentState.uiModel.copy(
-                        folder = fetchedFolder,
-                        folders = subFolders,
-                        event = currentState.uiModel.event.copy(folderId = folderId)
-                    )
-                )
-            } else {
-                _uiState.value = EventScreenUiState.Success(
-                    EventScreenUiModel(
-                        events = emptyList(),
-                        eventListItems = emptyList(),
-                        tasks = emptyList(),
-                        taskListItems = emptyList(),
-                        folders = subFolders,
-                        folder = fetchedFolder,
-                        event = Event(folderId = folderId)
-                    )
-                )
-            }
+            _uiState.value = currentState.copy(
+                folder = fetchedFolder,
+                folders = subFolders,
+                event = currentState.event.copy(folderId = folderId)
+            )
+
         }
 
     }
@@ -156,23 +145,8 @@ class EventViewModel @Inject constructor(
                 return@launch
             }
             val currentState = _uiState.value
-            if (currentState is EventScreenUiState.Success) {
-                _uiState.value = currentState.copy(uiModel = currentState.uiModel.copy(event = fetchedEvent))
-            } else {
-                val fetchedFolder = folderRepository.getFolderById(fetchedEvent.folderId)
-                val subFolders = folderRepository.getSubFolders(fetchedEvent.folderId).first()
-                _uiState.value = EventScreenUiState.Success(
-                    EventScreenUiModel(
-                        events = emptyList(),
-                        eventListItems = emptyList(),
-                        tasks = emptyList(),
-                        taskListItems = emptyList(),
-                        folders = subFolders,
-                        folder = fetchedFolder,
-                        event = fetchedEvent
-                    )
-                )
-            }
+            _uiState.value = currentState.copy(event = fetchedEvent)
+
             fetchFolderById(fetchedEvent.folderId)
         }
     }
@@ -232,8 +206,8 @@ class EventViewModel @Inject constructor(
                         break
                     }
                     if (nextMillis >= windowStart.toMillis()) {
-                        val duration = java.time.Duration.between(event.start, event.end).toMillis()
-                        val instanceStart = LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(nextMillis), ZoneId.systemDefault())
+                        val duration = Duration.between(event.start, event.end).toMillis()
+                        val instanceStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(nextMillis), ZoneId.systemDefault())
                         val instanceEnd = instanceStart.plusNanos(duration * 1_000_000)
                         instances.add(event.copy(id = null, start = instanceStart, end = instanceEnd, recurrenceRule = null))
                     }
@@ -262,7 +236,7 @@ class EventViewModel @Inject constructor(
                         break
                     }
                     if (nextMillis >= windowStart.toMillis()) {
-                        val instanceStart = LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(nextMillis), ZoneId.systemDefault())
+                        val instanceStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(nextMillis), ZoneId.systemDefault())
                         instances.add(task.copy(id = null, due = instanceStart, recurrenceRule = null))
                     }
                 }

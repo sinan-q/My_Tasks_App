@@ -25,9 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sinxn.mytasks.data.local.entities.Event
-import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.ui.components.RectangleCard
+import com.sinxn.mytasks.ui.features.tasks.TaskListItemUiModel
 import com.sinxn.mytasks.utils.toMillis
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -37,8 +36,8 @@ import kotlin.math.ceil
 
 @Composable
 fun CalendarGrid(
-    events: List<Event>,
-    tasks: List<Task>,
+    events: List<EventListItemUiModel>,
+    tasks: List<TaskListItemUiModel>,
     displayMonth: YearMonth, // The month this grid instance should display
     onClick: (Long) -> Unit,
     // No more onMonthChange needed here, as pager handles month changes
@@ -79,10 +78,10 @@ fun CalendarGrid(
                     if (dayIndex < days.size) {
                         val targetDay = days[dayIndex]
                         val tasksForDay = tasks
-                            .filter { it.due?.toLocalDate() == targetDay }
+                            .filter { it.date == targetDay }
                             .map { it.title }
                         val eventsForDay = events
-                            .filter { it.start?.toLocalDate() == targetDay }
+                            .filter { it.day == targetDay }
                             .map { it.title }
                         // Day is part of the displayMonth if its YearMonth matches
                         val isCurrentDisplayMonth = YearMonth.from(targetDay) == displayMonth

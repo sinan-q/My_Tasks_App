@@ -1,6 +1,8 @@
 package com.sinxn.mytasks.ui.features.tasks
 
 import com.sinxn.mytasks.data.local.entities.Task
+import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 /**
@@ -12,6 +14,8 @@ data class TaskListItemUiModel(
     val title: String,
     val isCompleted: Boolean,
     val formattedDueDate: String?,
+    val month: YearMonth,
+    val date: LocalDate?
 )
 
 /**
@@ -24,6 +28,8 @@ fun Task.toListItemUiModel(): TaskListItemUiModel {
         id = this.id?: 0L,
         title = this.title,
         isCompleted = this.isCompleted,
-        formattedDueDate = this.due?.format(formatter)
+        formattedDueDate = this.due?.format(formatter),
+        month = YearMonth.from(this.due) ?: YearMonth.now(),
+        date = this.due?.toLocalDate()
     )
 }

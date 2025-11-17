@@ -15,5 +15,5 @@ data class Task(
     val timestamp: LocalDateTime = LocalDateTime.now(),
     val due: LocalDateTime? = null,
     val recurrenceRule: String? = null,
-    val isArchived: Boolean = false
+    val isArchived: Boolean = false,
 )
