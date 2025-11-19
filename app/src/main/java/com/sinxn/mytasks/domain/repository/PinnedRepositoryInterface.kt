@@ -1,7 +1,7 @@
 package com.sinxn.mytasks.domain.repository
 
-import com.sinxn.mytasks.data.local.entities.ItemType
-import com.sinxn.mytasks.data.local.entities.Pinned
+import com.sinxn.mytasks.domain.models.ItemType
+import com.sinxn.mytasks.domain.models.Pinned
 import kotlinx.coroutines.flow.Flow
 
 interface PinnedRepositoryInterface {

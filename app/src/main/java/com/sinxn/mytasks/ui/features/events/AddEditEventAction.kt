@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.ui.features.events
 
-import com.sinxn.mytasks.data.local.entities.Event
+import com.sinxn.mytasks.domain.models.Event
 import java.time.YearMonth
 
 sealed class AddEditEventAction {

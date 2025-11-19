@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.ui.features.folders
 
-import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.domain.models.Folder
 
 /**
  * A UI-specific model representing a folder to be displayed in a list.
@@ -18,7 +18,7 @@ data class FolderListItemUiModel(
  */
 fun Folder.toListItemUiModel(): FolderListItemUiModel {
     return FolderListItemUiModel(
-        id = this.folderId!!, // Assuming id is never null for a folder in a list
+        id = this.folderId, // Domain model uses non-null folderId
         name = this.name,
         isLocked = this.isLocked,
     )

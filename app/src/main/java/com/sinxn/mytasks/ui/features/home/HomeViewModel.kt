@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.core.SelectionStore
-import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.data.local.entities.ItemType
+import com.sinxn.mytasks.domain.models.Folder
+import com.sinxn.mytasks.domain.models.ItemType
 import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface

@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.usecase.event
 
-import com.sinxn.mytasks.data.local.entities.Event
+import com.sinxn.mytasks.domain.models.Event
 import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
 
 data class EventUseCases(
@@ -9,10 +9,8 @@ data class EventUseCases(
     val deleteEvent: DeleteEvent,
     val addEvent: AddEvent,
     val getEvent: GetEvent,
-    val archiveEvent: ArchiveEvent,
-    val unarchiveEvent: UnarchiveEvent,
-    val archiveEvents: ArchiveEvents,
-    val unarchiveEvents: UnarchiveEvents,
+    val toggleArchive: ToggleEventArchive,
+    val toggleArchives: ToggleEventsArchive,
 )
 
 class GetEvents(private val repository: EventRepositoryInterface) {
@@ -35,18 +33,15 @@ class GetEvent(private val repository: EventRepositoryInterface) {
     suspend operator fun invoke(id: Long) = repository.getEventById(id)
 }
 
-class ArchiveEvent(private val repository: EventRepositoryInterface) {
-    suspend operator fun invoke(id: Long) = repository.archiveEvent(id)
+class ToggleEventArchive(private val repository: EventRepositoryInterface) {
+    suspend operator fun invoke(id: Long, archive: Boolean) {
+        if (archive) repository.archiveEvent(id) else repository.unarchiveEvent(id)
+    }
 }
 
-class UnarchiveEvent(private val repository: EventRepositoryInterface) {
-    suspend operator fun invoke(id: Long) = repository.unarchiveEvent(id)
-}
-
-class ArchiveEvents(private val repository: EventRepositoryInterface) {
-    suspend operator fun invoke(ids: List<Long>) = repository.archiveEvents(ids)
-}
-
-class UnarchiveEvents(private val repository: EventRepositoryInterface) {
-    suspend operator fun invoke(ids: List<Long>) = repository.unarchiveEvents(ids)
+class ToggleEventsArchive(private val repository: EventRepositoryInterface) {
+    suspend operator fun invoke(ids: List<Long>, archive: Boolean) {
+        if (ids.isEmpty()) return
+        if (archive) repository.archiveEvents(ids) else repository.unarchiveEvents(ids)
+    }
 }

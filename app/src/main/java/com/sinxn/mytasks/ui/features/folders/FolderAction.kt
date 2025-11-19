@@ -1,7 +1,7 @@
 package com.sinxn.mytasks.ui.features.folders
 
 import com.sinxn.mytasks.core.SelectionAction
-import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.domain.models.Folder
 
 sealed class FolderAction {
     data class AddFolder(val folder: Folder) : FolderAction()

@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.core.SelectionStore
-import com.sinxn.mytasks.data.local.entities.Alarm
-import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.models.Alarm
+import com.sinxn.mytasks.domain.models.Task
 import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
@@ -157,10 +157,12 @@ class TaskViewModel @Inject constructor(
                     val time = due.minus(pair.first.toLong(), pair.second).toMillis()
                     alarmRepository.insertAlarm(
                         Alarm(
-                        taskId = taskId,
-                        isTask = true, //TODO Event
-                        time = time
-                    ))
+                            alarmId = 0,
+                            taskId = taskId,
+                            isTask = true, //TODO Event
+                            time = time
+                        )
+                    )
                 }
             }
             showToast(Constants.SAVE_SUCCESS)

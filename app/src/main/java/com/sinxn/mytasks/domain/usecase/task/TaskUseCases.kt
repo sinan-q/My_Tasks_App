@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.usecase.task
 
-import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.models.Task
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 
 data class TaskUseCases(
@@ -9,10 +9,8 @@ data class TaskUseCases(
     val deleteTask: DeleteTask,
     val addTask: AddTask,
     val getTask: GetTask,
-    val archiveTask: ArchiveTask,
-    val unarchiveTask: UnarchiveTask,
-    val archiveTasks: ArchiveTasks,
-    val unarchiveTasks: UnarchiveTasks,
+    val toggleArchive: ToggleTaskArchive,
+    val toggleArchives: ToggleTasksArchive,
 )
 
 class GetTasks(private val repository: TaskRepositoryInterface) {
@@ -35,18 +33,15 @@ class GetTask(private val repository: TaskRepositoryInterface) {
     suspend operator fun invoke(id: Long) = repository.getTaskById(id)
 }
 
-class ArchiveTask(private val repository: TaskRepositoryInterface) {
-    suspend operator fun invoke(id: Long) = repository.archiveTask(id)
+class ToggleTaskArchive(private val repository: TaskRepositoryInterface) {
+    suspend operator fun invoke(id: Long, archive: Boolean) {
+        if (archive) repository.archiveTask(id) else repository.unarchiveTask(id)
+    }
 }
 
-class UnarchiveTask(private val repository: TaskRepositoryInterface) {
-    suspend operator fun invoke(id: Long) = repository.unarchiveTask(id)
-}
-
-class ArchiveTasks(private val repository: TaskRepositoryInterface) {
-    suspend operator fun invoke(ids: List<Long>) = repository.archiveTasks(ids)
-}
-
-class UnarchiveTasks(private val repository: TaskRepositoryInterface) {
-    suspend operator fun invoke(ids: List<Long>) = repository.unarchiveTasks(ids)
+class ToggleTasksArchive(private val repository: TaskRepositoryInterface) {
+    suspend operator fun invoke(ids: List<Long>, archive: Boolean) {
+        if (ids.isEmpty()) return
+        if (archive) repository.archiveTasks(ids) else repository.unarchiveTasks(ids)
+    }
 }

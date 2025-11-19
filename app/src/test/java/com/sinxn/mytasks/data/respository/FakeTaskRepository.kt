@@ -1,7 +1,7 @@
 package com.sinxn.mytasks.data.respository
 
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
-import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.models.Task
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,9 +32,10 @@ class FakeTaskRepository : TaskRepositoryInterface { // Use this interface if yo
         return newId
     }
 
-    override suspend fun deleteTask(task: Task) {
-        tasks.removeIf { it.id == task.id }
+    override suspend fun deleteTask(task: Task): Int {
+        val removed = tasks.removeIf { it.id == task.id }
         tasksFlow.value = tasks.toList()
+        return if (removed) 1 else 0
     }
 
     override suspend fun updateTask(task: Task) {
@@ -58,5 +59,46 @@ class FakeTaskRepository : TaskRepositoryInterface { // Use this interface if yo
         return flow {
             emit(tasks.filter { it.folderId == folderId })
         }
+    }
+
+    override fun getArchivedTasks(): Flow<List<Task>> = flow {
+        emit(tasks.filter { it.isArchived })
+    }
+
+    override fun getTasksWithDueDate(limit: Int): Flow<List<Task>> = flow {
+        emit(tasks.filter { it.due != null }.take(limit))
+    }
+
+    override suspend fun insertTasks(tasks: List<Task>) {
+        tasks.forEach { insertTask(it) }
+    }
+
+    override suspend fun deleteTasks(tasks: List<Task>) {
+        tasks.forEach { deleteTask(it) }
+    }
+
+    override suspend fun clearAllTasks() {
+        tasks.clear()
+        tasksFlow.value = emptyList()
+    }
+
+    override suspend fun archiveTask(taskId: Long) {
+        tasks.find { it.id == taskId }?.let {
+            updateTask(it.copy(isArchived = true))
+        }
+    }
+
+    override suspend fun unarchiveTask(taskId: Long) {
+        tasks.find { it.id == taskId }?.let {
+            updateTask(it.copy(isArchived = false))
+        }
+    }
+
+    override suspend fun archiveTasks(taskIds: List<Long>) {
+        taskIds.forEach { archiveTask(it) }
+    }
+
+    override suspend fun unarchiveTasks(taskIds: List<Long>) {
+        taskIds.forEach { unarchiveTask(it) }
     }
 }

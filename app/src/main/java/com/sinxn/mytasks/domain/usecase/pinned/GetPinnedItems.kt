@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.usecase.pinned
 
-import com.sinxn.mytasks.data.local.entities.Pinned
+import com.sinxn.mytasks.domain.models.Pinned
 import com.sinxn.mytasks.domain.repository.PinnedRepositoryInterface
 import kotlinx.coroutines.flow.Flow
 

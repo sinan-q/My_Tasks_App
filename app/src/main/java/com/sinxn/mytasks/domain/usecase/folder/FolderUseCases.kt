@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.usecase.folder
 
-import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 
 data class FolderUseCases(
@@ -9,10 +9,8 @@ data class FolderUseCases(
     val deleteFolder: DeleteFolder,
     val addFolder: AddFolder,
     val getFolder: GetFolder,
-    val archiveFolder: ArchiveFolder,
-    val unarchiveFolder: UnarchiveFolder,
-    val archiveFolders: ArchiveFolders,
-    val unarchiveFolders: UnarchiveFolders,
+    val toggleArchive: ToggleFolderArchive,
+    val toggleArchives: ToggleFoldersArchive,
 )
 
 class GetFolders(private val repository: FolderRepositoryInterface) {
@@ -35,18 +33,15 @@ class GetFolder(private val repository: FolderRepositoryInterface) {
     suspend operator fun invoke(id: Long) = repository.getFolderById(id)
 }
 
-class ArchiveFolder(private val repository: FolderRepositoryInterface) {
-    suspend operator fun invoke(id: Long) = repository.archiveFolder(id)
+class ToggleFolderArchive(private val repository: FolderRepositoryInterface) {
+    suspend operator fun invoke(id: Long, archive: Boolean) {
+        if (archive) repository.archiveFolder(id) else repository.unarchiveFolder(id)
+    }
 }
 
-class UnarchiveFolder(private val repository: FolderRepositoryInterface) {
-    suspend operator fun invoke(id: Long) = repository.unarchiveFolder(id)
-}
-
-class ArchiveFolders(private val repository: FolderRepositoryInterface) {
-    suspend operator fun invoke(ids: List<Long>) = repository.archiveFolders(ids)
-}
-
-class UnarchiveFolders(private val repository: FolderRepositoryInterface) {
-    suspend operator fun invoke(ids: List<Long>) = repository.unarchiveFolders(ids)
+class ToggleFoldersArchive(private val repository: FolderRepositoryInterface) {
+    suspend operator fun invoke(ids: List<Long>, archive: Boolean) {
+        if (ids.isEmpty()) return
+        if (archive) repository.archiveFolders(ids) else repository.unarchiveFolders(ids)
+    }
 }

@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.usecase.folder
 
-import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import javax.inject.Inject
 

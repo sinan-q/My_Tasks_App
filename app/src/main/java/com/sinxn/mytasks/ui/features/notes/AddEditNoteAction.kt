@@ -1,7 +1,7 @@
 package com.sinxn.mytasks.ui.features.notes
 
 import com.sinxn.mytasks.core.SelectionAction
-import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.domain.models.Note
 
 sealed class AddEditNoteAction {
     data class UpdateNote(val note: Note) : AddEditNoteAction()

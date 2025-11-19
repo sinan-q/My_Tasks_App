@@ -28,7 +28,7 @@ class AutoArchiveWorker @AssistedInject constructor(
                 if (rule.expireAfterDueDate) {
                     val task = taskUseCases.getTask(rule.taskId)
                     if (task != null && task.isCompleted && task.due != null && task.due.isBefore(now)) {
-                        taskUseCases.archiveTask(task.id!!)
+                        taskUseCases.toggleArchive(task.id!!, true)
                     }
                 }
             }

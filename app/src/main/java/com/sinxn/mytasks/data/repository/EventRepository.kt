@@ -1,9 +1,12 @@
 package com.sinxn.mytasks.data.repository
 
-import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
 import com.sinxn.mytasks.data.local.dao.EventDao
-import com.sinxn.mytasks.data.local.entities.Event
+import com.sinxn.mytasks.data.mapper.toDomain
+import com.sinxn.mytasks.data.mapper.toEntity
+import com.sinxn.mytasks.domain.models.Event
+import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,40 +15,40 @@ import javax.inject.Singleton
 class EventRepository @Inject constructor(
     private val eventDao: EventDao
 ) : EventRepositoryInterface {
-    override fun getAllEvents(): Flow<List<Event>> = eventDao.getAlLEvents()
+    override fun getAllEvents(): Flow<List<Event>> = eventDao.getAlLEvents().map { it.map { e -> e.toDomain() } }
 
-    override fun getArchivedEvents(): Flow<List<Event>> = eventDao.getArchivedEvents()
+    override fun getArchivedEvents(): Flow<List<Event>> = eventDao.getArchivedEvents().map { it.map { e -> e.toDomain() } }
 
     override fun getEventsByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Event>> {
-        return eventDao.getEventsByMonth(startOfMonth, endOfMonth)
+        return eventDao.getEventsByMonth(startOfMonth, endOfMonth).map { it.map { e -> e.toDomain() } }
     }
     override suspend fun insertEvent(event: Event) {
-        eventDao.insertEvent(event)
+        eventDao.insertEvent(event.toEntity())
     }
     override suspend fun insertEvents(events: List<Event>) {
-        eventDao.insertEvents(events)
+        eventDao.insertEvents(events.map { it.toEntity() })
     }
     override suspend fun clearAllEvents() {
         eventDao.clearAllEvents()
     }
 
-    override suspend fun deleteEvent(event: Event) = eventDao.deleteEvent(event)
+    override suspend fun deleteEvent(event: Event) = eventDao.deleteEvent(event.toEntity())
 
 
     override suspend fun updateEvent(event: Event) {
-        eventDao.updateEvent(event)
+        eventDao.updateEvent(event.toEntity())
     }
 
     override suspend fun getEventById(eventId: Long): Event? {
-        return eventDao.getEventById(eventId)
+        return eventDao.getEventById(eventId)?.toDomain()
     }
 
     override fun getEventsByFolderId(folderId: Long?): Flow<List<Event>> {
-        return eventDao.getEventsByFolderId(folderId)
+        return eventDao.getEventsByFolderId(folderId).map { it.map { e -> e.toDomain() } }
     }
 
     override fun getUpcomingEvents(limit: Int): Flow<List<Event>> {
-        return eventDao.getUpcomingEvents(LocalDateTime.now(), limit)
+        return eventDao.getUpcomingEvents(LocalDateTime.now(), limit).map { it.map { e -> e.toDomain() } }
 
     }
 

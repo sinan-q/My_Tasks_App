@@ -1,8 +1,8 @@
 package com.sinxn.mytasks.domain.usecase.selection
 
-import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.models.Folder
+import com.sinxn.mytasks.domain.models.Note
+import com.sinxn.mytasks.domain.models.Task
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface

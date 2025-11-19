@@ -38,7 +38,7 @@ import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
-import com.sinxn.mytasks.ui.navigation.Routes
+import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.collectLatest
 import showBiometricsAuthentication
 
@@ -85,7 +85,13 @@ fun NoteListScreen(
 
                     )
                 }
-                RectangleFAB(onClick = { navController.navigate(Routes.Note.Add.byFolder(0)) }) {
+                RectangleFAB(onClick = {
+                    navController.navigate(
+                        NavRouteHelpers.routeFor(
+                            NavRouteHelpers.NoteArgs(noteId = -1L, folderId = 0L)
+                        )
+                    )
+                }) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add Note")
                 }
             }
@@ -154,7 +160,13 @@ fun NoteListScreen(
                                 NoteItem(
                                     note = note,
                                     path = path,
-                                    onClick = { navController.navigate(Routes.Note.get(note.id)) },
+                                    onClick = {
+                                        navController.navigate(
+                                            NavRouteHelpers.routeFor(
+                                                NavRouteHelpers.NoteArgs(noteId = note.id, folderId = 0L)
+                                            )
+                                        )
+                                    },
                                     onHold = { viewModel.onSelectionNote(note.id) },
                                     selected = selectedNotes.any { it.id == note.id },
                                     modifier = Modifier.animateItem()

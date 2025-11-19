@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.usecase.expired_task
 
-import com.sinxn.mytasks.data.local.entities.ExpiredTask
+import com.sinxn.mytasks.domain.models.ExpiredTask
 import com.sinxn.mytasks.domain.repository.ExpiredTaskRepositoryInterface
 import kotlinx.coroutines.flow.Flow
 

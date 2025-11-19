@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.ui.features.events
 
-import com.sinxn.mytasks.data.local.entities.Event
+import com.sinxn.mytasks.domain.models.Event
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -33,7 +33,7 @@ fun Event.toListItemUiModel(): EventListItemUiModel {
         title = this.title,
         startDay = this.start?.dayOfMonth?.toString()?:"Error",
         startMonth = this.start?.month?.getDisplayName(TextStyle.SHORT, Locale.getDefault())?:"Error",
-        month = YearMonth.from(this.start ) ?: YearMonth.now(),
+        month = this.start?.let { YearMonth.from(it) } ?: YearMonth.now(),
         day = this.start?.toLocalDate() ?: LocalDate.now(),
         formattedDuration = this.start?.let { start ->
             val end = this.end

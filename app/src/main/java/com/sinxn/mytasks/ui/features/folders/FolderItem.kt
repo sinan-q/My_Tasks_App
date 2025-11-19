@@ -41,7 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.RectangleButton
 import showBiometricsAuthentication

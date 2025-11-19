@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.ui.features.tasks
 
-import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.models.Task
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter

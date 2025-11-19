@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.repository
 
-import com.sinxn.mytasks.data.local.entities.Event
+import com.sinxn.mytasks.domain.models.Event
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 

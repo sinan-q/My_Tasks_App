@@ -2,9 +2,9 @@ package com.sinxn.mytasks.ui.features.events
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.data.local.entities.Event
-import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.models.Event
+import com.sinxn.mytasks.domain.models.Folder
+import com.sinxn.mytasks.domain.models.Task
 import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface

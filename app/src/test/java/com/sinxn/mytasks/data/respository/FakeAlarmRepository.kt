@@ -2,7 +2,7 @@
 package com.sinxn.mytasks.data.respository
 
 import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
-import com.sinxn.mytasks.data.local.entities.Alarm
+import com.sinxn.mytasks.domain.models.Alarm
 import com.sinxn.mytasks.utils.toMillis
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicLong
@@ -43,5 +43,13 @@ class FakeAlarmRepository : AlarmRepositoryInterface {
 
     override suspend fun getUpcomingAlarms(): List<Alarm> {
         return alarms.filter { it.time >= LocalDateTime.now().toMillis() }
+    }
+
+    override suspend fun insertAlarms(alarms: List<Alarm>) {
+        alarms.forEach { insertAlarm(it) }
+    }
+
+    override suspend fun clearAllAlarms() {
+        alarms.clear()
     }
 }

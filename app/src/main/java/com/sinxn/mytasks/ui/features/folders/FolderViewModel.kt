@@ -3,7 +3,7 @@ package com.sinxn.mytasks.ui.features.folders
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionStore
-import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface

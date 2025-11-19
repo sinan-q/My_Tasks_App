@@ -42,7 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionAction
-import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
@@ -51,7 +51,7 @@ import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.features.notes.NoteItem
 import com.sinxn.mytasks.ui.features.tasks.TaskItem
-import com.sinxn.mytasks.ui.navigation.Routes
+import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -253,7 +253,13 @@ fun FolderListScreen(
                     ) { task ->
                         TaskItem(
                             task = task,
-                            onClick = { navController.navigate(Routes.Task.get(task.id)) },
+                            onClick = {
+                                navController.navigate(
+                                    NavRouteHelpers.routeFor(
+                                        NavRouteHelpers.TaskArgs(taskId = task.id, folderId = 0L)
+                                    )
+                                )
+                            },
                             onHold = { folderViewModel.onSelectionTask(task.id) },
                             onUpdate = { status -> folderViewModel.onAction(FolderAction.UpdateTaskStatus(task.id, status)) },
                             path = null,
@@ -264,7 +270,13 @@ fun FolderListScreen(
                     items(items = notes, key = { note -> "note_${note.id}" }) { note ->
                         NoteItem(
                             note = note,
-                            onClick = { navController.navigate(Routes.Note.get(note.id)) },
+                            onClick = {
+                                navController.navigate(
+                                    NavRouteHelpers.routeFor(
+                                        NavRouteHelpers.NoteArgs(noteId = note.id, folderId = 0L)
+                                    )
+                                )
+                            },
                             onHold = { folderViewModel.onSelectionNote(note.id) },
                             selected = selectedNotes.any { it.id == note.id },
                             modifier = Modifier.animateItem()

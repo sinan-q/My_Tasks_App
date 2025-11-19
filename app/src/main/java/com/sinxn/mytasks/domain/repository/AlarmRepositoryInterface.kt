@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.repository
 
-import com.sinxn.mytasks.data.local.entities.Alarm
+import com.sinxn.mytasks.domain.models.Alarm
 
 interface AlarmRepositoryInterface {
     suspend fun getAlarms(): List<Alarm>

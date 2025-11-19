@@ -22,9 +22,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.sinxn.mytasks.R
-import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.ui.navigation.Routes
-import com.sinxn.mytasks.ui.navigation.Routes.Event
+import com.sinxn.mytasks.domain.models.Folder
+import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 
 
 @Composable
@@ -43,9 +42,27 @@ fun ShowOptionsFAB(
             visible = isOptionsVisible,
         ) {
             OptionsColumn(
-                onAddTaskClick = { navController.navigate(Routes.Task.Add.byFolder(currentFolder.folderId))  },
-                onAddNoteClick = { navController.navigate(Routes.Note.Add.byFolder(currentFolder.folderId))},
-                onAddEventClick = { navController.navigate(Event.Add.byFolder(currentFolder.folderId))  },
+                onAddTaskClick = {
+                    navController.navigate(
+                        NavRouteHelpers.routeFor(
+                            NavRouteHelpers.TaskArgs(taskId = -1L, folderId = currentFolder.folderId)
+                        )
+                    )
+                },
+                onAddNoteClick = {
+                    navController.navigate(
+                        NavRouteHelpers.routeFor(
+                            NavRouteHelpers.NoteArgs(noteId = -1L, folderId = currentFolder.folderId)
+                        )
+                    )
+                },
+                onAddEventClick = {
+                    navController.navigate(
+                        NavRouteHelpers.routeFor(
+                            NavRouteHelpers.EventArgs(eventId = -1L, folderId = currentFolder.folderId, date = -1L)
+                        )
+                    )
+                },
                 onAddFolderClick = onAddFolderClick,
                 onCloseOptions = { isOptionsVisible = false }
             )

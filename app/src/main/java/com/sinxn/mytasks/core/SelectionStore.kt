@@ -1,10 +1,10 @@
 package com.sinxn.mytasks.core
 
-import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.data.local.entities.ItemType
-import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.data.local.entities.Pinned
-import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.models.Folder
+import com.sinxn.mytasks.domain.models.ItemType
+import com.sinxn.mytasks.domain.models.Note
+import com.sinxn.mytasks.domain.models.Pinned
+import com.sinxn.mytasks.domain.models.Task
 import com.sinxn.mytasks.domain.usecase.folder.FolderUseCases
 import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
 import com.sinxn.mytasks.domain.usecase.pinned.PinnedUseCases
@@ -86,31 +86,24 @@ class SelectionStore @Inject constructor(
     }
 
     suspend fun togglePinSelection() {
-        val itemsToPin = mutableListOf<Pinned>()
-        val itemsToUnpin = mutableListOf<Pinned>()
+        data class PinCandidate(val itemId: Long, val type: ItemType)
 
-        _selectedNotes.value.forEach { note -> note.id?.let {
-            val pin = Pinned(itemId = note.id, itemType = ItemType.NOTE)
-            val isExisting = pinnedUseCases.isPinned(pin.itemId, pin.itemType)
-            if (isExisting == null ) itemsToPin.add(pin) else itemsToUnpin.add(isExisting)
-        }}
-        _selectedTasks.value.forEach { task -> task.id?.let {
-            val pin = Pinned(itemId = task.id, itemType = ItemType.TASK)
-            val isExisting = pinnedUseCases.isPinned(pin.itemId, pin.itemType)
-            if (isExisting == null ) itemsToPin.add(pin) else itemsToUnpin.add(isExisting)
-        }}
-        _selectedFolders.value.forEach { folder ->
-            val pin = Pinned(itemId = folder.folderId, itemType = ItemType.FOLDER)
-            val isExisting = pinnedUseCases.isPinned(pin.itemId, pin.itemType)
-            if (isExisting == null ) itemsToPin.add(pin) else itemsToUnpin.add(isExisting)
+        fun toCandidates(): List<PinCandidate> = buildList {
+            addAll(_selectedNotes.value.mapNotNull { it.id?.let { id -> PinCandidate(id, ItemType.NOTE) } })
+            addAll(_selectedTasks.value.mapNotNull { it.id?.let { id -> PinCandidate(id, ItemType.TASK) } })
+            addAll(_selectedFolders.value.map { PinCandidate(it.folderId, ItemType.FOLDER) })
         }
 
-        if (itemsToPin.isNotEmpty()) {
-            pinnedUseCases.insertPinnedItems(itemsToPin)
+        val toPin = mutableListOf<Pinned>()
+        val toUnpin = mutableListOf<Pinned>()
+
+        toCandidates().forEach { c ->
+            val existing = pinnedUseCases.isPinned(c.itemId, c.type)
+            if (existing == null) toPin.add(Pinned(itemId = c.itemId, itemType = c.type)) else toUnpin.add(existing)
         }
-        if (itemsToUnpin.isNotEmpty()) {
-            pinnedUseCases.deletePinnedItems(itemsToUnpin)
-        }
+
+        if (toPin.isNotEmpty()) pinnedUseCases.insertPinnedItems(toPin)
+        if (toUnpin.isNotEmpty()) pinnedUseCases.deletePinnedItems(toUnpin)
         clearSelection()
     }
 
@@ -119,15 +112,9 @@ class SelectionStore @Inject constructor(
         val taskIds = _selectedTasks.value.mapNotNull { it.id }
         val folderIds = _selectedFolders.value.map { it.folderId }
 
-        if (archive) {
-            if (noteIds.isNotEmpty()) noteUseCases.archiveNotes(noteIds)
-            if (taskIds.isNotEmpty()) taskUseCases.archiveTasks(taskIds)
-            if (folderIds.isNotEmpty()) folderUseCases.archiveFolders(folderIds)
-        } else {
-            if (noteIds.isNotEmpty()) noteUseCases.unarchiveNotes(noteIds)
-            if (taskIds.isNotEmpty()) taskUseCases.unarchiveTasks(taskIds)
-            if (folderIds.isNotEmpty()) folderUseCases.unarchiveFolders(folderIds)
-        }
+        if (noteIds.isNotEmpty()) noteUseCases.toggleArchives(noteIds, archive)
+        if (taskIds.isNotEmpty()) taskUseCases.toggleArchives(taskIds, archive)
+        if (folderIds.isNotEmpty()) folderUseCases.toggleArchives(folderIds, archive)
 
         clearSelection()
     }

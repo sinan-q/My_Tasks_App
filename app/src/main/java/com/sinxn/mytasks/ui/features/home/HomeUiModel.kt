@@ -1,9 +1,6 @@
 package com.sinxn.mytasks.ui.features.home
 
-import com.sinxn.mytasks.data.local.entities.Event
-import com.sinxn.mytasks.data.local.entities.Folder
-import com.sinxn.mytasks.data.local.entities.Note
-import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.ui.features.events.EventListItemUiModel
 import com.sinxn.mytasks.ui.features.events.toListItemUiModel
 import com.sinxn.mytasks.ui.features.folders.FolderListItemUiModel

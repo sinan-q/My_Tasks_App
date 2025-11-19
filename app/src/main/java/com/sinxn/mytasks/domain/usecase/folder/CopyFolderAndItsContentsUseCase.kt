@@ -1,9 +1,9 @@
 package com.sinxn.mytasks.domain.usecase.folder
 
+import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
-import com.sinxn.mytasks.data.local.entities.Folder
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
@@ -21,9 +21,7 @@ class CopyFolderAndItsContentsUseCase @Inject constructor(
         val tasksInFolder = taskRepository.getTasksByFolderId(folder.folderId).first()
         tasksInFolder.forEach { task -> taskRepository.insertTask(task.copy(id = null, folderId = newFolder)) }
 
-        // Recursively copy subfolders and their contents logic...
-        val subfolders = folderRepository.getSubFolders(folder.folderId)
-            .first() // Use .first() if you expect the flow to emit once and complete or you need the current list
+        val subfolders = folderRepository.getSubFolders(folder.folderId).first()
         subfolders.forEach { subfolder -> invoke(subfolder, newFolder) }
     }
 }

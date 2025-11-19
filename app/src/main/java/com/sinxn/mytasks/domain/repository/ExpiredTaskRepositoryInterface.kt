@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.repository
 
-import com.sinxn.mytasks.data.local.entities.ExpiredTask
+import com.sinxn.mytasks.domain.models.ExpiredTask
 import kotlinx.coroutines.flow.Flow
 
 interface ExpiredTaskRepositoryInterface {

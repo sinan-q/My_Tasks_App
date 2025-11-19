@@ -1,8 +1,10 @@
 package com.sinxn.mytasks.data.repository
 
-import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
 import com.sinxn.mytasks.data.local.dao.AlarmDao
-import com.sinxn.mytasks.data.local.entities.Alarm
+import com.sinxn.mytasks.data.mapper.toDomain
+import com.sinxn.mytasks.data.mapper.toEntity
+import com.sinxn.mytasks.domain.models.Alarm
+import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
 import com.sinxn.mytasks.ui.features.alarms.broadcastReceivers.AlarmScheduler
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -14,18 +16,20 @@ class AlarmRepository @Inject constructor(
     private val alarmScheduler: AlarmScheduler,
 
     ): AlarmRepositoryInterface {
-    override suspend fun getAlarms(): List<Alarm> = alarmDao.getAlarms()
+    override suspend fun getAlarms(): List<Alarm> = alarmDao.getAlarms().map { it.toDomain() }
 
     override suspend fun insertAlarm(alarm: Alarm) {
-        val alarmId = alarmDao.insertAlarm(alarm)
+        val alarmId = alarmDao.insertAlarm(alarm.toEntity())
         if (alarmId != -1L) {
-            alarmScheduler.scheduleAlarm(alarm.copy(
-                alarmId = alarmId
-            ))
+            alarmScheduler.scheduleAlarm(
+                alarm.copy(
+                    alarmId = alarmId
+                )
+            )
         }
     }
     override suspend fun insertAlarms(alarms: List<Alarm>) {
-        alarmDao.insertAlarms(alarms)
+        alarmDao.insertAlarms(alarms.map { it.toEntity() })
     }
     override suspend fun clearAllAlarms() {
         alarmDao.clearAllAlarms()
@@ -38,16 +42,16 @@ class AlarmRepository @Inject constructor(
 
     override suspend fun deleteAlarm(id: Long) {
         val alarm = alarmDao.getAlarmById(id)
-        alarmScheduler.cancelAlarm(alarm)
+        alarmScheduler.cancelAlarm(alarm.toDomain())
         alarmDao.deleteAlarm(alarm)
     }
 
     override suspend fun getAlarmById(alarmId: Long): Alarm {
-        return alarmDao.getAlarmById(alarmId)
+        return alarmDao.getAlarmById(alarmId).toDomain()
     }
 
     override suspend fun getAlarmsByTaskId(taskId: Long): List<Alarm> {
-        return alarmDao.getAlarmsByTaskId(taskId)
+        return alarmDao.getAlarmsByTaskId(taskId).map { it.toDomain() }
     }
 
     override suspend fun cancelAlarmsByTaskId(taskId: Long) {
@@ -58,7 +62,7 @@ class AlarmRepository @Inject constructor(
     }
 
     override suspend fun getUpcomingAlarms(): List<Alarm> {
-        return alarmDao.getUpcomingAlarms(LocalDateTime.now())
+        return alarmDao.getUpcomingAlarms(LocalDateTime.now()).map { it.toDomain() }
 
     }
 }

@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
-import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.models.Task
 import com.sinxn.mytasks.ui.features.alarms.broadcastReceivers.AlarmScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext

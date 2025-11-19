@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.repository
 
-import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.domain.models.Folder
 import kotlinx.coroutines.flow.Flow
 
 interface FolderRepositoryInterface {

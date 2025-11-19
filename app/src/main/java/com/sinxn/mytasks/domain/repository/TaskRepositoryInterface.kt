@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.repository
 
-import com.sinxn.mytasks.data.local.entities.Task
+import com.sinxn.mytasks.domain.models.Task
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
@@ -10,6 +10,7 @@ interface TaskRepositoryInterface {
     fun getAllTasksSorted(): Flow<List<Task>>
     fun getTasksByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Task>>
     fun getTasksWithDueDate(limit: Int = 10): Flow<List<Task>>
+
     suspend fun insertTask(task: Task): Long
     suspend fun insertTasks(tasks: List<Task>)
     suspend fun deleteTask(task: Task): Int

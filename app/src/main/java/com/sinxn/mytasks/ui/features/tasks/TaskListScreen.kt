@@ -37,7 +37,7 @@ import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
-import com.sinxn.mytasks.ui.navigation.Routes
+import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.collectLatest
 import showBiometricsAuthentication
 
@@ -86,7 +86,13 @@ fun TaskListScreen(
 
                     )
                 }
-                RectangleFAB(onClick = { navController.navigate(Routes.Task.Add.byFolder(0L)) }) {
+                RectangleFAB(onClick = {
+                    navController.navigate(
+                        NavRouteHelpers.routeFor(
+                            NavRouteHelpers.TaskArgs(taskId = -1L, folderId = 0L)
+                        )
+                    )
+                }) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add Task")
                 }
             }
@@ -148,7 +154,13 @@ fun TaskListScreen(
                             TaskItem(
                                 task = task,
                                 path = path,
-                                onClick = { navController.navigate(Routes.Task.get(task.id)) },
+                                onClick = {
+                                    navController.navigate(
+                                        NavRouteHelpers.routeFor(
+                                            NavRouteHelpers.TaskArgs(taskId = task.id, folderId = 0L)
+                                        )
+                                    )
+                                },
                                 onUpdate = { task.id.let { it1 -> viewModel.onAction(AddEditTaskAction.UpdateStatusTask(it1, it)) } },
                                 onHold = { viewModel.onSelectionTask(task.id) },
                                 selected = selectedTasks.any { it.id == task.id },

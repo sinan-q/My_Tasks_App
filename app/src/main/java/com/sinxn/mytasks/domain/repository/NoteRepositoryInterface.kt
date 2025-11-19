@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.repository
 
-import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.domain.models.Note
 import kotlinx.coroutines.flow.Flow
 
 interface NoteRepositoryInterface {

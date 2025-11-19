@@ -25,7 +25,7 @@ import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.RectangleFAB
-import com.sinxn.mytasks.ui.navigation.Routes.Event
+import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -71,7 +71,13 @@ fun EventListScreen(
             )
         },
         floatingActionButton = {
-            RectangleFAB(onClick = { navController.navigate(Event.Add.byFolder(0)) }) {
+            RectangleFAB(onClick = {
+                navController.navigate(
+                    NavRouteHelpers.routeFor(
+                        NavRouteHelpers.EventArgs(eventId = -1L, folderId = 0L, date = -1L)
+                    )
+                )
+            }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Event")
             }
         }
@@ -114,7 +120,13 @@ fun EventListScreen(
                         tasks = uiState.taskOnMonth,
                         events = uiState.eventsOnMonth,
                         displayMonth = pageMonth, // Pass the month this grid should display
-                        onClick = { navController.navigate(Event.Add.byDate(it)) }
+                        onClick = {
+                            navController.navigate(
+                                NavRouteHelpers.routeFor(
+                                    NavRouteHelpers.EventArgs(eventId = -1L, folderId = 0L, date = it)
+                                )
+                            )
+                        }
                     )
                 }
                 MyTitle(text = "Events on this month")
@@ -122,7 +134,13 @@ fun EventListScreen(
 
             items(uiState.eventsOnMonth) { event ->
                 EventSmallItem(event = event, modifier = Modifier.animateItem(), onClick = {
-                    event.id.let { navController.navigate(Event.get(it)) }
+                    event.id.let {
+                        navController.navigate(
+                            NavRouteHelpers.routeFor(
+                                NavRouteHelpers.EventArgs(eventId = it, folderId = 0L, date = -1L)
+                            )
+                        )
+                    }
                 })
             }
         }

@@ -1,6 +1,6 @@
 package com.sinxn.mytasks.domain.usecase.note
 
-import com.sinxn.mytasks.data.local.entities.Note
+import com.sinxn.mytasks.domain.models.Note
 import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
 
 data class NoteUseCases(
@@ -9,10 +9,8 @@ data class NoteUseCases(
     val deleteNote: DeleteNote,
     val addNote: AddNote,
     val getNote: GetNote,
-    val archiveNote: ArchiveNote,
-    val unarchiveNote: UnarchiveNote,
-    val archiveNotes: ArchiveNotes,
-    val unarchiveNotes: UnarchiveNotes,
+    val toggleArchive: ToggleNoteArchive,
+    val toggleArchives: ToggleNotesArchive,
 )
 
 class GetNotes(private val repository: NoteRepositoryInterface) {
@@ -35,18 +33,15 @@ class GetNote(private val repository: NoteRepositoryInterface) {
     suspend operator fun invoke(id: Long) = repository.getNoteById(id)
 }
 
-class ArchiveNote(private val repository: NoteRepositoryInterface) {
-    suspend operator fun invoke(id: Long) = repository.archiveNote(id)
+class ToggleNoteArchive(private val repository: NoteRepositoryInterface) {
+    suspend operator fun invoke(id: Long, archive: Boolean) {
+        if (archive) repository.archiveNote(id) else repository.unarchiveNote(id)
+    }
 }
 
-class UnarchiveNote(private val repository: NoteRepositoryInterface) {
-    suspend operator fun invoke(id: Long) = repository.unarchiveNote(id)
-}
-
-class ArchiveNotes(private val repository: NoteRepositoryInterface) {
-    suspend operator fun invoke(ids: List<Long>) = repository.archiveNotes(ids)
-}
-
-class UnarchiveNotes(private val repository: NoteRepositoryInterface) {
-    suspend operator fun invoke(ids: List<Long>) = repository.unarchiveNotes(ids)
+class ToggleNotesArchive(private val repository: NoteRepositoryInterface) {
+    suspend operator fun invoke(ids: List<Long>, archive: Boolean) {
+        if (ids.isEmpty()) return
+        if (archive) repository.archiveNotes(ids) else repository.unarchiveNotes(ids)
+    }
 }

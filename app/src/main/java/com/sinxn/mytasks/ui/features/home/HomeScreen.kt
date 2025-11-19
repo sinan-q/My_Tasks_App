@@ -41,7 +41,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionAction
-import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
@@ -59,9 +59,7 @@ import com.sinxn.mytasks.ui.features.tasks.TaskItem
 import com.sinxn.mytasks.ui.features.tasks.TaskListItemUiModel
 import com.sinxn.mytasks.ui.navigation.Routes
 import com.sinxn.mytasks.ui.navigation.Routes.Backup
-import com.sinxn.mytasks.ui.navigation.Routes.Event
-import com.sinxn.mytasks.ui.navigation.Routes.Note
-import com.sinxn.mytasks.ui.navigation.Routes.Task
+import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.collectLatest
 
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
@@ -176,7 +174,7 @@ fun HomeScreen(
                 ) {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            MyTitle(onClick = { navController.navigate(Event.route) }, text = "Upcoming Events")
+                            MyTitle(onClick = { navController.navigate(Routes.Event.route) }, text = "Upcoming Events")
                             HorizontalDivider()
                             if (upcomingEvents.isEmpty()) Text(
                                 text = "Nothing to show here",
@@ -190,7 +188,11 @@ fun HomeScreen(
 
                     items(upcomingEvents, key = { "event_${it.id}" }) { event ->
                         EventSmallItem(event, modifier = Modifier.animateItem()) {
-                            navController.navigate(Event.get(event.id))
+                            navController.navigate(
+                                NavRouteHelpers.routeFor(
+                                    NavRouteHelpers.EventArgs(eventId = event.id, folderId = 0L, date = -1L)
+                                )
+                            )
                         }
                     }
 
@@ -218,7 +220,13 @@ fun HomeScreen(
                     ) { task ->
                         TaskItem(
                             task = task,
-                            onClick = { navController.navigate(Task.get(task.id)) },
+                            onClick = {
+                                navController.navigate(
+                                    NavRouteHelpers.routeFor(
+                                        NavRouteHelpers.TaskArgs(taskId = task.id, folderId = 0L)
+                                    )
+                                )
+                            },
                             onUpdate = { status -> viewModel.updateStatusTask(task.id, status) },
                             onHold = { viewModel.onSelectionTask(task.id) },
                             path = null,
@@ -247,7 +255,13 @@ fun HomeScreen(
                         when (item) {
                             is NoteListItemUiModel -> NoteItem(
                                 note = item,
-                                onClick = { navController.navigate(Note.get(item.id)) },
+                                onClick = {
+                                    navController.navigate(
+                                        NavRouteHelpers.routeFor(
+                                            NavRouteHelpers.NoteArgs(noteId = item.id, folderId = 0L)
+                                        )
+                                    )
+                                },
                                 onHold = { viewModel.onSelectionNote(item.id) },
                                 selected = selectedNotes.any { it.id == item.id },
                                 modifier = Modifier.animateItem()
@@ -255,7 +269,13 @@ fun HomeScreen(
 
                             is TaskListItemUiModel -> TaskItem(
                                 task = item,
-                                onClick = { navController.navigate(Task.get(item.id)) },
+                                onClick = {
+                                    navController.navigate(
+                                        NavRouteHelpers.routeFor(
+                                            NavRouteHelpers.TaskArgs(taskId = item.id, folderId = 0L)
+                                        )
+                                    )
+                                },
                                 onUpdate = { status -> viewModel.updateStatusTask(item.id, status) },
                                 onHold = { viewModel.onSelectionTask(item.id) },
                                 path = null,
@@ -267,12 +287,22 @@ fun HomeScreen(
                                 item,
                                 modifier = Modifier.animateItem()
                             ) {
-                                navController.navigate(Event.get(item.id))
+                                navController.navigate(
+                                    NavRouteHelpers.routeFor(
+                                        NavRouteHelpers.EventArgs(eventId = item.id, folderId = 0L, date = -1L)
+                                    )
+                                )
                             }
 
                             is FolderListItemUiModel -> FolderItem(
                                 folder = item,
-                                onClick = { navController.navigate(Routes.Folder.get(item.id)) },
+                                onClick = {
+                                    navController.navigate(
+                                        NavRouteHelpers.routeFor(
+                                            NavRouteHelpers.FolderArgs(folderId = item.id)
+                                        )
+                                    )
+                                },
                                 onDelete = { viewModel.deleteFolder(Folder(folderId = item.id, name = item.name, isLocked = item.isLocked)) },
                                 onLock = { viewModel.lockFolder(Folder(folderId = item.id, name = item.name, isLocked = item.isLocked)) },
                                 onHold = { viewModel.onSelectionFolder(item.id) },
@@ -304,7 +334,13 @@ fun HomeScreen(
                     items(folders, key = { "folder_${it.id}" }) { folder ->
                         FolderItem(
                             folder = folder,
-                            onClick = { navController.navigate(Routes.Folder.get(folder.id)) },
+                            onClick = {
+                                navController.navigate(
+                                    NavRouteHelpers.routeFor(
+                                        NavRouteHelpers.FolderArgs(folderId = folder.id)
+                                    )
+                                )
+                            },
                             onDelete = { viewModel.deleteFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked)) },
                             onLock = { viewModel.lockFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked)) },
                             onHold = { viewModel.onSelectionFolder(folder.id) },
@@ -319,7 +355,13 @@ fun HomeScreen(
                     ) { task ->
                         TaskItem(
                             task = task,
-                            onClick = { navController.navigate(Task.get(task.id)) },
+                            onClick = {
+                                navController.navigate(
+                                    NavRouteHelpers.routeFor(
+                                        NavRouteHelpers.TaskArgs(taskId = task.id, folderId = 0L)
+                                    )
+                                )
+                            },
                             onUpdate = { status -> viewModel.updateStatusTask(task.id, status) },
                             onHold = { viewModel.onSelectionTask(task.id) },
                             path = null,
@@ -330,7 +372,13 @@ fun HomeScreen(
                     items(notes, key = { "note_${it.id}" }) { note ->
                         NoteItem(
                             note = note,
-                            onClick = { navController.navigate(Note.get(note.id)) },
+                            onClick = {
+                                navController.navigate(
+                                    NavRouteHelpers.routeFor(
+                                        NavRouteHelpers.NoteArgs(noteId = note.id, folderId = 0L)
+                                    )
+                                )
+                            },
                             onHold = { viewModel.onSelectionNote(note.id) },
                             selected = selectedNotes.any { it.id == note.id },
                             modifier = Modifier.animateItem()
