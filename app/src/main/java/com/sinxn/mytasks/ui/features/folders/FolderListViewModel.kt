@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -138,28 +139,26 @@ class FolderViewModel @Inject constructor(
             _uiState.value = FolderScreenUiState.Loading
             try {
                 val folder = folderUseCases.getFolder(folderId)
-                com.sinxn.mytasks.domain.usecase.home.combine(
+                combine(
                     folderUseCases.getSubFolders(folderId),
                     taskUseCases.getTasksByFolderId(folderId),
                     noteUseCases.getNotesByFolderId(folderId),
-                    selectionStateHolder.selectedFolders,
-                    selectionStateHolder.selectedTasks,
-                    selectionStateHolder.selectedNotes
-                ) { folders, tasks, notes, selectedFolders, selectedTasks, selectedNotes ->
+                    selectionStateHolder.selectedState
+                ) { folders, tasks, notes, selectedItems ->
                     FolderScreenUiState.Success(
                         folders = folders.map { folderItem ->
                             folderItem.toListItemUiModel().copy(
-                                isSelected = selectedFolders.any { it.folderId == folderItem.folderId }
+                                isSelected = selectedItems.folders.any { it.folderId == folderItem.folderId }
                             )
                         },
                         tasks = tasks.map { taskItem ->
                             taskItem.toListItemUiModel().copy(
-                                isSelected = selectedTasks.any { it.id == taskItem.id }
+                                isSelected = selectedItems.tasks.any { it.id == taskItem.id }
                             )
                         },
                         notes = notes.map { noteItem ->
                             noteItem.toListItemUiModel().copy(
-                                isSelected = selectedNotes.any { it.id == noteItem.id }
+                                isSelected = selectedItems.notes.any { it.id == noteItem.id }
                             )
                         },
                         folder = folder

@@ -1,9 +1,7 @@
 package com.sinxn.mytasks.domain.usecase.selection
 
+import com.sinxn.mytasks.core.SelectedItems
 import com.sinxn.mytasks.core.SelectionAction
-import com.sinxn.mytasks.domain.models.Folder
-import com.sinxn.mytasks.domain.models.Note
-import com.sinxn.mytasks.domain.models.Task
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
@@ -18,29 +16,27 @@ class PasteSelectionUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         action: SelectionAction,
-        selectedTasks: Set<Task>,
-        selectedNotes: Set<Note>,
-        selectedFolders: Set<Folder>,
+        selectedItems: SelectedItems,
         destinationFolderId: Long
     ) {
         if (action == SelectionAction.Copy) {
-            selectedFolders.forEach {
+            selectedItems.folders.forEach {
                 copyFolderAndItsContentsUseCase(it, parentId = destinationFolderId)
             }
-            selectedTasks.forEach {
+            selectedItems.tasks.forEach {
                 taskRepository.insertTask(it.copy(id = null, folderId = destinationFolderId))
             }
-            selectedNotes.forEach {
+            selectedItems.notes.forEach {
                 noteRepository.insertNote(it.copy(id = null, folderId = destinationFolderId))
             }
         } else if (action == SelectionAction.Cut) {
-            selectedTasks.forEach {
+            selectedItems.tasks.forEach {
                 taskRepository.updateTask(it.copy(folderId = destinationFolderId))
             }
-            selectedNotes.forEach {
+            selectedItems.notes.forEach {
                 noteRepository.updateNote(it.copy(folderId = destinationFolderId))
             }
-            selectedFolders.forEach {
+            selectedItems.folders.forEach {
                 folderRepository.updateFolder(it.copy(parentFolderId = destinationFolderId))
             }
         }

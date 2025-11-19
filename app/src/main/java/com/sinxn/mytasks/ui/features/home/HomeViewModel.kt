@@ -75,24 +75,22 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             kotlinx.coroutines.flow.combine(
                 homeUseCases.getDashboardData(),
-                selectionStateHolder.selectedTasks,
-                selectionStateHolder.selectedNotes,
-                selectionStateHolder.selectedFolders
-            ) { dashboardData, selectedTasks, selectedNotes, selectedFolders ->
+                selectionStateHolder.selectedState
+            ) { dashboardData, selectedState ->
                 HomeScreenUiState.Success(dashboardData.copy(
-                    folders = selectedFolders.map { folderItem ->
+                    folders = selectedState.folders.map { folderItem ->
                         folderItem.toListItemUiModel().copy(
-                            isSelected = selectedFolders.any { it.folderId == folderItem.folderId }
+                            isSelected = selectedState.folders.any { it.folderId == folderItem.folderId }
                         )
                     },
-                    tasks = selectedTasks.map { taskItem ->
+                    tasks = selectedState.tasks.map { taskItem ->
                         taskItem.toListItemUiModel().copy(
-                            isSelected = selectedTasks.any { it.id == taskItem.id }
+                            isSelected = selectedState.tasks.any { it.id == taskItem.id }
                         )
                     },
-                    notes = selectedNotes.map { noteItem ->
+                    notes = selectedState.notes.map { noteItem ->
                         noteItem.toListItemUiModel().copy(
-                            isSelected = selectedNotes.any { it.id == noteItem.id }
+                            isSelected = selectedState.notes.any { it.id == noteItem.id }
                         )
                     },
                 ))

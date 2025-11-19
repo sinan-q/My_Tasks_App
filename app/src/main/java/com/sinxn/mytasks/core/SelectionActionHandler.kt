@@ -39,9 +39,7 @@ class SelectionActionHandler @Inject constructor(
     private suspend fun pasteSelection(folderId: Long) {
         pasteSelectionUseCase(
             action = stateHolder.action.value,
-            selectedTasks = stateHolder.selectedTasks.value,
-            selectedNotes = stateHolder.selectedNotes.value,
-            selectedFolders = stateHolder.selectedFolders.value,
+            selectedItems = stateHolder.selectedState.value,
             destinationFolderId = folderId
         )
         stateHolder.clearSelection()
@@ -51,9 +49,9 @@ class SelectionActionHandler @Inject constructor(
         data class PinCandidate(val itemId: Long, val type: ItemType)
 
         fun toCandidates(): List<PinCandidate> = buildList {
-            addAll(stateHolder.selectedNotes.value.mapNotNull { it.id?.let { id -> PinCandidate(id, ItemType.NOTE) } })
-            addAll(stateHolder.selectedTasks.value.mapNotNull { it.id?.let { id -> PinCandidate(id, ItemType.TASK) } })
-            addAll(stateHolder.selectedFolders.value.map { PinCandidate(it.folderId, ItemType.FOLDER) })
+            addAll(stateHolder.selectedState.value.notes.mapNotNull { it.id?.let { id -> PinCandidate(id, ItemType.NOTE) } })
+            addAll(stateHolder.selectedState.value.tasks.mapNotNull { it.id?.let { id -> PinCandidate(id, ItemType.TASK) } })
+            addAll(stateHolder.selectedState.value.folders.map { PinCandidate(it.folderId, ItemType.FOLDER) })
         }
 
         val toPin = mutableListOf<Pinned>()
@@ -70,9 +68,9 @@ class SelectionActionHandler @Inject constructor(
     }
 
     private suspend fun toggleArchiveSelection(archive: Boolean) {
-        val noteIds = stateHolder.selectedNotes.value.mapNotNull { it.id }
-        val taskIds = stateHolder.selectedTasks.value.mapNotNull { it.id }
-        val folderIds = stateHolder.selectedFolders.value.map { it.folderId }
+        val noteIds = stateHolder.selectedState.value.notes.mapNotNull { it.id }
+        val taskIds = stateHolder.selectedState.value.tasks.mapNotNull { it.id }
+        val folderIds = stateHolder.selectedState.value.folders.map { it.folderId }
 
         if (noteIds.isNotEmpty()) noteUseCases.toggleArchives(noteIds, archive)
         if (taskIds.isNotEmpty()) taskUseCases.toggleArchives(taskIds, archive)
@@ -84,9 +82,9 @@ class SelectionActionHandler @Inject constructor(
     private suspend fun deleteSelection(confirmed: Boolean) {
         if (!confirmed) return // If not confirmed, do nothing
         deleteSelectionUseCase(
-            selectedTasks = stateHolder.selectedTasks.value,
-            selectedNotes = stateHolder.selectedNotes.value,
-            selectedFolders = stateHolder.selectedFolders.value
+            selectedTasks = stateHolder.selectedState.value.tasks,
+            selectedNotes = stateHolder.selectedState.value.notes,
+            selectedFolders = stateHolder.selectedState.value.folders
         )
         stateHolder.clearSelection()
     }

@@ -171,7 +171,7 @@ fun NoteListScreen(
                                         )
                                     },
                                     onHold = { viewModel.onSelectionNote(note.id) },
-                                    selected = selectedNotes.any { it.id == note.id },
+                                    selected = selectedNotes.notes.any { it.id == note.id },
                                     modifier = Modifier.animateItem()
                                 )
                             }

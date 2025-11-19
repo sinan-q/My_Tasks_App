@@ -37,8 +37,6 @@ import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
-import com.sinxn.mytasks.ui.features.tasks.list.TaskListAction
-import com.sinxn.mytasks.ui.features.tasks.list.TaskListViewModel
 import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.collectLatest
 import showBiometricsAuthentication
@@ -174,7 +172,7 @@ fun TaskListScreen(
                                     }
                                 },
                                 onHold = { viewModel.onSelectionTask(task.id) },
-                                selected = selectedTasks.any { it.id == task.id },
+                                selected = selectedTasks.tasks.any { it.id == task.id },
                                 modifier = Modifier.animateItem()
                             )
                     }

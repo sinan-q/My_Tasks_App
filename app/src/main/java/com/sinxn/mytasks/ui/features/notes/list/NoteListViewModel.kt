@@ -27,7 +27,7 @@ class NoteListViewModel @Inject constructor(
     private val selectionStateHolder: SelectionStateHolder
 ) : ViewModel() {
 
-    val selectedNotes = selectionStateHolder.selectedNotes
+    val selectedNotes = selectionStateHolder.selectedState
     val selectedAction = selectionStateHolder.action
     val selectionCount = selectionStateHolder.selectionCount
 

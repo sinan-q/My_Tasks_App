@@ -25,7 +25,7 @@ class TaskListViewModel @Inject constructor(
     private val selectionStateHolder: SelectionStateHolder
 ) : ViewModel() {
 
-    val selectedTasks = selectionStateHolder.selectedTasks
+    val selectedTasks = selectionStateHolder.selectedState
     val selectedAction = selectionStateHolder.action
     val selectionCount = selectionStateHolder.selectionCount
 
