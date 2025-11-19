@@ -12,9 +12,6 @@ import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
 import com.sinxn.mytasks.domain.usecase.home.HomeUseCases
 import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
 import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
-import com.sinxn.mytasks.ui.features.folders.toListItemUiModel
-import com.sinxn.mytasks.ui.features.notes.list.toListItemUiModel
-import com.sinxn.mytasks.ui.features.tasks.list.toListItemUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -78,18 +75,18 @@ class HomeViewModel @Inject constructor(
                 selectionStateHolder.selectedState
             ) { dashboardData, selectedState ->
                 HomeScreenUiState.Success(dashboardData.copy(
-                    folders = selectedState.folders.map { folderItem ->
-                        folderItem.toListItemUiModel().copy(
-                            isSelected = selectedState.folders.any { it.folderId == folderItem.folderId }
+                    folders = dashboardData.folders.map { folderItem ->
+                        folderItem.copy(
+                            isSelected = selectedState.folders.any { it.folderId == folderItem.id }
                         )
                     },
-                    tasks = selectedState.tasks.map { taskItem ->
-                        taskItem.toListItemUiModel().copy(
+                    tasks = dashboardData.tasks.map { taskItem ->
+                        taskItem.copy(
                             isSelected = selectedState.tasks.any { it.id == taskItem.id }
                         )
                     },
-                    notes = selectedState.notes.map { noteItem ->
-                        noteItem.toListItemUiModel().copy(
+                    notes = dashboardData.notes.map { noteItem ->
+                        noteItem.copy(
                             isSelected = selectedState.notes.any { it.id == noteItem.id }
                         )
                     },

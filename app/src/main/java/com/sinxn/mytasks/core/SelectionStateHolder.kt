@@ -27,12 +27,15 @@ class SelectionStateHolder @Inject constructor() {
 
     private fun <T> toggle(item: T) {
         _selectedState.update { current ->
+            fun <E> Set<E>.toggle(element: E): Set<E> =
+                if (element in this) this - element else this + element
+
             when (item) {
-                is Task -> if (item in current.tasks) current.tasks - item else current.tasks + item
-                is Note -> if (item in current.notes) current.notes - item else current.notes + item
-                is Folder -> if (item in current.folders) current.folders - item else current.folders + item
+                is Task -> current.copy(tasks = current.tasks.toggle(item))
+                is Note -> current.copy(notes = current.notes.toggle(item))
+                is Folder -> current.copy(folders = current.folders.toggle(item))
+                else -> current
             }
-            current
         }
         updateSelectionCount()
     }
