@@ -73,9 +73,6 @@ fun HomeScreen(
     val context = LocalContext.current
     var folderEditToggle by remember { mutableStateOf(false) }
 
-    val selectedTasks by viewModel.selectedTasks.collectAsState()
-    val selectedNotes by viewModel.selectedNotes.collectAsState()
-    val selectedFolders by viewModel.selectedFolders.collectAsState()
     val selectionAction by viewModel.selectedAction.collectAsState()
     val selectionCount by viewModel.selectionCount.collectAsState()
 
@@ -230,7 +227,7 @@ fun HomeScreen(
                             onUpdate = { status -> viewModel.updateStatusTask(task.id, status) },
                             onHold = { viewModel.onSelectionTask(task.id) },
                             path = null,
-                            selected = selectedTasks.any { it.id == task.id },
+                            selected = task.isSelected,
                             modifier = Modifier.animateItem()
                         )
                     }
@@ -263,7 +260,7 @@ fun HomeScreen(
                                     )
                                 },
                                 onHold = { viewModel.onSelectionNote(item.id) },
-                                selected = selectedNotes.any { it.id == item.id },
+                                selected = item.isSelected,
                                 modifier = Modifier.animateItem()
                             )
 
@@ -279,7 +276,7 @@ fun HomeScreen(
                                 onUpdate = { status -> viewModel.updateStatusTask(item.id, status) },
                                 onHold = { viewModel.onSelectionTask(item.id) },
                                 path = null,
-                                selected = selectedTasks.any { it.id == item.id },
+                                selected = item.isSelected,
                                 modifier = Modifier.animateItem()
                             )
 
@@ -306,7 +303,7 @@ fun HomeScreen(
                                 onDelete = { viewModel.deleteFolder(Folder(folderId = item.id, name = item.name, isLocked = item.isLocked)) },
                                 onLock = { viewModel.lockFolder(Folder(folderId = item.id, name = item.name, isLocked = item.isLocked)) },
                                 onHold = { viewModel.onSelectionFolder(item.id) },
-                                selected = selectedFolders.any { it.folderId == item.id },
+                                selected = item.isSelected,
                                 modifier = Modifier.animateItem()
                             )
                         }
@@ -344,7 +341,7 @@ fun HomeScreen(
                             onDelete = { viewModel.deleteFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked)) },
                             onLock = { viewModel.lockFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked)) },
                             onHold = { viewModel.onSelectionFolder(folder.id) },
-                            selected = selectedFolders.any { it.folderId == folder.id },
+                            selected = folder.isSelected,
                             modifier = Modifier.animateItem()
                         )
                     }
@@ -365,7 +362,7 @@ fun HomeScreen(
                             onUpdate = { status -> viewModel.updateStatusTask(task.id, status) },
                             onHold = { viewModel.onSelectionTask(task.id) },
                             path = null,
-                            selected = selectedTasks.any { it.id == task.id },
+                            selected = task.isSelected,
                             modifier = Modifier.animateItem()
                         )
                     }
@@ -380,7 +377,7 @@ fun HomeScreen(
                                 )
                             },
                             onHold = { viewModel.onSelectionNote(note.id) },
-                            selected = selectedNotes.any { it.id == note.id },
+                            selected = note.isSelected,
                             modifier = Modifier.animateItem()
                         )
 

@@ -12,6 +12,9 @@ import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
 import com.sinxn.mytasks.domain.usecase.home.HomeUseCases
 import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
 import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
+import com.sinxn.mytasks.ui.features.folders.toListItemUiModel
+import com.sinxn.mytasks.ui.features.notes.list.toListItemUiModel
+import com.sinxn.mytasks.ui.features.tasks.list.toListItemUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -70,8 +73,32 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            homeUseCases.getDashboardData().collectLatest { homeUiModel ->
-                _uiState.value = HomeScreenUiState.Success(homeUiModel)
+            kotlinx.coroutines.flow.combine(
+                homeUseCases.getDashboardData(),
+                selectionStateHolder.selectedTasks,
+                selectionStateHolder.selectedNotes,
+                selectionStateHolder.selectedFolders
+            ) { dashboardData, selectedTasks, selectedNotes, selectedFolders ->
+                HomeScreenUiState.Success(dashboardData.copy(
+                    folders = selectedFolders.map { folderItem ->
+                        folderItem.toListItemUiModel().copy(
+                            isSelected = selectedFolders.any { it.folderId == folderItem.folderId }
+                        )
+                    },
+                    tasks = selectedTasks.map { taskItem ->
+                        taskItem.toListItemUiModel().copy(
+                            isSelected = selectedTasks.any { it.id == taskItem.id }
+                        )
+                    },
+                    notes = selectedNotes.map { noteItem ->
+                        noteItem.toListItemUiModel().copy(
+                            isSelected = selectedNotes.any { it.id == noteItem.id }
+                        )
+                    },
+                ))
+            }
+            .collectLatest { homeUiModel ->
+                _uiState.value = homeUiModel
             }
         }
     }
