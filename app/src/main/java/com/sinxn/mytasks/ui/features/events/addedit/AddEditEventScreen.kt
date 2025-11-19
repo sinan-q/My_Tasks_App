@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.features.events
+package com.sinxn.mytasks.ui.features.events.addedit
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -69,7 +69,7 @@ fun AddEditEventScreen(
     eventId: Long = -1L,
     folderId: Long = 0,
     date: Long = -1L,
-    eventViewModel: EventViewModel = hiltViewModel(),
+    eventViewModel: AddEditEventViewModel = hiltViewModel(),
     onFinish: () -> Unit,
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog

@@ -4,10 +4,9 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
-import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.domain.models.Task
-import com.sinxn.mytasks.ui.features.alarms.broadcastReceivers.AlarmScheduler
+import com.sinxn.mytasks.domain.usecase.alarm.AlarmUseCases
+import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,9 +22,8 @@ sealed class AlarmScreenUiState {
 
 @HiltViewModel
 class AlarmViewModel @Inject constructor(
-    private val alarmRepository: AlarmRepositoryInterface,
-    private val taskRepository: TaskRepositoryInterface,
-    private val alarmScheduler: AlarmScheduler,
+    private val alarmUseCases: AlarmUseCases,
+    private val taskUseCases: TaskUseCases,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
     private val notificationManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -37,7 +35,7 @@ class AlarmViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = AlarmScreenUiState.Loading
             try {
-                val task = taskRepository.getTaskById(id)
+                val task = taskUseCases.getTask(id)
                 if (task != null) {
                     _uiState.value = AlarmScreenUiState.Success(task)
                 } else {
@@ -51,19 +49,17 @@ class AlarmViewModel @Inject constructor(
 
     fun snoozeAlarm(alarmId: Long, newTime: Long) {
         viewModelScope.launch {
-            val newAlarm = alarmRepository.getAlarmById(alarmId).copy(
+            val newAlarm = alarmUseCases.getAlarmById(alarmId).copy(
                 time = newTime
             )
-            alarmRepository.snoozeAlarm(newAlarm)
-
+            alarmUseCases.snoozeAlarm(newAlarm)
         }
     }
 
     fun cancelAlarm(alarmId: Long) {
         viewModelScope.launch {
-            val alarm = alarmRepository.getAlarmById(alarmId)
-            alarmScheduler.cancelAlarm(alarm)
-            alarmRepository.deleteAlarm(alarmId)
+            val alarm = alarmUseCases.getAlarmById(alarmId)
+            alarmUseCases.cancelAlarm(alarm)
         }
     }
 
@@ -73,9 +69,8 @@ class AlarmViewModel @Inject constructor(
 
     fun setAsCompleted(taskId: Long) {
         viewModelScope.launch {
-            taskRepository.updateStatusTask(taskId, true)
-            alarmRepository.cancelAlarmsByTaskId(taskId)
-
+            taskUseCases.updateStatusTask(taskId, true)
+            alarmUseCases.cancelAlarmsByTaskId(taskId)
         }
     }
 }

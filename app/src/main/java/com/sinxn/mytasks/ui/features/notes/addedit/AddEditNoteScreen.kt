@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.features.notes
+package com.sinxn.mytasks.ui.features.notes.addedit
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -45,6 +45,7 @@ import com.sinxn.mytasks.ui.components.MyTextField
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.features.folders.FolderDropDown
+import com.sinxn.mytasks.ui.features.notes.list.NoteScreenUiState
 import com.sinxn.mytasks.utils.Constants
 import com.sinxn.mytasks.utils.formatDate
 import dev.jeziellago.compose.markdowntext.MarkdownText
@@ -54,7 +55,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun AddEditNoteScreen(
     noteId: Long = -1L,
     folderId: Long = 0,
-    noteViewModel: NoteViewModel = hiltViewModel(),
+    noteViewModel: AddEditNoteViewModel = hiltViewModel(),
     onFinish: () -> Unit,
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog

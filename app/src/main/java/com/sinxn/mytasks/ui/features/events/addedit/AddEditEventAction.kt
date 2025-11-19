@@ -1,7 +1,7 @@
-package com.sinxn.mytasks.ui.features.events
+package com.sinxn.mytasks.ui.features.events.addedit
 
 import com.sinxn.mytasks.domain.models.Event
-import java.time.YearMonth
+
 
 sealed class AddEditEventAction {
     data class UpdateEvent(val event: Event) : AddEditEventAction()
@@ -10,6 +10,6 @@ sealed class AddEditEventAction {
     data class FetchEventById(val eventId: Long) : AddEditEventAction()
     data class FetchFolderById(val folderId: Long) : AddEditEventAction()
 
-    data class OnMonthChange(val month: YearMonth) : AddEditEventAction()
+
 
 }

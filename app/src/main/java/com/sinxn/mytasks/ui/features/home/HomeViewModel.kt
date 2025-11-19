@@ -5,29 +5,20 @@ import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.domain.models.Folder
-import com.sinxn.mytasks.domain.models.ItemType
-import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
-import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
-import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
-import com.sinxn.mytasks.domain.repository.PinnedRepositoryInterface
-import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
 import com.sinxn.mytasks.domain.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.domain.usecase.folder.FolderUseCases
 import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
-import com.sinxn.mytasks.ui.features.events.toListItemUiModel
-import com.sinxn.mytasks.ui.features.folders.toListItemUiModel
-import com.sinxn.mytasks.ui.features.notes.toListItemUiModel
-import com.sinxn.mytasks.ui.features.tasks.toListItemUiModel
+import com.sinxn.mytasks.domain.usecase.home.HomeUseCases
+import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
+import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -42,11 +33,9 @@ sealed class HomeScreenUiState {
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val noteRepository: NoteRepositoryInterface,
-    private val taskRepository: TaskRepositoryInterface,
-    private val folderRepository: FolderRepositoryInterface,
-    private val eventRepository: EventRepositoryInterface,
-    private val pinnedRepository: PinnedRepositoryInterface,
+    private val homeUseCases: HomeUseCases,
+    private val taskUseCases: TaskUseCases,
+    private val noteUseCases: NoteUseCases,
     private val folderUseCases: FolderUseCases,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
@@ -60,15 +49,15 @@ class HomeViewModel @Inject constructor(
     val selectionCount = selectionStore.selectionCount
 
     fun onSelectionTask(id: Long) = viewModelScope.launch {
-        taskRepository.getTaskById(id)?.let { selectionStore.toggleTask(it) }
+        taskUseCases.getTask(id)?.let { selectionStore.toggleTask(it) }
     }
 
     fun onSelectionNote(id: Long) = viewModelScope.launch {
-        noteRepository.getNoteById(id)?.let { selectionStore.toggleNote(it) }
+        noteUseCases.getNote(id)?.let { selectionStore.toggleNote(it) }
     }
 
     fun onSelectionFolder(id: Long) = viewModelScope.launch {
-        folderRepository.getFolderById(id).let { it?.let{ folder->  selectionStore.toggleFolder(folder)} }
+        folderUseCases.getFolder(id).let { it?.let{ folder->  selectionStore.toggleFolder(folder)} }
     }
 
     fun onAction(action: SelectionAction) = viewModelScope.launch {
@@ -83,38 +72,8 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val parentFolder = folderRepository.getFolderById(0L)
-            combine(
-                flow=folderRepository.getSubFolders(0).map { folders -> folders.map { it.toListItemUiModel() } },
-                flow2=eventRepository.getUpcomingEvents(4).map { events -> events.map { it.toListItemUiModel() } },
-                flow3=taskRepository.getTasksWithDueDate(10).map { tasks -> tasks.map { it.toListItemUiModel() } },
-                flow4=noteRepository.getNotesByFolderId(0).map { notes -> notes.map { it.toListItemUiModel() } },
-                flow5=taskRepository.getTasksByFolderId(0).map { tasks -> tasks.map { it.toListItemUiModel() } },
-                flow6=pinnedRepository.getPinnedItems().map { pinnedList -> pinnedList.map { pinned ->
-                        when (pinned.itemType) {
-                            ItemType.NOTE -> noteRepository.getNoteById(pinned.itemId)?.toListItemUiModel()
-
-                            ItemType.TASK -> taskRepository.getTaskById(pinned.itemId)?.toListItemUiModel()
-                            ItemType.EVENT -> eventRepository.getEventById(pinned.itemId)!!.toListItemUiModel()
-
-                            ItemType.FOLDER -> folderRepository.getFolderById(pinned.itemId)?.toListItemUiModel()
-                        }
-                    }},
-            ) { folders, upcomingEvents, pendingTasks, notes, tasks, pinned ->
-
-                HomeScreenUiState.Success(
-                    HomeUiModel(
-                        folders = folders,
-                        upcomingEvents = upcomingEvents,
-                        pendingTasks = pendingTasks,
-                        notes = notes,
-                        tasks = tasks,
-                        parentFolder = parentFolder,
-                        pinnedItems = pinned.filterNotNull()
-                    )
-                )
-            }.collectLatest { state ->
-                _uiState.value = state
+            homeUseCases.getDashboardData().collectLatest { homeUiModel ->
+                _uiState.value = HomeScreenUiState.Success(homeUiModel)
             }
         }
     }
@@ -157,7 +116,7 @@ class HomeViewModel @Inject constructor(
 
     fun updateStatusTask(taskId: Long, status: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            taskRepository.updateStatusTask(taskId, status)
+            taskUseCases.updateStatusTask(taskId, status)
         }
     }
 
@@ -167,25 +126,5 @@ class HomeViewModel @Inject constructor(
         }
     }
 }
-inline fun <T1, T2, T3, T4, T5, T6, R> combine(
-    flow: Flow<T1>,
-    flow2: Flow<T2>,
-    flow3: Flow<T3>,
-    flow4: Flow<T4>,
-    flow5: Flow<T5>,
-    flow6: Flow<T6>,
-    crossinline transform: suspend (T1, T2, T3, T4, T5, T6) -> R
-): Flow<R> {
-    return kotlinx.coroutines.flow.combine(flow, flow2, flow3, flow4, flow5, flow6) { args: Array<*> ->
-        @Suppress("UNCHECKED_CAST")
-        transform(
-            args[0] as T1,
-            args[1] as T2,
-            args[2] as T3,
-            args[3] as T4,
-            args[4] as T5,
-            args[5] as T6,
-        )
-    }
-}
+
 

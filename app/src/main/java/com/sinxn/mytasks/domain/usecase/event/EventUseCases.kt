@@ -9,6 +9,7 @@ data class EventUseCases(
     val deleteEvent: DeleteEvent,
     val addEvent: AddEvent,
     val getEvent: GetEvent,
+    val updateEvent: UpdateEvent,
     val toggleArchive: ToggleEventArchive,
     val toggleArchives: ToggleEventsArchive,
 )
@@ -44,4 +45,8 @@ class ToggleEventsArchive(private val repository: EventRepositoryInterface) {
         if (ids.isEmpty()) return
         if (archive) repository.archiveEvents(ids) else repository.unarchiveEvents(ids)
     }
+}
+
+class UpdateEvent(private val repository: EventRepositoryInterface) {
+    suspend operator fun invoke(event: Event) = repository.updateEvent(event)
 }

@@ -44,4 +44,7 @@ abstract class RepositoryModule {
     @Binds
     abstract fun bindExpiredTaskRepository(impl: ExpiredTaskRepository): ExpiredTaskRepositoryInterface
 
+    @Binds
+    abstract fun bindAlarmScheduler(impl: com.sinxn.mytasks.ui.features.alarms.broadcastReceivers.AlarmScheduler): com.sinxn.mytasks.domain.repository.AlarmSchedulerInterface
+
 }

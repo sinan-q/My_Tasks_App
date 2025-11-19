@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.features.notes
+package com.sinxn.mytasks.ui.features.notes.list
 
 import com.sinxn.mytasks.domain.models.Note
 import java.time.format.DateTimeFormatter

@@ -1,6 +1,7 @@
-package com.sinxn.mytasks.ui.features.tasks
+package com.sinxn.mytasks.ui.features.tasks.list
 
 import com.sinxn.mytasks.domain.models.Folder
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 data class TaskUiState(
@@ -9,7 +10,7 @@ data class TaskUiState(
     val title: String = "",
     val description: String = "",
     val isCompleted: Boolean = false,
-    val due: java.time.LocalDateTime? = null,
+    val due: LocalDateTime? = null,
     val recurrenceRule: String? = null
 )
 

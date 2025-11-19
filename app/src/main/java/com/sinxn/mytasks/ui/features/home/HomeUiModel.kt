@@ -2,13 +2,9 @@ package com.sinxn.mytasks.ui.features.home
 
 import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.ui.features.events.EventListItemUiModel
-import com.sinxn.mytasks.ui.features.events.toListItemUiModel
 import com.sinxn.mytasks.ui.features.folders.FolderListItemUiModel
-import com.sinxn.mytasks.ui.features.folders.toListItemUiModel
-import com.sinxn.mytasks.ui.features.notes.NoteListItemUiModel
-import com.sinxn.mytasks.ui.features.notes.toListItemUiModel
-import com.sinxn.mytasks.ui.features.tasks.TaskListItemUiModel
-import com.sinxn.mytasks.ui.features.tasks.toListItemUiModel
+import com.sinxn.mytasks.ui.features.notes.list.NoteListItemUiModel
+import com.sinxn.mytasks.ui.features.tasks.list.TaskListItemUiModel
 
 /**
  * A UI-specific model representing the home screen.

@@ -1,6 +1,6 @@
-package com.sinxn.mytasks.ui.features.notes
+package com.sinxn.mytasks.ui.features.notes.addedit
 
-import com.sinxn.mytasks.core.SelectionAction
+
 import com.sinxn.mytasks.domain.models.Note
 
 sealed class AddEditNoteAction {
@@ -10,5 +10,5 @@ sealed class AddEditNoteAction {
     data class FetchNoteById(val noteId: Long) : AddEditNoteAction()
     data class FetchFolderById(val folderId: Long) : AddEditNoteAction()
     data class NewNoteByFolder(val folderId: Long) : AddEditNoteAction()
-    data class OnSelectionAction(val action: SelectionAction) : AddEditNoteAction()
+
 }

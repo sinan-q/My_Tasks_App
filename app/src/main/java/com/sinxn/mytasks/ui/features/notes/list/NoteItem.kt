@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.features.notes
+package com.sinxn.mytasks.ui.features.notes.list
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.combinedClickable

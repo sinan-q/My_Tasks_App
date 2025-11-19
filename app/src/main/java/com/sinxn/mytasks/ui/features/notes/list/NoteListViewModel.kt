@@ -1,0 +1,74 @@
+package com.sinxn.mytasks.ui.features.notes.list
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.sinxn.mytasks.core.SelectionAction
+import com.sinxn.mytasks.core.SelectionStore
+import com.sinxn.mytasks.domain.models.Note
+import com.sinxn.mytasks.domain.usecase.folder.GetPathUseCase
+import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class NoteListViewModel @Inject constructor(
+    private val noteUseCases: NoteUseCases,
+    private val selectionStore: SelectionStore,
+    private val getPathUseCase: GetPathUseCase
+) : ViewModel() {
+
+    val selectedNotes = selectionStore.selectedNotes
+    val selectedAction = selectionStore.action
+    val selectionCount = selectionStore.selectionCount
+
+    private val _uiState = MutableStateFlow<NoteScreenUiState>(NoteScreenUiState.Loading)
+    val uiState: StateFlow<NoteScreenUiState> = _uiState.asStateFlow()
+
+    private val _toastMessage = MutableSharedFlow<String>()
+    val toastMessage = _toastMessage.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            noteUseCases.getNotes().map { notes -> notes.map { it.toListItemUiModel() } }.collectLatest { notes ->
+                val currentState = _uiState.value
+                if (currentState is NoteScreenUiState.Success) {
+                    _uiState.value = currentState.copy(notes = notes)
+                } else {
+                    _uiState.value = NoteScreenUiState.Success(Note(), notes, null, emptyList())
+                }
+            }
+        }
+    }
+
+    fun onAction(action: NoteListAction) {
+        when (action) {
+            is NoteListAction.OnSelectionAction -> onSelectionAction(action.action)
+        }
+    }
+
+    suspend fun getPath(folderId: Long, hideLocked: Boolean): String? {
+        return getPathUseCase(folderId, hideLocked)
+    }
+
+    fun onSelectionNote(id: Long) = viewModelScope.launch {
+        noteUseCases.getNote(id)?.let { selectionStore.toggleNote(it) }
+    }
+
+    private fun onSelectionAction(action: SelectionAction) = viewModelScope.launch {
+        selectionStore.onAction(action)
+    }
+
+    fun showToast(message: String) {
+        viewModelScope.launch {
+            _toastMessage.emit(message)
+        }
+    }
+}

@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sinxn.mytasks.ui.components.RectangleCard
-import com.sinxn.mytasks.ui.features.tasks.TaskListItemUiModel
+import com.sinxn.mytasks.ui.features.tasks.list.TaskListItemUiModel
 import com.sinxn.mytasks.utils.toMillis
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -40,7 +40,6 @@ fun CalendarGrid(
     tasks: List<TaskListItemUiModel>,
     displayMonth: YearMonth, // The month this grid instance should display
     onClick: (Long) -> Unit,
-    // No more onMonthChange needed here, as pager handles month changes
 ) {
     val WEEK_DAYS = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
 

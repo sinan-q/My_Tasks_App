@@ -49,8 +49,8 @@ import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTextField
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
-import com.sinxn.mytasks.ui.features.notes.NoteItem
-import com.sinxn.mytasks.ui.features.tasks.TaskItem
+import com.sinxn.mytasks.ui.features.notes.list.NoteItem
+import com.sinxn.mytasks.ui.features.tasks.list.TaskItem
 import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.collectLatest
 
@@ -72,7 +72,7 @@ fun FolderListScreen(
 
     val context = LocalContext.current
     LaunchedEffect(folderId) {
-        folderViewModel.onAction(FolderAction.GetSubFolders(folderId))
+        folderViewModel.onAction(FolderListAction.GetSubFolders(folderId))
     }
 
     LaunchedEffect(key1 = Unit) {
@@ -121,7 +121,7 @@ fun FolderListScreen(
                 enabled = currentFolder?.parentFolderId != 0L
             ) {
                 if (currentFolder != null) {
-                    folderViewModel.onAction(FolderAction.GetSubFolders(currentFolder.parentFolderId ?: 0L))
+                    folderViewModel.onAction(FolderListAction.GetSubFolders(currentFolder.parentFolderId ?: 0L))
                 }
             }
             Scaffold(
@@ -133,7 +133,7 @@ fun FolderListScreen(
                                 folderId = currentFolder?.folderId ?: 0L,
                                 action = selectionAction,
                                 onAction = {
-                                    folderViewModel.onAction(FolderAction.OnSelectionAction(it))
+                                    folderViewModel.onAction(FolderListAction.OnSelectionListAction(it))
                                 },
 
                             )
@@ -165,12 +165,12 @@ fun FolderListScreen(
                                     placeholder = "Folder Name",
                                 )
                             },
-                            onNavigateUp = { if (folder.parentFolderId == 0L) navController.popBackStack() else folderViewModel.onAction(FolderAction.GetSubFolders(folder.parentFolderId ?: 0L)) },
+                            onNavigateUp = { if (folder.parentFolderId == 0L) navController.popBackStack() else folderViewModel.onAction(FolderListAction.GetSubFolders(folder.parentFolderId ?: 0L)) },
                             actions = {
                                 if (isFolderNameEdit) {
                                     IconButton(onClick = {
                                         isFolderNameEdit = false
-                                        folderViewModel.onAction(FolderAction.UpdateFolderName(folder.folderId, folderName))
+                                        folderViewModel.onAction(FolderListAction.UpdateFolderListName(folder.folderId, folderName))
                                     }) {
                                         Icon(
                                             imageVector = Icons.Default.Check,
@@ -231,15 +231,15 @@ fun FolderListScreen(
                                     parentFolderId = currentFolder?.folderId?: 0L
                                 ),
                                 onDismiss = { folderEditToggle = false }
-                            ) { folderViewModel.onAction(FolderAction.AddFolder(it)) }
+                            ) { folderViewModel.onAction(FolderListAction.AddFolderList(it)) }
                         }
                     }
                     items(items = folders, key = { folder -> "folder_${folder.id}" }) { folder ->
                         FolderItem(
                             folder = folder,
-                            onClick = { folderViewModel.onAction(FolderAction.GetSubFolders(folder.id)) },
-                            onDelete = { folderViewModel.onAction(FolderAction.DeleteFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked))) },
-                            onLock = { folderViewModel.onAction(FolderAction.LockFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked))) },
+                            onClick = { folderViewModel.onAction(FolderListAction.GetSubFolders(folder.id)) },
+                            onDelete = { folderViewModel.onAction(FolderListAction.DeleteFolderList(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked))) },
+                            onLock = { folderViewModel.onAction(FolderListAction.LockFolderList(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked))) },
                             onHold = { folderViewModel.onSelectionFolder(folder.id) },
                             selected = selectedFolders.any { it.folderId == folder.id },
                             modifier = Modifier.animateItem()
@@ -261,7 +261,7 @@ fun FolderListScreen(
                                 )
                             },
                             onHold = { folderViewModel.onSelectionTask(task.id) },
-                            onUpdate = { status -> folderViewModel.onAction(FolderAction.UpdateTaskStatus(task.id, status)) },
+                            onUpdate = { status -> folderViewModel.onAction(FolderListAction.UpdateTaskStatus(task.id, status)) },
                             path = null,
                             selected = selectedTasks.any { it.id == task.id },
                             modifier = Modifier.animateItem()
@@ -290,8 +290,8 @@ fun FolderListScreen(
                     showDialog = showDeleteConfirmationDialog,
                     onDismiss = { showDeleteConfirmationDialog = false },
                     onConfirm = {
-                        folderViewModel.onAction(FolderAction.DeleteFolder(it))
-                        folderViewModel.onAction(FolderAction.GetSubFolders(it.parentFolderId ?: 0L))
+                        folderViewModel.onAction(FolderListAction.DeleteFolderList(it))
+                        folderViewModel.onAction(FolderListAction.GetSubFolders(it.parentFolderId ?: 0L))
                         showDeleteConfirmationDialog = false
                     },
                     title = stringResource(R.string.delete_confirmation_title),
@@ -301,10 +301,10 @@ fun FolderListScreen(
             ConfirmationDialog(
                 showDialog = selectionAction == SelectionAction.Delete,
                 onDismiss = {
-                    folderViewModel.onAction(FolderAction.OnSelectionAction(SelectionAction.None))
+                    folderViewModel.onAction(FolderListAction.OnSelectionListAction(SelectionAction.None))
                 },
                 onConfirm = {
-                    folderViewModel.onAction(FolderAction.OnSelectionAction(SelectionAction.DeleteConfirm(true)))
+                    folderViewModel.onAction(FolderListAction.OnSelectionListAction(SelectionAction.DeleteConfirm(true)))
                 },
                 title = stringResource(R.string.delete_confirmation_title),
                 message = "Sure want to delete $selectionCount items?" //TODO

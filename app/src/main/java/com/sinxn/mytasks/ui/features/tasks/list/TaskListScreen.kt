@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.features.tasks
+package com.sinxn.mytasks.ui.features.tasks.list
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -37,13 +37,15 @@ import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
+import com.sinxn.mytasks.ui.features.tasks.list.TaskListAction
+import com.sinxn.mytasks.ui.features.tasks.list.TaskListViewModel
 import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.collectLatest
 import showBiometricsAuthentication
 
 @Composable
 fun TaskListScreen(
-    viewModel: TaskViewModel = hiltViewModel(),
+    viewModel: TaskListViewModel = hiltViewModel(),
     navController: NavController,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -81,7 +83,7 @@ fun TaskListScreen(
                         pasteDisabled = true,
                         action = selectionAction,
                         onAction = {
-                            viewModel.onAction(AddEditTaskAction.OnSelectionAction(it))
+                            viewModel.onAction(TaskListAction.OnSelectionAction(it))
                         },
 
                     )
@@ -157,11 +159,20 @@ fun TaskListScreen(
                                 onClick = {
                                     navController.navigate(
                                         NavRouteHelpers.routeFor(
-                                            NavRouteHelpers.TaskArgs(taskId = task.id, folderId = 0L)
+                                            NavRouteHelpers.TaskArgs(
+                                                taskId = task.id,
+                                                folderId = 0L
+                                            )
                                         )
                                     )
                                 },
-                                onUpdate = { task.id.let { it1 -> viewModel.onAction(AddEditTaskAction.UpdateStatusTask(it1, it)) } },
+                                onUpdate = {
+                                    task.id.let { it1 ->
+                                        viewModel.onAction(
+                                            TaskListAction.UpdateStatusTask(it1, it)
+                                        )
+                                    }
+                                },
                                 onHold = { viewModel.onSelectionTask(task.id) },
                                 selected = selectedTasks.any { it.id == task.id },
                                 modifier = Modifier.animateItem()
@@ -172,10 +183,10 @@ fun TaskListScreen(
             ConfirmationDialog(
                 showDialog = selectionAction == SelectionAction.Delete,
                 onDismiss = {
-                    viewModel.onAction(AddEditTaskAction.OnSelectionAction(SelectionAction.None))
+                    viewModel.onAction(TaskListAction.OnSelectionAction(SelectionAction.None))
                 },
                 onConfirm = {
-                    viewModel.onAction(AddEditTaskAction.OnSelectionAction(SelectionAction.DeleteConfirm(true)))
+                    viewModel.onAction(TaskListAction.OnSelectionAction(SelectionAction.DeleteConfirm(true)))
                 },
                 title = stringResource(R.string.delete_confirmation_title),
                 message = "Sure want to delete ${selectionCount.value} items?"

@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.features.events
+package com.sinxn.mytasks.ui.features.events.list
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +25,9 @@ import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTitle
 import com.sinxn.mytasks.ui.components.RectangleFAB
+import com.sinxn.mytasks.ui.features.events.CalendarGrid
+import com.sinxn.mytasks.ui.features.events.EventSmallItem
+import com.sinxn.mytasks.ui.features.events.MonthYearHeader
 import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -34,10 +37,10 @@ import java.time.YearMonth
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventListScreen(
-    eventViewModel: EventViewModel = hiltViewModel(),
+    viewModel: EventListViewModel = hiltViewModel(),
     navController: NavController,
 ) {
-    val uiState by eventViewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     // Define a very large range for "infinite" swiping.
     // Pager works with indices. We'll map these indices to YearMonth.
@@ -60,7 +63,7 @@ fun EventListScreen(
             }
             .distinctUntilChanged()
             .collect { month ->
-                eventViewModel.onAction(AddEditEventAction.OnMonthChange(month))
+                viewModel.onAction(EventListAction.OnMonthChange(month))
             }
     }
     Scaffold(
@@ -93,12 +96,12 @@ fun EventListScreen(
                         // This requires a coroutine scope
                         // rememberCoroutineScope().launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
                         // For simplicity now, direct change, but animation is better
-                        eventViewModel.onAction(AddEditEventAction.OnMonthChange(uiState.month.minusMonths(1)))
+                        viewModel.onAction(EventListAction.OnMonthChange(uiState.month.minusMonths(1)))
                         scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
                         // You would need to calculate the target page and scroll the pager
                     },
                     onNextMonth = {
-                        eventViewModel.onAction(AddEditEventAction.OnMonthChange(uiState.month.plusMonths(1)))
+                        viewModel.onAction(EventListAction.OnMonthChange(uiState.month.plusMonths(1)))
                         scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                         // You would need to calculate the target page and scroll the pager
                     }
@@ -117,13 +120,17 @@ fun EventListScreen(
                     // Pass this specific month to your CalendarGrid
                     // CalendarGrid will now be responsible for rendering only ONE month
                     CalendarGrid(
-                        tasks = uiState.taskOnMonth,
                         events = uiState.eventsOnMonth,
+                        tasks = uiState.taskOnMonth,
                         displayMonth = pageMonth, // Pass the month this grid should display
                         onClick = {
                             navController.navigate(
                                 NavRouteHelpers.routeFor(
-                                    NavRouteHelpers.EventArgs(eventId = -1L, folderId = 0L, date = it)
+                                    NavRouteHelpers.EventArgs(
+                                        eventId = -1L,
+                                        folderId = 0L,
+                                        date = it
+                                    )
                                 )
                             )
                         }

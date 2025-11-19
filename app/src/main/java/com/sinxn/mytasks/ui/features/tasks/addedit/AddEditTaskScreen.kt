@@ -1,20 +1,16 @@
-package com.sinxn.mytasks.ui.features.tasks
+package com.sinxn.mytasks.ui.features.tasks.addedit
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -38,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -55,15 +50,13 @@ import com.sinxn.mytasks.R
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTextField
-import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.RecurrenceComponent
-import com.sinxn.mytasks.ui.components.ScrollablePicker
 import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.features.folders.FolderDropDown
+
 import com.sinxn.mytasks.utils.Constants
-import com.sinxn.mytasks.utils.ReminderTypes
 import com.sinxn.mytasks.utils.addTimerPickerState
 import com.sinxn.mytasks.utils.formatDate
 import com.sinxn.mytasks.utils.fromMillis
@@ -77,7 +70,7 @@ fun AddEditTaskScreen(
     modifier: Modifier = Modifier,
     taskId: Long = -1L,
     folderId: Long = 0,
-    taskViewModel: TaskViewModel = hiltViewModel(),
+    viewModel: AddEditTaskViewModel = hiltViewModel(),
     onFinish: () -> Unit,
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
@@ -87,9 +80,7 @@ fun AddEditTaskScreen(
 
     val context = LocalContext.current
 
-    val uiState by taskViewModel.taskScreenUiState.collectAsState()
-    var reminder by remember { mutableStateOf("0") }
-    var reminderType by remember { mutableStateOf(ReminderTypes.MINUTE) }
+    val uiState by viewModel.uiState.collectAsState()
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -100,7 +91,7 @@ fun AddEditTaskScreen(
         if (message in listOf(Constants.SAVE_SUCCESS, Constants.DELETE_SUCCESS, Constants.NOT_FOUND)) onFinish()
     }
     LaunchedEffect(key1 = Unit) {
-        taskViewModel.toastMessage.collectLatest { message ->
+        viewModel.toastMessage.collectLatest { message ->
             showToast(message)
         }
     }
@@ -113,9 +104,9 @@ fun AddEditTaskScreen(
 
     LaunchedEffect(taskId, folderId) {
         if (taskId != -1L) {
-            taskViewModel.onAction(AddEditTaskAction.FetchTaskById(taskId))
+            viewModel.onAction(AddEditTaskAction.FetchTaskById(taskId))
         } else {
-            taskViewModel.onAction(AddEditTaskAction.FetchFolderById(folderId))
+            viewModel.onAction(AddEditTaskAction.FetchFolderById(folderId))
         }
     }
 
@@ -141,7 +132,7 @@ fun AddEditTaskScreen(
                 RectangleFAB(
                     onClick = {
                         if (isEditing) {
-                            taskViewModel.onAction(AddEditTaskAction.InsertTask(taskInputState, reminders))
+                            viewModel.onAction(AddEditTaskAction.InsertTask(taskInputState, reminders))
                             isEditing = false
                         } else {
                             isEditing = true
@@ -180,7 +171,7 @@ fun AddEditTaskScreen(
             ) {
                 MyTextField(
                     value = taskInputState.title,
-                    onValueChange = { taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(title = it))) },
+                    onValueChange = { viewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(title = it))) },
                     placeholder = "Title",
                     readOnly = !isEditing,
                     singleLine = true,
@@ -197,7 +188,7 @@ fun AddEditTaskScreen(
                 FolderDropDown(
                     modifier = Modifier.padding(horizontal = 20.dp),
                     onClick = {folderId ->
-                        taskViewModel.onAction(AddEditTaskAction.FetchFolderById(folderId))
+                        viewModel.onAction(AddEditTaskAction.FetchFolderById(folderId))
                     },
                     isEditing = isEditing,
                     folder = folder,
@@ -206,7 +197,7 @@ fun AddEditTaskScreen(
                 HorizontalDivider()
                 MyTextField(
                     value = taskInputState.description,
-                    onValueChange = { taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(description = it))) },
+                    onValueChange = { viewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(description = it))) },
                     placeholder = "Description",
                     readOnly = !isEditing,
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
@@ -229,59 +220,16 @@ fun AddEditTaskScreen(
                 RecurrenceComponent(
                     recurrenceRule = taskInputState.recurrenceRule,
                     onRecurrenceRuleChange = {
-                        taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(recurrenceRule = it)))
+                        viewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(recurrenceRule = it)))
                     }
                 )
-                taskInputState.due?.let { dueDate ->
-                    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
-                        Text(text = "Reminders on " )
-                        if (reminders.isEmpty())
-                            Text(text = "No Remainders set")
-
-                        reminders.forEach { option ->
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                if (isEditing) {
-                                    IconButton(onClick = { taskViewModel.onAction(AddEditTaskAction.RemoveReminder(option)) }) {
-                                        Icon(Icons.Default.Close, contentDescription = "Delete Reminder")
-                                    }
-                                }
-                                Text(text = "${option.first} ${option.second.name}")
-                            }
-                        }
-                        if (isEditing) {
-                            Row {
-                                val itemHeight = 50.dp
-                                RectangleButton(
-                                    modifier = Modifier.height(itemHeight),
-                                    onClick = {
-                                        taskViewModel.onAction(AddEditTaskAction.AddReminder(Pair(reminder.toInt(), reminderType.unit)))
-                                    }
-                                ) {
-                                    Icon(Icons.Default.Add, "Add Reminder")
-                                }
-                                ScrollablePicker(
-                                    values = (0..60).toList(),
-                                    defaultValue = 0,
-                                    height = itemHeight,
-                                    modifier = Modifier
-                                        .width(70.dp)
-                                        .height(itemHeight)
-                                ) {
-                                    reminder = it.toString()
-                                }
-                                ScrollablePicker(
-                                    values = ReminderTypes.entries.toList(),
-                                    defaultValue = ReminderTypes.MINUTE,
-                                    height = itemHeight,
-                                    modifier = Modifier
-                                        .width(100.dp)
-                                        .height(itemHeight)
-                                ) {
-                                    reminderType = it
-                                }
-                            }
-                        }
-                    }
+                taskInputState.due?.let { _ ->
+                    RemindersSection(
+                        reminders = reminders,
+                        isEditing = isEditing,
+                        onRemoveReminder = { viewModel.onAction(AddEditTaskAction.RemoveReminder(it)) },
+                        onAddReminder = { viewModel.onAction(AddEditTaskAction.AddReminder(it)) }
+                    )
                 }
 
                 if (showDatePicker) {
@@ -294,7 +242,8 @@ fun AddEditTaskScreen(
                         confirmButton = {
                             TextButton(
                                 onClick = {
-                                    taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(
+                                    viewModel.onAction(
+                                        AddEditTaskAction.UpdateTask(taskInputState.copy(
                                         due = datePickerState.selectedDateMillis?.let { fromMillis(it) }
                                     )))
                                     showDatePicker = false
@@ -319,7 +268,8 @@ fun AddEditTaskScreen(
                     TimePickerDialog(
                         onDismiss = { showTimePicker = false },
                         onConfirm = {
-                            taskViewModel.onAction(AddEditTaskAction.UpdateTask(taskInputState.copy(
+                            viewModel.onAction(
+                                AddEditTaskAction.UpdateTask(taskInputState.copy(
                                 due = taskInputState.due?.addTimerPickerState(timePickerState))))
                             showTimePicker = false
                         }
@@ -336,7 +286,7 @@ fun AddEditTaskScreen(
             showDialog = showDeleteConfirmationDialog,
             onDismiss = { showDeleteConfirmationDialog = false },
             onConfirm = {
-                taskViewModel.onAction(AddEditTaskAction.DeleteTask(taskInputState))
+                viewModel.onAction(AddEditTaskAction.DeleteTask(taskInputState))
                 showDeleteConfirmationDialog = false
                 onFinish()
             },

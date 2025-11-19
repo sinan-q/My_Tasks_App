@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.features.tasks
+package com.sinxn.mytasks.ui.features.tasks.list
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.combinedClickable

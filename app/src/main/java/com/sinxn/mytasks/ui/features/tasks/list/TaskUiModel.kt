@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.features.tasks
+package com.sinxn.mytasks.ui.features.tasks.list
 
 import com.sinxn.mytasks.domain.models.Task
 import java.time.LocalDate

@@ -53,13 +53,13 @@ import com.sinxn.mytasks.ui.features.events.EventSmallItem
 import com.sinxn.mytasks.ui.features.folders.FolderItem
 import com.sinxn.mytasks.ui.features.folders.FolderItemEdit
 import com.sinxn.mytasks.ui.features.folders.FolderListItemUiModel
-import com.sinxn.mytasks.ui.features.notes.NoteItem
-import com.sinxn.mytasks.ui.features.notes.NoteListItemUiModel
-import com.sinxn.mytasks.ui.features.tasks.TaskItem
-import com.sinxn.mytasks.ui.features.tasks.TaskListItemUiModel
+import com.sinxn.mytasks.ui.features.notes.list.NoteItem
+import com.sinxn.mytasks.ui.features.notes.list.NoteListItemUiModel
+import com.sinxn.mytasks.ui.features.tasks.list.TaskItem
+import com.sinxn.mytasks.ui.features.tasks.list.TaskListItemUiModel
+import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import com.sinxn.mytasks.ui.navigation.Routes
 import com.sinxn.mytasks.ui.navigation.Routes.Backup
-import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.collectLatest
 
 @SuppressLint("UnusedContentLambdaTargetStateParameter")

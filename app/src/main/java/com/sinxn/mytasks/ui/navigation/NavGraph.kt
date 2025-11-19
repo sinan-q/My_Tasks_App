@@ -15,14 +15,14 @@ import com.sinxn.mytasks.ui.navigation.Routes.Home
 import com.sinxn.mytasks.ui.navigation.Routes.Note
 import com.sinxn.mytasks.ui.navigation.Routes.Task
 import com.sinxn.mytasks.ui.features.backup.BackupScreen
-import com.sinxn.mytasks.ui.features.events.AddEditEventScreen
-import com.sinxn.mytasks.ui.features.events.EventListScreen
+import com.sinxn.mytasks.ui.features.events.addedit.AddEditEventScreen
+import com.sinxn.mytasks.ui.features.events.list.EventListScreen
 import com.sinxn.mytasks.ui.features.folders.FolderListScreen
 import com.sinxn.mytasks.ui.features.home.HomeScreen
-import com.sinxn.mytasks.ui.features.notes.AddEditNoteScreen
-import com.sinxn.mytasks.ui.features.notes.NoteListScreen
-import com.sinxn.mytasks.ui.features.tasks.AddEditTaskScreen
-import com.sinxn.mytasks.ui.features.tasks.TaskListScreen
+import com.sinxn.mytasks.ui.features.notes.addedit.AddEditNoteScreen
+import com.sinxn.mytasks.ui.features.notes.list.NoteListScreen
+import com.sinxn.mytasks.ui.features.tasks.addedit.AddEditTaskScreen
+import com.sinxn.mytasks.ui.features.tasks.list.TaskListScreen
 
 @Composable
 fun NavGraph(

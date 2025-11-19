@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.sinxn.mytasks.domain.models.Alarm
+import com.sinxn.mytasks.domain.repository.AlarmSchedulerInterface
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,7 +13,7 @@ import javax.inject.Singleton
 @Singleton
 class AlarmScheduler @Inject constructor(
     @ApplicationContext private val context: Context
-) {
+) : AlarmSchedulerInterface {
     private fun getIntent(alarm: Alarm): PendingIntent {
         return Intent(context, AlarmReceiver::class.java)
             .apply {
@@ -30,7 +31,7 @@ class AlarmScheduler @Inject constructor(
             )
         }
     }
-    fun scheduleAlarm(alarm: Alarm) {
+    override fun scheduleAlarm(alarm: Alarm) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         assert(alarmManager.canScheduleExactAlarms())
         alarmManager.setExactAndAllowWhileIdle(
@@ -39,7 +40,7 @@ class AlarmScheduler @Inject constructor(
             getIntent(alarm)
         )
     }
-    fun cancelAlarm(alarm: Alarm) {
+    override fun cancelAlarm(alarm: Alarm) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
         alarmManager?.cancel(getIntent(alarm))
     }

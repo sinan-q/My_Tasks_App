@@ -1,15 +1,14 @@
-package com.sinxn.mytasks.ui.features.tasks
+package com.sinxn.mytasks.ui.features.tasks.addedit
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.core.SelectionAction
-import com.sinxn.mytasks.core.SelectionStore
 import com.sinxn.mytasks.domain.models.Alarm
 import com.sinxn.mytasks.domain.models.Task
-import com.sinxn.mytasks.domain.repository.AlarmRepositoryInterface
-import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
-import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
-import com.sinxn.mytasks.domain.usecase.folder.GetPathUseCase
+import com.sinxn.mytasks.domain.usecase.alarm.AlarmUseCases
+import com.sinxn.mytasks.domain.usecase.folder.FolderUseCases
+import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
+import com.sinxn.mytasks.ui.features.tasks.list.TaskScreenUiState
+import com.sinxn.mytasks.ui.features.tasks.list.TaskUiState
 import com.sinxn.mytasks.utils.Constants
 import com.sinxn.mytasks.utils.differenceSeconds
 import com.sinxn.mytasks.utils.fromMillis
@@ -20,9 +19,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
@@ -30,31 +27,17 @@ import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 @HiltViewModel
-class TaskViewModel @Inject constructor(
-    private val repository: TaskRepositoryInterface,
-    private val alarmRepository: AlarmRepositoryInterface,
-    private val folderRepository: FolderRepositoryInterface,
-    private val selectionStore: SelectionStore,
-    private val getPathUseCase: GetPathUseCase
+class AddEditTaskViewModel @Inject constructor(
+    private val taskUseCases: TaskUseCases,
+    private val alarmUseCases: AlarmUseCases,
+    private val folderUseCases: FolderUseCases,
 ) : ViewModel() {
 
-    val selectedTasks = selectionStore.selectedTasks
-    val selectedAction = selectionStore.action
-    val selectionCount = selectionStore.selectionCount
-
-    private val _uiState = MutableStateFlow(TasksListUiState())
+    private val _uiState = MutableStateFlow(TaskScreenUiState())
     val uiState = _uiState.asStateFlow()
 
-    private val _taskScreenUiState = MutableStateFlow(TaskScreenUiState())
-    val taskScreenUiState = _taskScreenUiState.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            repository.getAllTasksSorted().map { tasks -> tasks.map { it.toListItemUiModel() } }.collectLatest { tasks ->
-                _uiState.value = TasksListUiState(tasks = tasks)
-            }
-        }
-    }
+    private val _toastMessage = MutableSharedFlow<String>()
+    val toastMessage = _toastMessage.asSharedFlow()
 
     fun onAction(action: AddEditTaskAction) {
         when (action) {
@@ -65,48 +48,32 @@ class TaskViewModel @Inject constructor(
             is AddEditTaskAction.FetchFolderById -> fetchFolderById(action.folderId)
             is AddEditTaskAction.AddReminder -> addReminder(action.reminder)
             is AddEditTaskAction.RemoveReminder -> removeReminder(action.reminder)
-            is AddEditTaskAction.UpdateStatusTask -> updateStatusTask(action.taskId, action.status)
-            is AddEditTaskAction.OnSelectionAction -> onSelectionAction(action.action)
         }
     }
 
-    suspend fun getPath(folderId: Long, hideLocked: Boolean): String? {
-        return getPathUseCase(folderId, hideLocked)
-    }
-
-    fun onSelectionTask(id: Long) = viewModelScope.launch {
-        repository.getTaskById(id)?.let { selectionStore.toggleTask(it) }
-    }
-
-    fun onSelectionAction(action: SelectionAction) = viewModelScope.launch {
-        selectionStore.onAction(action)
-    }
-    private val _toastMessage = MutableSharedFlow<String>()
-    val toastMessage = _toastMessage.asSharedFlow()
-
-    fun showToast(message: String) {
+    private fun showToast(message: String) {
         viewModelScope.launch {
             _toastMessage.emit(message)
         }
     }
 
     private fun onTaskUpdate(task: TaskUiState) {
-        _taskScreenUiState.value = _taskScreenUiState.value.copy(task = task)
+        _uiState.value = _uiState.value.copy(task = task)
     }
 
     private fun fetchTaskById(taskId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            _taskScreenUiState.value = _taskScreenUiState.value.copy(isLoading = true)
+            _uiState.value = _uiState.value.copy(isLoading = true)
             try {
-                val fetchedTask = repository.getTaskById(taskId)
+                val fetchedTask = taskUseCases.getTask(taskId)
                 if (fetchedTask == null) {
                     showToast("Task not found")
-                    _taskScreenUiState.value = _taskScreenUiState.value.copy(isLoading = false)
+                    _uiState.value = _uiState.value.copy(isLoading = false)
                     return@launch
                 }
 
                 val alarms = mutableListOf<Pair<Int, ChronoUnit>>().apply {
-                    alarmRepository.getAlarmsByTaskId(taskId).forEach { alarm ->
+                    alarmUseCases.getAlarmsByTaskId(taskId).forEach { alarm ->
                         fetchedTask.due?.differenceSeconds(fromMillis(alarm.time))?.let { it2 ->
                             val duration = Duration.ofSeconds(it2)
                             val pair = if (duration.toDaysPart() > 0) Pair(duration.toDaysPart().toInt(), ChronoUnit.DAYS) else if(duration.toHours() > 0) Pair(duration.toHoursPart(), ChronoUnit.HOURS) else if(duration.toMinutesPart() > 0) Pair(duration.toMinutesPart(), ChronoUnit.MINUTES) else Pair(duration.toSecondsPart(), ChronoUnit.SECONDS)
@@ -115,10 +82,10 @@ class TaskViewModel @Inject constructor(
                     }
                 }
 
-                val fetchedFolder = folderRepository.getFolderById(fetchedTask.folderId)
-                val subFolders = folderRepository.getSubFolders(fetchedTask.folderId).first()
+                val fetchedFolder = folderUseCases.getFolder(fetchedTask.folderId)
+                val subFolders = folderUseCases.getSubFolders(fetchedTask.folderId).first()
 
-                _taskScreenUiState.value = TaskScreenUiState(
+                _uiState.value = TaskScreenUiState(
                     task = fetchedTask.toUiState(),
                     reminders = alarms,
                     folder = fetchedFolder,
@@ -128,7 +95,7 @@ class TaskViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 showToast(e.message ?: "An error occurred")
-                _taskScreenUiState.value = _taskScreenUiState.value.copy(isLoading = false)
+                _uiState.value = _uiState.value.copy(isLoading = false)
             }
         }
     }
@@ -149,13 +116,14 @@ class TaskViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             var taskId = task.id
             if (taskId != null) {
-                repository.updateTask(task.toDomain())
-                alarmRepository.cancelAlarmsByTaskId(taskId)
-            } else taskId = repository.insertTask(task.toDomain())
+                taskUseCases.updateTask(task.toDomain())
+                alarmUseCases.cancelAlarmsByTaskId(taskId)
+            } else taskId = taskUseCases.addTask(task.toDomain())
+            
             task.due?.let { due ->
                 reminders.forEach { pair ->
                     val time = due.minus(pair.first.toLong(), pair.second).toMillis()
-                    alarmRepository.insertAlarm(
+                    alarmUseCases.insertAlarm(
                         Alarm(
                             alarmId = 0,
                             taskId = taskId,
@@ -175,9 +143,9 @@ class TaskViewModel @Inject constructor(
             return@launch
         }
         if(task.due != null) {
-            alarmRepository.cancelAlarmsByTaskId(task.id)
+            alarmUseCases.cancelAlarmsByTaskId(task.id)
         }
-        val deleted = repository.deleteTask(task.toDomain())
+        val deleted = taskUseCases.deleteTask(task.toDomain())
         if (deleted == 0) {
             showToast(Constants.DELETE_FAILED)
             return@launch
@@ -187,37 +155,31 @@ class TaskViewModel @Inject constructor(
     }
 
     private fun addReminder(pair: Pair<Int, ChronoUnit>) {
-        if (_taskScreenUiState.value.task.due == null || !validateReminder(_taskScreenUiState.value.task.due!!, pair)) {
+        if (_uiState.value.task.due == null || !validateReminder(_uiState.value.task.due!!, pair)) {
             showToast(Constants.NOTE_SAVE_FAILED_REMINDER_IN_PAST)
             return
         }
-        if (_taskScreenUiState.value.reminders.contains(pair)) {
+        if (_uiState.value.reminders.contains(pair)) {
             showToast(Constants.TASK_REMINDER_ALREADY_EXISTS)
             return
         }
-        _taskScreenUiState.value = _taskScreenUiState.value.copy(reminders = _taskScreenUiState.value.reminders.plus(pair))
+        _uiState.value = _uiState.value.copy(reminders = _uiState.value.reminders.plus(pair))
     }
 
     private fun validateReminder(dueDae: LocalDateTime, pair: Pair<Int, ChronoUnit>): Boolean = dueDae.minus(pair.first.toLong(),pair.second).isAfter(LocalDateTime.now())
 
     private fun removeReminder(pair: Pair<Int, ChronoUnit>) {
-        _taskScreenUiState.value = _taskScreenUiState.value.copy(reminders = _taskScreenUiState.value.reminders.minus(pair))
-    }
-
-    private fun updateStatusTask(taskId: Long, status: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.updateStatusTask(taskId, status)
-        }
+        _uiState.value = _uiState.value.copy(reminders = _uiState.value.reminders.minus(pair))
     }
 
     private fun fetchFolderById(folderId: Long) {
         viewModelScope.launch {
-            val fetchedFolder = folderRepository.getFolderById(folderId)
-            val subFolders = folderRepository.getSubFolders(folderId).first()
-            _taskScreenUiState.value = _taskScreenUiState.value.copy(
+            val fetchedFolder = folderUseCases.getFolder(folderId)
+            val subFolders = folderUseCases.getSubFolders(folderId).first()
+            _uiState.value = _uiState.value.copy(
                 folder = fetchedFolder,
                 folders = subFolders,
-                task = _taskScreenUiState.value.task.copy(folderId = folderId)
+                task = _uiState.value.task.copy(folderId = folderId)
             )
         }
     }

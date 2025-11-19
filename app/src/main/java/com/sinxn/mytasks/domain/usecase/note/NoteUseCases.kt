@@ -9,8 +9,10 @@ data class NoteUseCases(
     val deleteNote: DeleteNote,
     val addNote: AddNote,
     val getNote: GetNote,
+    val updateNote: UpdateNote,
     val toggleArchive: ToggleNoteArchive,
     val toggleArchives: ToggleNotesArchive,
+    val getNotesByFolderId: GetNotesByFolderId,
 )
 
 class GetNotes(private val repository: NoteRepositoryInterface) {
@@ -44,4 +46,12 @@ class ToggleNotesArchive(private val repository: NoteRepositoryInterface) {
         if (ids.isEmpty()) return
         if (archive) repository.archiveNotes(ids) else repository.unarchiveNotes(ids)
     }
+}
+
+class UpdateNote(private val repository: NoteRepositoryInterface) {
+    suspend operator fun invoke(note: Note) = repository.updateNote(note)
+}
+
+class GetNotesByFolderId(private val repository: NoteRepositoryInterface) {
+    operator fun invoke(folderId: Long) = repository.getNotesByFolderId(folderId)
 }

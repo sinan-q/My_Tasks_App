@@ -1,6 +1,7 @@
-package com.sinxn.mytasks.ui.features.tasks
+package com.sinxn.mytasks.ui.features.tasks.addedit
 
-import com.sinxn.mytasks.core.SelectionAction
+
+import com.sinxn.mytasks.ui.features.tasks.list.TaskUiState
 import java.time.temporal.ChronoUnit
 
 sealed class AddEditTaskAction {
@@ -11,6 +12,6 @@ sealed class AddEditTaskAction {
     data class FetchFolderById(val folderId: Long) : AddEditTaskAction()
     data class AddReminder(val reminder: Pair<Int, ChronoUnit>) : AddEditTaskAction()
     data class RemoveReminder(val reminder: Pair<Int, ChronoUnit>) : AddEditTaskAction()
-    data class UpdateStatusTask(val taskId: Long, val status: Boolean) : AddEditTaskAction()
-    data class OnSelectionAction(val action: SelectionAction) : AddEditTaskAction()
+
+
 }

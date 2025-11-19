@@ -1,4 +1,4 @@
-package com.sinxn.mytasks.ui.features.notes
+package com.sinxn.mytasks.ui.features.notes.list
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -44,7 +44,7 @@ import showBiometricsAuthentication
 
 @Composable
 fun NoteListScreen(
-    viewModel: NoteViewModel = hiltViewModel(),
+    viewModel: NoteListViewModel = hiltViewModel(),
     navController: NavController,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -80,7 +80,7 @@ fun NoteListScreen(
                         pasteDisabled = true,
                         action = selectionAction,
                         onAction = {
-                            viewModel.onAction(AddEditNoteAction.OnSelectionAction(it))
+                            viewModel.onAction(NoteListAction.OnSelectionAction(it))
                         },
 
                     )
@@ -163,7 +163,10 @@ fun NoteListScreen(
                                     onClick = {
                                         navController.navigate(
                                             NavRouteHelpers.routeFor(
-                                                NavRouteHelpers.NoteArgs(noteId = note.id, folderId = 0L)
+                                                NavRouteHelpers.NoteArgs(
+                                                    noteId = note.id,
+                                                    folderId = 0L
+                                                )
                                             )
                                         )
                                     },
@@ -177,10 +180,10 @@ fun NoteListScreen(
                 ConfirmationDialog(
                     showDialog = selectionAction == SelectionAction.Delete,
                     onDismiss = {
-                        viewModel.onAction(AddEditNoteAction.OnSelectionAction(SelectionAction.None))
+                        viewModel.onAction(NoteListAction.OnSelectionAction(SelectionAction.None))
                     },
                     onConfirm = {
-                        viewModel.onAction(AddEditNoteAction.OnSelectionAction(SelectionAction.DeleteConfirm(true)))
+                        viewModel.onAction(NoteListAction.OnSelectionAction(SelectionAction.DeleteConfirm(true)))
                     },
                     title = stringResource(R.string.delete_confirmation_title),
                     message = "Sure want to delete ${selectionCount.value} items?"
