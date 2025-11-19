@@ -12,7 +12,6 @@ import com.sinxn.mytasks.domain.usecase.home.HomeUseCases
 import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
 import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -115,7 +114,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun updateStatusTask(taskId: Long, status: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             taskUseCases.updateStatusTask(taskId, status)
         }
     }

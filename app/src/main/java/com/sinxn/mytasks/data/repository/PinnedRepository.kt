@@ -6,7 +6,9 @@ import com.sinxn.mytasks.data.mapper.toEntity
 import com.sinxn.mytasks.domain.models.ItemType
 import com.sinxn.mytasks.domain.models.Pinned
 import com.sinxn.mytasks.domain.repository.PinnedRepositoryInterface
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -14,7 +16,7 @@ class PinnedRepository @Inject constructor(
     private val dao: PinnedDao
 ) : PinnedRepositoryInterface {
     override fun getPinnedItems(): Flow<List<Pinned>> {
-        return dao.getPinnedItems().map { it.map { e -> e.toDomain() } }
+        return dao.getPinnedItems().map { it.map { e -> e.toDomain() } }.flowOn(Dispatchers.IO)
     }
 
     override suspend fun isPinned(itemId: Long, itemType: ItemType): Pinned? {

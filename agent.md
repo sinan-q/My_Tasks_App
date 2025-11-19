@@ -120,6 +120,7 @@
     *   `entities`: Room entities (often mapped 1:1 to domain models or same class).
 *   **`repository`**: Implementation of domain repositories.
     *   `NoteRepositoryImpl`, `TaskRepositoryImpl`, etc. These inject DAOs and map data if necessary.
+    *   **Threading**: All Repositories are **Main-Safe**. Flow-returning functions use `.flowOn(Dispatchers.IO)` to offload work to the IO dispatcher. Suspend functions are main-safe by default (Room handles its own threading).
 
 ### `di` Package
 *   `AppModule.kt`: Provides global dependencies (Database, Context, etc.).
@@ -147,7 +148,7 @@
 1.  **UI Event**: User clicks "Save" in `AddEditTaskScreen`.
 2.  **ViewModel**: `AddEditTaskViewModel` receives event, calls `taskUseCases.addTask()`.
 3.  **UseCase**: `AddTaskUseCase` (via wrapper) validates data, calls `TaskRepository.insertTask()`.
-4.  **Repository**: `TaskRepositoryImpl` calls `TaskDao.insertTask()`.
+4.  **Repository**: `TaskRepositoryImpl` calls `TaskDao.insertTask()` (Main-safe, offloaded to IO).
 5.  **Database**: Room inserts data into `tasks` table.
 6.  **UI Update**: `TaskListViewModel` observing `taskUseCases.getTasks()` (Flow) receives new list, updates `StateFlow`, UI recomposes.
 

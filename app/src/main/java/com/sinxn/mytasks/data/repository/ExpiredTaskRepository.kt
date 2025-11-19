@@ -5,7 +5,9 @@ import com.sinxn.mytasks.data.mapper.toDomain
 import com.sinxn.mytasks.data.mapper.toEntity
 import com.sinxn.mytasks.domain.models.ExpiredTask
 import com.sinxn.mytasks.domain.repository.ExpiredTaskRepositoryInterface
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -26,6 +28,6 @@ class ExpiredTaskRepository @Inject constructor(
     }
 
     override fun getAllExpiredTasks(): Flow<List<ExpiredTask>> {
-        return dao.getAllExpiredTasks().map { it.map { e -> e.toDomain() } }
+        return dao.getAllExpiredTasks().map { it.map { e -> e.toDomain() } }.flowOn(Dispatchers.IO)
     }
 }

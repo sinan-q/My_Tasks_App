@@ -14,7 +14,6 @@ import com.sinxn.mytasks.utils.differenceSeconds
 import com.sinxn.mytasks.utils.fromMillis
 import com.sinxn.mytasks.utils.toMillis
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -62,7 +61,7 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     private fun fetchTaskById(taskId: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             try {
                 val fetchedTask = taskUseCases.getTask(taskId)
@@ -113,7 +112,7 @@ class AddEditTaskViewModel @Inject constructor(
                 return
             }
         }
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             var taskId = task.id
             if (taskId != null) {
                 taskUseCases.updateTask(task.toDomain())
@@ -137,7 +136,7 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 
-    private fun deleteTask(task: TaskUiState) = viewModelScope.launch(Dispatchers.IO) {
+    private fun deleteTask(task: TaskUiState) = viewModelScope.launch {
         if (task.id == null) {
             showToast(Constants.DELETE_FAILED)
             return@launch

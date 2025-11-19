@@ -6,7 +6,9 @@ import com.sinxn.mytasks.data.mapper.toDomain
 import com.sinxn.mytasks.data.mapper.toEntity
 import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,11 +17,11 @@ import javax.inject.Singleton
 class FolderRepository @Inject constructor(
     private val folderDao: FolderDao
 ) : FolderRepositoryInterface {
-    override fun getAllFolders(): Flow<List<Folder>> = folderDao.getAllFolders().map { it.map { e -> e.toDomain() } }
+    override fun getAllFolders(): Flow<List<Folder>> = folderDao.getAllFolders().map { it.map { e -> e.toDomain() } }.flowOn(Dispatchers.IO)
 
-    override fun getArchivedFolders(): Flow<List<Folder>> = folderDao.getArchivedFolders().map { it.map { e -> e.toDomain() } }
+    override fun getArchivedFolders(): Flow<List<Folder>> = folderDao.getArchivedFolders().map { it.map { e -> e.toDomain() } }.flowOn(Dispatchers.IO)
 
-    override fun getSubFolders(parentId: Long?): Flow<List<Folder>> = folderDao.getSubFolders(parentId).map { it.map { e -> e.toDomain() } }
+    override fun getSubFolders(parentId: Long?): Flow<List<Folder>> = folderDao.getSubFolders(parentId).map { it.map { e -> e.toDomain() } }.flowOn(Dispatchers.IO)
 
     override suspend fun insertFolder(folder: Folder): Long = folderDao.insertFolder(folder.toEntity())
     override suspend fun insertFolders(folders: List<Folder>) = folderDao.insertFolders(folders.map { it.toEntity() })
