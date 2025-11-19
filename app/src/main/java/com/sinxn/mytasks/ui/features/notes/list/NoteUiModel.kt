@@ -12,6 +12,7 @@ data class NoteListItemUiModel(
     val title: String,
     val content: String,
     val lastModified: String,
+    val isSelected: Boolean = false
 )
 
 /**

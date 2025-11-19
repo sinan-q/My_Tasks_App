@@ -64,9 +64,6 @@ fun FolderListScreen(
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
     var isFolderNameEdit by remember { mutableStateOf(false) }
 
-    val selectedTasks by folderViewModel.selectedTasks.collectAsState()
-    val selectedFolders by folderViewModel.selectedFolders.collectAsState()
-    val selectedNotes by folderViewModel.selectedNotes.collectAsState()
     val selectionAction by folderViewModel.selectedAction.collectAsState()
     val selectionCount by folderViewModel.selectionCount.collectAsState()
 
@@ -241,7 +238,7 @@ fun FolderListScreen(
                             onDelete = { folderViewModel.onAction(FolderListAction.DeleteFolderList(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked))) },
                             onLock = { folderViewModel.onAction(FolderListAction.LockFolderList(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked))) },
                             onHold = { folderViewModel.onSelectionFolder(folder.id) },
-                            selected = selectedFolders.any { it.folderId == folder.id },
+                            selected = folder.isSelected,
                             modifier = Modifier.animateItem()
                         )
                     }
@@ -263,7 +260,7 @@ fun FolderListScreen(
                             onHold = { folderViewModel.onSelectionTask(task.id) },
                             onUpdate = { status -> folderViewModel.onAction(FolderListAction.UpdateTaskStatus(task.id, status)) },
                             path = null,
-                            selected = selectedTasks.any { it.id == task.id },
+                            selected = task.isSelected,
                             modifier = Modifier.animateItem()
                         )
                     }
@@ -278,7 +275,7 @@ fun FolderListScreen(
                                 )
                             },
                             onHold = { folderViewModel.onSelectionNote(note.id) },
-                            selected = selectedNotes.any { it.id == note.id },
+                            selected = note.isSelected,
                             modifier = Modifier.animateItem()
                         )
                     }

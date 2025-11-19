@@ -3,7 +3,7 @@ package com.sinxn.mytasks.ui.features.events.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionAction
-import com.sinxn.mytasks.core.SelectionStore
+import com.sinxn.mytasks.core.SelectionActionHandler
 import com.sinxn.mytasks.domain.models.Event
 import com.sinxn.mytasks.domain.models.Task
 import com.sinxn.mytasks.domain.usecase.event.EventUseCases
@@ -32,7 +32,7 @@ import javax.inject.Inject
 class EventListViewModel @Inject constructor(
     private val eventUseCases: EventUseCases,
     private val taskUseCases: TaskUseCases,
-    private val selectionStore: SelectionStore
+    private val selectionActionHandler: SelectionActionHandler
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EventsUiState())
@@ -85,7 +85,7 @@ class EventListViewModel @Inject constructor(
     }
 
     private fun onSelectionAction(action: SelectionAction) = viewModelScope.launch {
-        selectionStore.onAction(action)
+        selectionActionHandler.onAction(action)
     }
 
     private fun generateRecurringInstances(events: List<Event>): List<Event> {

@@ -10,6 +10,7 @@ data class FolderListItemUiModel(
     val id: Long,
     val name: String,
     val isLocked: Boolean,
+    val isSelected: Boolean = false,
 )
 
 /**

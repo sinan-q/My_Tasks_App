@@ -3,7 +3,8 @@ package com.sinxn.mytasks.ui.features.tasks.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionAction
-import com.sinxn.mytasks.core.SelectionStore
+import com.sinxn.mytasks.core.SelectionActionHandler
+import com.sinxn.mytasks.core.SelectionStateHolder
 import com.sinxn.mytasks.domain.usecase.folder.GetPathUseCase
 import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,13 +20,14 @@ import javax.inject.Inject
 @HiltViewModel
 class TaskListViewModel @Inject constructor(
     private val taskUseCases: TaskUseCases,
-    private val selectionStore: SelectionStore,
-    private val getPathUseCase: GetPathUseCase
+    private val getPathUseCase: GetPathUseCase,
+    private val selectionActionHandler: SelectionActionHandler,
+    private val selectionStateHolder: SelectionStateHolder
 ) : ViewModel() {
 
-    val selectedTasks = selectionStore.selectedTasks
-    val selectedAction = selectionStore.action
-    val selectionCount = selectionStore.selectionCount
+    val selectedTasks = selectionStateHolder.selectedTasks
+    val selectedAction = selectionStateHolder.action
+    val selectionCount = selectionStateHolder.selectionCount
 
     private val _uiState = MutableStateFlow(TasksListUiState())
     val uiState = _uiState.asStateFlow()
@@ -53,11 +55,11 @@ class TaskListViewModel @Inject constructor(
     }
 
     fun onSelectionTask(id: Long) = viewModelScope.launch {
-        taskUseCases.getTask(id)?.let { selectionStore.toggleTask(it) }
+        taskUseCases.getTask(id)?.let { selectionStateHolder.toggleTask(it) }
     }
 
     fun onSelectionAction(action: SelectionAction) = viewModelScope.launch {
-        selectionStore.onAction(action)
+        selectionActionHandler.onAction(action)
     }
 
     fun showToast(message: String) {

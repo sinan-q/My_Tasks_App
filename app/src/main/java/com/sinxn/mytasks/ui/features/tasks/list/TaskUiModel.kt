@@ -15,7 +15,8 @@ data class TaskListItemUiModel(
     val isCompleted: Boolean,
     val formattedDueDate: String?,
     val month: YearMonth,
-    val date: LocalDate?
+    val date: LocalDate?,
+    val isSelected: Boolean = false
 )
 
 /**

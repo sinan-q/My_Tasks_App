@@ -3,7 +3,8 @@ package com.sinxn.mytasks.ui.features.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionAction
-import com.sinxn.mytasks.core.SelectionStore
+import com.sinxn.mytasks.core.SelectionActionHandler
+import com.sinxn.mytasks.core.SelectionStateHolder
 import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.domain.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.domain.usecase.folder.FolderUseCases
@@ -38,29 +39,27 @@ class HomeViewModel @Inject constructor(
     private val folderUseCases: FolderUseCases,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
-    private val selectionStore: SelectionStore
-) : ViewModel() {
+    private val selectionActionHandler: SelectionActionHandler,
+    private val selectionStateHolder: SelectionStateHolder) : ViewModel() {
 
-    val selectedTasks = selectionStore.selectedTasks
-    val selectedNotes = selectionStore.selectedNotes
-    val selectedFolders = selectionStore.selectedFolders
-    val selectedAction = selectionStore.action
-    val selectionCount = selectionStore.selectionCount
+
+    val selectedAction = selectionStateHolder.action
+    val selectionCount = selectionStateHolder.selectionCount
 
     fun onSelectionTask(id: Long) = viewModelScope.launch {
-        taskUseCases.getTask(id)?.let { selectionStore.toggleTask(it) }
+        taskUseCases.getTask(id)?.let { selectionStateHolder.toggleTask(it) }
     }
 
     fun onSelectionNote(id: Long) = viewModelScope.launch {
-        noteUseCases.getNote(id)?.let { selectionStore.toggleNote(it) }
+        noteUseCases.getNote(id)?.let { selectionStateHolder.toggleNote(it) }
     }
 
     fun onSelectionFolder(id: Long) = viewModelScope.launch {
-        folderUseCases.getFolder(id).let { it?.let{ folder->  selectionStore.toggleFolder(folder)} }
+        folderUseCases.getFolder(id).let { it?.let{ folder->  selectionStateHolder.toggleFolder(folder)} }
     }
 
     fun onAction(action: SelectionAction) = viewModelScope.launch {
-        selectionStore.onAction(action)
+        selectionActionHandler.onAction(action)
     }
 
     private val _uiState = MutableStateFlow<HomeScreenUiState>(HomeScreenUiState.Loading)

@@ -3,7 +3,8 @@ package com.sinxn.mytasks.ui.features.notes.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.core.SelectionAction
-import com.sinxn.mytasks.core.SelectionStore
+import com.sinxn.mytasks.core.SelectionActionHandler
+import com.sinxn.mytasks.core.SelectionStateHolder
 import com.sinxn.mytasks.domain.models.Note
 import com.sinxn.mytasks.domain.usecase.folder.GetPathUseCase
 import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
@@ -21,13 +22,14 @@ import javax.inject.Inject
 @HiltViewModel
 class NoteListViewModel @Inject constructor(
     private val noteUseCases: NoteUseCases,
-    private val selectionStore: SelectionStore,
-    private val getPathUseCase: GetPathUseCase
+    private val getPathUseCase: GetPathUseCase,
+    private val selectionActionHandler: SelectionActionHandler,
+    private val selectionStateHolder: SelectionStateHolder
 ) : ViewModel() {
 
-    val selectedNotes = selectionStore.selectedNotes
-    val selectedAction = selectionStore.action
-    val selectionCount = selectionStore.selectionCount
+    val selectedNotes = selectionStateHolder.selectedNotes
+    val selectedAction = selectionStateHolder.action
+    val selectionCount = selectionStateHolder.selectionCount
 
     private val _uiState = MutableStateFlow<NoteScreenUiState>(NoteScreenUiState.Loading)
     val uiState: StateFlow<NoteScreenUiState> = _uiState.asStateFlow()
@@ -59,11 +61,11 @@ class NoteListViewModel @Inject constructor(
     }
 
     fun onSelectionNote(id: Long) = viewModelScope.launch {
-        noteUseCases.getNote(id)?.let { selectionStore.toggleNote(it) }
+        noteUseCases.getNote(id)?.let { selectionStateHolder.toggleNote(it) }
     }
 
     private fun onSelectionAction(action: SelectionAction) = viewModelScope.launch {
-        selectionStore.onAction(action)
+        selectionActionHandler.onAction(action)
     }
 
     fun showToast(message: String) {

@@ -2,7 +2,8 @@ package com.sinxn.mytasks.ui.features.folders
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sinxn.mytasks.core.SelectionStore
+import com.sinxn.mytasks.core.SelectionActionHandler
+import com.sinxn.mytasks.core.SelectionStateHolder
 import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.domain.usecase.folder.FolderUseCases
 import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
@@ -18,8 +19,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,23 +38,22 @@ class FolderViewModel @Inject constructor(
     private val noteUseCases: NoteUseCases,
     private val taskUseCases: TaskUseCases,
     private val folderUseCases: FolderUseCases,
-    private val selectionStore: SelectionStore
+    private val selectionActionHandler: SelectionActionHandler,
+    private val selectionStateHolder: SelectionStateHolder
 ) : ViewModel() {
 
-    val selectedTasks = selectionStore.selectedTasks
-    val selectedNotes = selectionStore.selectedNotes
-    val selectedFolders = selectionStore.selectedFolders
-    val selectedAction = selectionStore.action
-    val selectionCount = selectionStore.selectionCount
+
+    val selectedAction = selectionStateHolder.action
+    val selectionCount = selectionStateHolder.selectionCount
 
     fun onSelectionTask(id: Long) = viewModelScope.launch {
-        taskUseCases.getTask(id)?.let { selectionStore.toggleTask(it) }
+        taskUseCases.getTask(id)?.let { selectionStateHolder.toggleTask(it) }
     }
     fun onSelectionNote(id: Long) = viewModelScope.launch {
-        noteUseCases.getNote(id)?.let { selectionStore.toggleNote(it) }
+        noteUseCases.getNote(id)?.let { selectionStateHolder.toggleNote(it) }
     }
     fun onSelectionFolder(id: Long) = viewModelScope.launch {
-        folderUseCases.getFolder(id).let { it?.let {folder -> selectionStore.toggleFolder(folder) }}
+        folderUseCases.getFolder(id).let { it?.let {folder -> selectionStateHolder.toggleFolder(folder) }}
     }
 
     private val _uiState = MutableStateFlow<FolderScreenUiState>(FolderScreenUiState.Loading)
@@ -73,7 +71,7 @@ class FolderViewModel @Inject constructor(
                 is FolderListAction.UpdateFolderListName -> updateFolderName(action.folderId, action.newName)
                 is FolderListAction.GetSubFolders -> getSubFolders(action.folderId)
                 is FolderListAction.UpdateTaskStatus -> updateTaskStatus(action.taskId, action.status)
-                is FolderListAction.OnSelectionListAction -> selectionStore.onAction(action.action)
+                is FolderListAction.OnSelectionListAction -> selectionActionHandler.onAction(action.action)
             }
         }
 
@@ -132,20 +130,38 @@ class FolderViewModel @Inject constructor(
         }
     }
 
+    private var getSubFoldersJob: kotlinx.coroutines.Job? = null
+
     private fun getSubFolders(folderId: Long) {
-        viewModelScope.launch {
+        getSubFoldersJob?.cancel()
+        getSubFoldersJob = viewModelScope.launch {
             _uiState.value = FolderScreenUiState.Loading
             try {
                 val folder = folderUseCases.getFolder(folderId)
-                combine(
-                    folderUseCases.getSubFolders(folderId).map { folders -> folders.map { it.toListItemUiModel() } },
-                    taskUseCases.getTasksByFolderId(folderId).map { tasks -> tasks.map { it.toListItemUiModel() } },
-                    noteUseCases.getNotesByFolderId(folderId).map { notes -> notes.map { it.toListItemUiModel() } }
-                ) { folders, tasks, notes ->
+                com.sinxn.mytasks.domain.usecase.home.combine(
+                    folderUseCases.getSubFolders(folderId),
+                    taskUseCases.getTasksByFolderId(folderId),
+                    noteUseCases.getNotesByFolderId(folderId),
+                    selectionStateHolder.selectedFolders,
+                    selectionStateHolder.selectedTasks,
+                    selectionStateHolder.selectedNotes
+                ) { folders, tasks, notes, selectedFolders, selectedTasks, selectedNotes ->
                     FolderScreenUiState.Success(
-                        folders = folders,
-                        tasks = tasks,
-                        notes = notes,
+                        folders = folders.map { folderItem ->
+                            folderItem.toListItemUiModel().copy(
+                                isSelected = selectedFolders.any { it.folderId == folderItem.folderId }
+                            )
+                        },
+                        tasks = tasks.map { taskItem ->
+                            taskItem.toListItemUiModel().copy(
+                                isSelected = selectedTasks.any { it.id == taskItem.id }
+                            )
+                        },
+                        notes = notes.map { noteItem ->
+                            noteItem.toListItemUiModel().copy(
+                                isSelected = selectedNotes.any { it.id == noteItem.id }
+                            )
+                        },
                         folder = folder
                     )
                 }.collectLatest { state ->
@@ -156,6 +172,8 @@ class FolderViewModel @Inject constructor(
             }
         }
     }
+
+
 
 
 }

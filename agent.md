@@ -128,7 +128,8 @@
 *   `UseCaseModule.kt`: Provides Use Case instances.
 
 ### `core` Package
-*   `SelectionStore.kt`: A singleton (likely injected or object) managing multi-selection state (Copy, Cut, Paste, Delete) across screens.
+*   `SelectionStateHolder.kt`: A singleton pure state container managing multi-selection state (Selected items, Action mode).
+*   `SelectionActionHandler.kt`: Encapsulates business logic for executing selection actions (Copy, Cut, Paste, Delete, Pin, Archive).
 
 ### `utils` Package
 *   `Authentication.kt`: Biometric auth helpers.
