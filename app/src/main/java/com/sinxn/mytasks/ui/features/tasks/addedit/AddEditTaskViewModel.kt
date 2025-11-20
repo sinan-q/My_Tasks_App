@@ -4,9 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sinxn.mytasks.domain.models.Alarm
 import com.sinxn.mytasks.domain.models.Task
+import com.sinxn.mytasks.domain.models.RelationItemType
+import com.sinxn.mytasks.domain.models.ItemRelation
 import com.sinxn.mytasks.domain.usecase.alarm.AlarmUseCases
 import com.sinxn.mytasks.domain.usecase.folder.FolderUseCases
 import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
+import com.sinxn.mytasks.domain.usecase.event.EventUseCases
+import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
+import com.sinxn.mytasks.domain.usecase.relation.ItemRelationUseCases
+import com.sinxn.mytasks.ui.components.ParentItemOption
 import com.sinxn.mytasks.ui.features.tasks.list.TaskScreenUiState
 import com.sinxn.mytasks.ui.features.tasks.list.TaskUiState
 import com.sinxn.mytasks.utils.Constants
@@ -30,6 +36,9 @@ class AddEditTaskViewModel @Inject constructor(
     private val taskUseCases: TaskUseCases,
     private val alarmUseCases: AlarmUseCases,
     private val folderUseCases: FolderUseCases,
+    private val itemRelationUseCases: ItemRelationUseCases,
+    private val eventUseCases: EventUseCases,
+    private val noteUseCases: NoteUseCases,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TaskScreenUiState())
@@ -37,6 +46,10 @@ class AddEditTaskViewModel @Inject constructor(
 
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
+
+    val allTasks = taskUseCases.getTasks()
+    val allEvents = eventUseCases.getEvents()
+    val allNotes = noteUseCases.getNotes()
 
     fun onAction(action: AddEditTaskAction) {
         when (action) {
@@ -47,6 +60,8 @@ class AddEditTaskViewModel @Inject constructor(
             is AddEditTaskAction.FetchFolderById -> fetchFolderById(action.folderId)
             is AddEditTaskAction.AddReminder -> addReminder(action.reminder)
             is AddEditTaskAction.RemoveReminder -> removeReminder(action.reminder)
+            is AddEditTaskAction.SetParent -> setParent(action.parent)
+            is AddEditTaskAction.RemoveParent -> removeParent()
         }
     }
 
@@ -118,11 +133,21 @@ class AddEditTaskViewModel @Inject constructor(
                 val fetchedFolder = folderUseCases.getFolder(fetchedTask.folderId)
                 val subFolders = folderUseCases.getSubFolders(fetchedTask.folderId).first()
 
+                // Fetch Parent
+                val parentRelation = itemRelationUseCases.getParent(taskId, RelationItemType.TASK).first()
+                val parentOption = parentRelation?.let { fetchParentDetails(it) }
+
+                // Fetch Children
+                val childrenRelations = itemRelationUseCases.getChildren(taskId, RelationItemType.TASK).first()
+                val childrenOptions = fetchChildrenDetails(childrenRelations)
+
                 _uiState.value = TaskScreenUiState(
                     task = fetchedTask.toUiState(),
                     reminders = alarms,
                     folder = fetchedFolder,
                     folders = subFolders,
+                    parentItem = parentOption,
+                    relatedItems = childrenOptions,
                     isLoading = false
                 )
 
@@ -167,6 +192,22 @@ class AddEditTaskViewModel @Inject constructor(
                     )
                 }
             }
+
+            // Handle Parent Relation
+            val currentParent = _uiState.value.parentItem
+            if (currentParent != null) {
+                itemRelationUseCases.addRelation(
+                    ItemRelation(
+                        parentId = currentParent.id,
+                        parentType = currentParent.type,
+                        childId = taskId,
+                        childType = RelationItemType.TASK
+                    )
+                )
+            } else {
+                itemRelationUseCases.removeRelationsForItem(taskId, RelationItemType.TASK)
+            }
+
             showToast(Constants.SAVE_SUCCESS)
         }
     }
@@ -232,6 +273,41 @@ class AddEditTaskViewModel @Inject constructor(
                 folders = subFolders,
                 task = _uiState.value.task.copy(folderId = folderId)
             )
+        }
+    }
+    private fun setParent(parent: ParentItemOption) {
+        _uiState.value = _uiState.value.copy(parentItem = parent)
+    }
+
+    private fun removeParent() {
+        _uiState.value = _uiState.value.copy(parentItem = null)
+    }
+
+    private suspend fun fetchParentDetails(relation: ItemRelation): ParentItemOption? {
+        return try {
+            val title = when (relation.parentType) {
+                RelationItemType.TASK -> taskUseCases.getTask(relation.parentId)?.title
+                RelationItemType.EVENT -> eventUseCases.getEvent(relation.parentId)?.title
+                RelationItemType.NOTE -> noteUseCases.getNote(relation.parentId)?.title
+            }
+            title?.let { ParentItemOption(relation.parentId, it, relation.parentType) }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private suspend fun fetchChildrenDetails(relations: List<ItemRelation>): List<ParentItemOption> {
+        return relations.mapNotNull { relation ->
+            try {
+                val title = when (relation.childType) {
+                    RelationItemType.TASK -> taskUseCases.getTask(relation.childId)?.title
+                    RelationItemType.EVENT -> eventUseCases.getEvent(relation.childId)?.title
+                    RelationItemType.NOTE -> noteUseCases.getNote(relation.childId)?.title
+                }
+                title?.let { ParentItemOption(relation.childId, it, relation.childType) }
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 }

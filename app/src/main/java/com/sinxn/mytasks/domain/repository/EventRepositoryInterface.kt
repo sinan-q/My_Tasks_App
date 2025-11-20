@@ -8,7 +8,7 @@ interface EventRepositoryInterface {
     fun getAllEvents(): Flow<List<Event>>
     fun getArchivedEvents(): Flow<List<Event>>
     fun getEventsByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Event>>
-    suspend fun insertEvent(event: Event)
+    suspend fun insertEvent(event: Event): Long
     suspend fun insertEvents(events: List<Event>)
     suspend fun deleteEvent(event: Event): Int
     suspend fun clearAllEvents()

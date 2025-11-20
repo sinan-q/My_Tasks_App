@@ -45,6 +45,10 @@ import com.sinxn.mytasks.ui.components.MyTextField
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.features.folders.FolderDropDown
+import com.sinxn.mytasks.ui.components.ParentSelectionDialog
+import com.sinxn.mytasks.ui.components.ParentItemOption
+import androidx.compose.foundation.clickable
+import com.sinxn.mytasks.domain.models.RelationItemType
 import com.sinxn.mytasks.ui.features.notes.list.NoteScreenUiState
 import com.sinxn.mytasks.utils.Constants
 import com.sinxn.mytasks.utils.formatDate
@@ -57,12 +61,18 @@ fun AddEditNoteScreen(
     folderId: Long = 0,
     noteViewModel: AddEditNoteViewModel = hiltViewModel(),
     onFinish: () -> Unit,
+    onNavigateToItem: (Long, RelationItemType) -> Unit = { _, _ -> }
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
 
     val context = LocalContext.current
     val uiState by noteViewModel.uiState.collectAsState()
     var isEditing by remember { mutableStateOf(noteId == -1L) }
+    var showParentSelectionDialog by remember { mutableStateOf(false) }
+
+    val allTasks by noteViewModel.allTasks.collectAsState(initial = emptyList())
+    val allEvents by noteViewModel.allEvents.collectAsState(initial = emptyList())
+    val allNotes by noteViewModel.allNotes.collectAsState(initial = emptyList())
 
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -186,6 +196,79 @@ fun AddEditNoteScreen(
                         )
                     }
 
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    
+                    // Parent Item Section
+                    Text(
+                        text = "Parent Item",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                    )
+                    
+                    if (state.parentItem != null) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onNavigateToItem(state.parentItem!!.id, state.parentItem!!.type) }
+                                .padding(horizontal = 20.dp, vertical = 4.dp),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "[${state.parentItem!!.type.name}]",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = state.parentItem!!.title,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            if (isEditing) {
+                                IconButton(onClick = { noteViewModel.onAction(AddEditNoteAction.RemoveParent) }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Remove Parent")
+                                }
+                            }
+                        }
+                    } else if (isEditing) {
+                        androidx.compose.material3.TextButton(
+                            onClick = { showParentSelectionDialog = true },
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        ) {
+                            Text("Add Parent Item")
+                        }
+                    }
+
+                    // Related Items Section
+                    if (state.relatedItems.isNotEmpty()) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        Text(
+                            text = "Related Items",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                        )
+                        state.relatedItems.forEach { item ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onNavigateToItem(item.id, item.type) }
+                                    .padding(horizontal = 20.dp, vertical = 4.dp),
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "[${item.type.name}]",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                                Text(
+                                    text = item.title,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                        }
+                    }
+
                     HorizontalDivider()
                     if (isEditing) {
                         MyTextField(
@@ -207,7 +290,23 @@ fun AddEditNoteScreen(
                         )
                     }
                 }
-            }
+                }
+                
+                if (showParentSelectionDialog) {
+                    ParentSelectionDialog(
+                        onDismiss = { showParentSelectionDialog = false },
+                        onSelect = { 
+                            noteViewModel.onAction(AddEditNoteAction.SetParent(it))
+                            showParentSelectionDialog = false
+                        },
+                        tasks = allTasks,
+                        events = allEvents,
+                        notes = allNotes,
+                        currentId = noteId,
+                        currentType = RelationItemType.NOTE
+                    )
+                }
+
             ConfirmationDialog(
                 showDialog = showDeleteConfirmationDialog,
                 onDismiss = { showDeleteConfirmationDialog = false },

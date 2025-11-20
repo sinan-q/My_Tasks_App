@@ -9,7 +9,9 @@ sealed class NoteScreenUiState {
         val note: Note,
         val notes: List<NoteListItemUiModel>,
         val folder: Folder?,
-        val folders: List<Folder>
+        val folders: List<Folder>,
+        val parentItem: com.sinxn.mytasks.ui.components.ParentItemOption? = null,
+        val relatedItems: List<com.sinxn.mytasks.ui.components.ParentItemOption> = emptyList()
     ) : NoteScreenUiState()
     data class Error(val message: String) : NoteScreenUiState()
 }

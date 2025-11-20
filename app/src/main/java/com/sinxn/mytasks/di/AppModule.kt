@@ -6,6 +6,7 @@ import com.sinxn.mytasks.data.local.dao.AlarmDao
 import com.sinxn.mytasks.data.local.dao.EventDao
 import com.sinxn.mytasks.data.local.dao.ExpiredTaskDao
 import com.sinxn.mytasks.data.local.dao.FolderDao
+import com.sinxn.mytasks.data.local.dao.ItemRelationDao
 import com.sinxn.mytasks.data.local.dao.NoteDao
 import com.sinxn.mytasks.data.local.dao.PinnedDao
 import com.sinxn.mytasks.data.local.dao.TaskDao
@@ -16,6 +17,7 @@ import com.sinxn.mytasks.data.local.database.MIGRATION_5_6
 import com.sinxn.mytasks.data.local.database.MIGRATION_6_7
 import com.sinxn.mytasks.data.local.database.MIGRATION_7_8
 import com.sinxn.mytasks.data.local.database.MIGRATION_8_9
+import com.sinxn.mytasks.data.local.database.MIGRATION_9_10
 import com.sinxn.mytasks.ui.features.alarms.broadcastReceivers.AlarmScheduler
 import dagger.Module
 import dagger.Provides
@@ -37,7 +39,7 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "app_database"
-        ).addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9).build()
+        ).addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10).build()
     }
 
     @Provides
@@ -67,6 +69,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideExpiredTaskDao(database: AppDatabase): ExpiredTaskDao = database.expiredTaskDao()
+
+    @Provides
+    @Singleton
+    fun provideItemRelationDao(database: AppDatabase): ItemRelationDao = database.itemRelationDao()
 
     @Provides
     @Singleton

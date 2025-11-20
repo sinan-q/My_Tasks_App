@@ -21,7 +21,7 @@ class NoteRepository @Inject constructor(
 
     override fun getArchivedNotes(): Flow<List<Note>> = noteDao.getArchivedNotes().map { it.map { e -> e.toDomain() } }.flowOn(Dispatchers.IO)
 
-    override suspend fun insertNote(note: Note) = noteDao.insertNote(note.toEntity())
+    override suspend fun insertNote(note: Note): Long = noteDao.insertNote(note.toEntity())
     override suspend fun insertNotes(notes: List<Note>) = noteDao.insertNotes(notes.map { it.toEntity() })
 
     override suspend fun deleteNote(note: Note) = noteDao.deleteNote(note.toEntity())

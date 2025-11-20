@@ -24,9 +24,8 @@ class EventRepository @Inject constructor(
     override fun getEventsByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Event>> {
         return eventDao.getEventsByMonth(startOfMonth, endOfMonth).map { it.map { e -> e.toDomain() } }.flowOn(Dispatchers.IO)
     }
-    override suspend fun insertEvent(event: Event) {
-        eventDao.insertEvent(event.toEntity())
-    }
+    override suspend fun insertEvent(event: Event): Long =  eventDao.insertEvent(event.toEntity())
+
     override suspend fun insertEvents(events: List<Event>) {
         eventDao.insertEvents(events.map { it.toEntity() })
     }

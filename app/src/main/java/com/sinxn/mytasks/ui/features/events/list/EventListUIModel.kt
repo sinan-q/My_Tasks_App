@@ -16,4 +16,6 @@ data class EventsUiState(
     val folders: List<Folder> = emptyList(),
     val folder: Folder? = null,
     val event: Event = Event(),
+    val parentItem: com.sinxn.mytasks.ui.components.ParentItemOption? = null,
+    val relatedItems: List<com.sinxn.mytasks.ui.components.ParentItemOption> = emptyList(),
 )

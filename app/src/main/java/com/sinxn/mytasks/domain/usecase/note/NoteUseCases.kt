@@ -1,7 +1,9 @@
 package com.sinxn.mytasks.domain.usecase.note
 
 import com.sinxn.mytasks.domain.models.Note
+import com.sinxn.mytasks.domain.models.RelationItemType
 import com.sinxn.mytasks.domain.repository.NoteRepositoryInterface
+import com.sinxn.mytasks.domain.usecase.relation.RemoveRelationsForItem
 
 data class NoteUseCases(
     val getNotes: GetNotes,
@@ -23,12 +25,18 @@ class GetArchivedNotes(private val repository: NoteRepositoryInterface) {
     operator fun invoke() = repository.getArchivedNotes()
 }
 
-class DeleteNote(private val repository: NoteRepositoryInterface) {
-    suspend operator fun invoke(note: Note) = repository.deleteNote(note)
+class DeleteNote(
+    private val repository: NoteRepositoryInterface,
+    private val removeRelationsForItem: RemoveRelationsForItem
+) {
+    suspend operator fun invoke(note: Note): Int {
+        note.id?.let { removeRelationsForItem(it, RelationItemType.NOTE) }
+        return repository.deleteNote(note)
+    }
 }
 
 class AddNote(private val repository: NoteRepositoryInterface) {
-    suspend operator fun invoke(note: Note) = repository.insertNote(note)
+    suspend operator fun invoke(note: Note): Long = repository.insertNote(note)
 }
 
 class GetNote(private val repository: NoteRepositoryInterface) {

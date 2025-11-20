@@ -22,7 +22,7 @@ interface EventDao {
     fun getEventsByMonth(startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): Flow<List<Event>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEvent(event: Event)
+    suspend fun insertEvent(event: Event): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEvents(events: List<Event>)

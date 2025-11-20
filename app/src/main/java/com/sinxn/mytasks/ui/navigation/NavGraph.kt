@@ -55,6 +55,13 @@ fun NavGraph(
                 noteId = noteId,
                 folderId = folderId,
                 onFinish = { navController.popBackStack() },
+                onNavigateToItem = { id, type ->
+                    when (type) {
+                        com.sinxn.mytasks.domain.models.RelationItemType.TASK -> navController.navigate(Task.get(id))
+                        com.sinxn.mytasks.domain.models.RelationItemType.EVENT -> navController.navigate(Event.get(id))
+                        com.sinxn.mytasks.domain.models.RelationItemType.NOTE -> navController.navigate(Note.get(id))
+                    }
+                }
             )
         }
 
@@ -75,6 +82,13 @@ fun NavGraph(
                 onFinish = {
                     navController.popBackStack()
                 },
+                onNavigateToItem = { id, type ->
+                    when (type) {
+                        com.sinxn.mytasks.domain.models.RelationItemType.TASK -> navController.navigate(Task.get(id))
+                        com.sinxn.mytasks.domain.models.RelationItemType.EVENT -> navController.navigate(Event.get(id))
+                        com.sinxn.mytasks.domain.models.RelationItemType.NOTE -> navController.navigate(Note.get(id))
+                    }
+                }
             )
         }
         composable(Event.route) { EventListScreen(navController = navController) }
@@ -97,6 +111,13 @@ fun NavGraph(
                 date = date,
                 onFinish = {
                     navController.popBackStack()
+                },
+                onNavigateToItem = { id, type ->
+                    when (type) {
+                        com.sinxn.mytasks.domain.models.RelationItemType.TASK -> navController.navigate(Task.get(id))
+                        com.sinxn.mytasks.domain.models.RelationItemType.EVENT -> navController.navigate(Event.get(id))
+                        com.sinxn.mytasks.domain.models.RelationItemType.NOTE -> navController.navigate(Note.get(id))
+                    }
                 }
             )
         }

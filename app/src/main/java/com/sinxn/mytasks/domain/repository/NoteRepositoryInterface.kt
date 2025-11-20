@@ -4,7 +4,7 @@ import com.sinxn.mytasks.domain.models.Note
 import kotlinx.coroutines.flow.Flow
 
 interface NoteRepositoryInterface {
-    suspend fun insertNote(note: Note)
+    suspend fun insertNote(note: Note): Long
     suspend fun insertNotes(notes: List<Note>)
     suspend fun deleteNote(note: Note): Int
     suspend fun deleteNotes(notes: List<Note>)

@@ -55,6 +55,12 @@ import com.sinxn.mytasks.ui.components.RecurrenceComponent
 import com.sinxn.mytasks.ui.components.TimePickerDialog
 import com.sinxn.mytasks.ui.components.rememberPressBackTwiceState
 import com.sinxn.mytasks.ui.features.folders.FolderDropDown
+import com.sinxn.mytasks.ui.components.ParentSelectionDialog
+import com.sinxn.mytasks.ui.components.ParentItemOption
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
+import com.sinxn.mytasks.domain.models.RelationItemType
 
 import com.sinxn.mytasks.utils.Constants
 import com.sinxn.mytasks.utils.addTimerPickerState
@@ -72,6 +78,7 @@ fun AddEditTaskScreen(
     folderId: Long = 0,
     viewModel: AddEditTaskViewModel = hiltViewModel(),
     onFinish: () -> Unit,
+    onNavigateToItem: (Long, RelationItemType) -> Unit = { _, _ -> }
 ) {
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) } // State for dialog
 
@@ -84,7 +91,12 @@ fun AddEditTaskScreen(
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showParentSelectionDialog by remember { mutableStateOf(false) }
     var isEditing by remember { mutableStateOf(taskId == -1L) }
+
+    val allTasks by viewModel.allTasks.collectAsState(initial = emptyList())
+    val allEvents by viewModel.allEvents.collectAsState(initial = emptyList())
+    val allNotes by viewModel.allNotes.collectAsState(initial = emptyList())
 
     fun showToast(message : String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
@@ -232,6 +244,79 @@ fun AddEditTaskScreen(
                     )
                 }
 
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                
+                // Parent Item Section
+                Text(
+                    text = "Parent Item",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                )
+                
+                if (uiState.parentItem != null) {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onNavigateToItem(uiState.parentItem!!.id, uiState.parentItem!!.type) }
+                            .padding(horizontal = 20.dp, vertical = 4.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "[${uiState.parentItem!!.type.name}]",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = uiState.parentItem!!.title,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                        if (isEditing) {
+                            IconButton(onClick = { viewModel.onAction(AddEditTaskAction.RemoveParent) }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Remove Parent")
+                            }
+                        }
+                    }
+                } else if (isEditing) {
+                    TextButton(
+                        onClick = { showParentSelectionDialog = true },
+                        modifier = Modifier.padding(horizontal = 20.dp)
+                    ) {
+                        Text("Add Parent Item")
+                    }
+                }
+
+                // Related Items Section
+                if (uiState.relatedItems.isNotEmpty()) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    Text(
+                        text = "Related Items",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                    )
+                    uiState.relatedItems.forEach { item ->
+                        androidx.compose.foundation.layout.Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onNavigateToItem(item.id, item.type) }
+                                .padding(horizontal = 20.dp, vertical = 4.dp),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "[${item.type.name}]",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = item.title,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+
                 if (showDatePicker) {
                     val datePickerState = rememberDatePickerState(
                         initialSelectedDateMillis = taskInputState.due?.toMillis() ?: LocalDateTime.now().plusDays(1).toMillis()
@@ -278,6 +363,21 @@ fun AddEditTaskScreen(
                             state = timePickerState,
                         )
                     }
+                }
+                
+                if (showParentSelectionDialog) {
+                    ParentSelectionDialog(
+                        onDismiss = { showParentSelectionDialog = false },
+                        onSelect = { 
+                            viewModel.onAction(AddEditTaskAction.SetParent(it))
+                            showParentSelectionDialog = false
+                        },
+                        tasks = allTasks,
+                        events = allEvents,
+                        notes = allNotes,
+                        currentId = taskId,
+                        currentType = com.sinxn.mytasks.domain.models.RelationItemType.TASK
+                    )
                 }
             }
         }

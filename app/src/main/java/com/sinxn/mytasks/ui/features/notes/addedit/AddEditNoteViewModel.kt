@@ -8,6 +8,12 @@ import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
 import com.sinxn.mytasks.ui.features.notes.list.NoteScreenUiState
 import com.sinxn.mytasks.ui.features.notes.list.toListItemUiModel
 import com.sinxn.mytasks.utils.Constants
+import com.sinxn.mytasks.domain.models.RelationItemType
+import com.sinxn.mytasks.domain.models.ItemRelation
+import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
+import com.sinxn.mytasks.domain.usecase.event.EventUseCases
+import com.sinxn.mytasks.domain.usecase.relation.ItemRelationUseCases
+import com.sinxn.mytasks.ui.components.ParentItemOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +29,9 @@ import javax.inject.Inject
 class AddEditNoteViewModel @Inject constructor(
     private val noteUseCases: NoteUseCases,
     private val folderUseCases: FolderUseCases,
+    private val itemRelationUseCases: ItemRelationUseCases,
+    private val taskUseCases: TaskUseCases,
+    private val eventUseCases: EventUseCases,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NoteScreenUiState>(NoteScreenUiState.Loading)
@@ -30,6 +39,10 @@ class AddEditNoteViewModel @Inject constructor(
 
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
+
+    val allTasks = taskUseCases.getTasks()
+    val allEvents = eventUseCases.getEvents()
+    val allNotes = noteUseCases.getNotes()
 
     fun onAction(action: AddEditNoteAction) {
         when (action) {
@@ -39,6 +52,8 @@ class AddEditNoteViewModel @Inject constructor(
             is AddEditNoteAction.FetchNoteById -> fetchNoteById(action.noteId)
             is AddEditNoteAction.FetchFolderById -> fetchFolderById(action.folderId)
             is AddEditNoteAction.NewNoteByFolder -> newNoteByFolder(action.folderId)
+            is AddEditNoteAction.SetParent -> setParent(action.parent)
+            is AddEditNoteAction.RemoveParent -> removeParent()
         }
     }
 
@@ -61,7 +76,32 @@ class AddEditNoteViewModel @Inject constructor(
                 showToast(Constants.SAVE_FAILED_EMPTY)
                 return@launch
             }
-            noteUseCases.addNote(note)
+
+            var noteId = note.id
+            if (noteId != null) {
+                noteUseCases.updateNote(note)
+            } else {
+                noteId = noteUseCases.addNote(note)
+            }
+
+            // Handle Parent Relation
+            val currentState = _uiState.value
+            if (currentState is NoteScreenUiState.Success) {
+                val currentParent = currentState.parentItem
+                if (currentParent != null) {
+                    itemRelationUseCases.addRelation(
+                        ItemRelation(
+                            parentId = currentParent.id,
+                            parentType = currentParent.type,
+                            childId = noteId,
+                            childType = RelationItemType.NOTE
+                        )
+                    )
+                } else {
+                    itemRelationUseCases.removeRelationsForItem(noteId, RelationItemType.NOTE)
+                }
+            }
+
             showToast(Constants.SAVE_SUCCESS)
         }
     }
@@ -89,11 +129,22 @@ class AddEditNoteViewModel @Inject constructor(
                 val fetchedFolder = folderUseCases.getFolder(fetchedNote.folderId)
                 val subFolders = folderUseCases.getSubFolders(fetchedNote.folderId).first()
                 val notes = noteUseCases.getNotes().map { notes -> notes.map { it.toListItemUiModel() } }.first()
+                
+                // Fetch Parent
+                val parentRelation = itemRelationUseCases.getParent(noteId, RelationItemType.NOTE).first()
+                val parentOption = parentRelation?.let { fetchParentDetails(it) }
+
+                // Fetch Children
+                val childrenRelations = itemRelationUseCases.getChildren(noteId, RelationItemType.NOTE).first()
+                val childrenOptions = fetchChildrenDetails(childrenRelations)
+
                 _uiState.value = NoteScreenUiState.Success(
                     note = fetchedNote,
                     notes = notes,
                     folder = fetchedFolder,
-                    folders = subFolders
+                    folders = subFolders,
+                    parentItem = parentOption,
+                    relatedItems = childrenOptions
                 )
             } catch (e: Exception) {
                 _uiState.value = NoteScreenUiState.Error(e.message ?: "An error occurred")
@@ -135,6 +186,48 @@ class AddEditNoteViewModel @Inject constructor(
                 folder = fetchedFolder,
                 folders = subFolders
             )
+        }
+    }
+
+    private fun setParent(parent: ParentItemOption) {
+        val currentState = _uiState.value
+        if (currentState is NoteScreenUiState.Success) {
+            _uiState.value = currentState.copy(parentItem = parent)
+        }
+    }
+
+    private fun removeParent() {
+        val currentState = _uiState.value
+        if (currentState is NoteScreenUiState.Success) {
+            _uiState.value = currentState.copy(parentItem = null)
+        }
+    }
+
+    private suspend fun fetchParentDetails(relation: ItemRelation): ParentItemOption? {
+        return try {
+            val title = when (relation.parentType) {
+                RelationItemType.TASK -> taskUseCases.getTask(relation.parentId)?.title
+                RelationItemType.EVENT -> eventUseCases.getEvent(relation.parentId)?.title
+                RelationItemType.NOTE -> noteUseCases.getNote(relation.parentId)?.title
+            }
+            title?.let { ParentItemOption(relation.parentId, it, relation.parentType) }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private suspend fun fetchChildrenDetails(relations: List<ItemRelation>): List<ParentItemOption> {
+        return relations.mapNotNull { relation ->
+            try {
+                val title = when (relation.childType) {
+                    RelationItemType.TASK -> taskUseCases.getTask(relation.childId)?.title
+                    RelationItemType.EVENT -> eventUseCases.getEvent(relation.childId)?.title
+                    RelationItemType.NOTE -> noteUseCases.getNote(relation.childId)?.title
+                }
+                title?.let { ParentItemOption(relation.childId, it, relation.childType) }
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 }

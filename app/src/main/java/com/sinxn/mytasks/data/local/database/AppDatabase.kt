@@ -9,6 +9,7 @@ import com.sinxn.mytasks.data.local.dao.AlarmDao
 import com.sinxn.mytasks.data.local.dao.EventDao
 import com.sinxn.mytasks.data.local.dao.ExpiredTaskDao
 import com.sinxn.mytasks.data.local.dao.FolderDao
+import com.sinxn.mytasks.data.local.dao.ItemRelationDao
 import com.sinxn.mytasks.data.local.dao.NoteDao
 import com.sinxn.mytasks.data.local.dao.PinnedDao
 import com.sinxn.mytasks.data.local.dao.TaskDao
@@ -16,13 +17,14 @@ import com.sinxn.mytasks.data.local.entities.Alarm
 import com.sinxn.mytasks.data.local.entities.Event
 import com.sinxn.mytasks.data.local.entities.ExpiredTask
 import com.sinxn.mytasks.data.local.entities.Folder
+import com.sinxn.mytasks.data.local.entities.ItemRelation
 import com.sinxn.mytasks.data.local.entities.Note
 import com.sinxn.mytasks.data.local.entities.Pinned
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.utils.Converters
 
-const val DB_VERSION = 9
-@Database(entities = [Note::class, Task::class, Folder::class, Event::class, Alarm::class, Pinned::class, ExpiredTask::class],
+const val DB_VERSION = 10
+@Database(entities = [Note::class, Task::class, Folder::class, Event::class, Alarm::class, Pinned::class, ExpiredTask::class, ItemRelation::class],
     version = DB_VERSION,
     exportSchema = true)
 @TypeConverters(Converters::class)
@@ -34,10 +36,17 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun alarmDao(): AlarmDao
     abstract fun pinnedDao(): PinnedDao
     abstract fun expiredTaskDao(): ExpiredTaskDao
+    abstract fun itemRelationDao(): ItemRelationDao
 }
 
 val MIGRATION_8_9 = object : Migration(8, 9) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE alarm ADD COLUMN trigger TEXT NOT NULL DEFAULT 'FROM_END'")
+    }
+}
+
+val MIGRATION_9_10 = object : Migration(9, 10) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS `item_relations` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `parentId` INTEGER NOT NULL, `parentType` TEXT NOT NULL, `childId` INTEGER NOT NULL, `childType` TEXT NOT NULL)")
     }
 }

@@ -1,9 +1,7 @@
 package com.sinxn.mytasks.ui.features.tasks.addedit
 
 
-import com.sinxn.mytasks.ui.features.tasks.addedit.ReminderModel
 import com.sinxn.mytasks.ui.features.tasks.list.TaskUiState
-import java.time.temporal.ChronoUnit
 
 sealed class AddEditTaskAction {
     data class UpdateTask(val task: TaskUiState) : AddEditTaskAction()
@@ -13,6 +11,6 @@ sealed class AddEditTaskAction {
     data class FetchFolderById(val folderId: Long) : AddEditTaskAction()
     data class AddReminder(val reminder: ReminderModel) : AddEditTaskAction()
     data class RemoveReminder(val reminder: ReminderModel) : AddEditTaskAction()
-
-
+    data class SetParent(val parent: com.sinxn.mytasks.ui.components.ParentItemOption) : AddEditTaskAction()
+    object RemoveParent : AddEditTaskAction()
 }

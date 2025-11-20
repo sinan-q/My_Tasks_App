@@ -9,6 +9,8 @@ sealed class AddEditNoteAction {
     data class DeleteNote(val note: Note) : AddEditNoteAction()
     data class FetchNoteById(val noteId: Long) : AddEditNoteAction()
     data class FetchFolderById(val folderId: Long) : AddEditNoteAction()
+    data class SetParent(val parent: com.sinxn.mytasks.ui.components.ParentItemOption) : AddEditNoteAction()
+    object RemoveParent : AddEditNoteAction()
     data class NewNoteByFolder(val folderId: Long) : AddEditNoteAction()
 
 }

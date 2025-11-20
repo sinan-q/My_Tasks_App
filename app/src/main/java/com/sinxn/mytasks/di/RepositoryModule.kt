@@ -47,4 +47,6 @@ abstract class RepositoryModule {
     @Binds
     abstract fun bindAlarmScheduler(impl: com.sinxn.mytasks.ui.features.alarms.broadcastReceivers.AlarmScheduler): com.sinxn.mytasks.domain.repository.AlarmSchedulerInterface
 
+    @Binds
+    abstract fun bindItemRelationRepository(impl: com.sinxn.mytasks.data.repository.ItemRelationRepositoryImpl): com.sinxn.mytasks.domain.repository.ItemRelationRepository
 }

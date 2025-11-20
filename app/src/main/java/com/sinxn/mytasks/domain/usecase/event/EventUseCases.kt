@@ -1,7 +1,9 @@
 package com.sinxn.mytasks.domain.usecase.event
 
 import com.sinxn.mytasks.domain.models.Event
+import com.sinxn.mytasks.domain.models.RelationItemType
 import com.sinxn.mytasks.domain.repository.EventRepositoryInterface
+import com.sinxn.mytasks.domain.usecase.relation.RemoveRelationsForItem
 
 data class EventUseCases(
     val getEvents: GetEvents,
@@ -22,12 +24,18 @@ class GetArchivedEvents(private val repository: EventRepositoryInterface) {
     operator fun invoke() = repository.getArchivedEvents()
 }
 
-class DeleteEvent(private val repository: EventRepositoryInterface) {
-    suspend operator fun invoke(event: Event) = repository.deleteEvent(event)
+class DeleteEvent(
+    private val repository: EventRepositoryInterface,
+    private val removeRelationsForItem: RemoveRelationsForItem
+) {
+    suspend operator fun invoke(event: Event): Int {
+        event.id?.let { removeRelationsForItem(it, RelationItemType.EVENT) }
+        return repository.deleteEvent(event)
+    }
 }
 
 class AddEvent(private val repository: EventRepositoryInterface) {
-    suspend operator fun invoke(event: Event) = repository.insertEvent(event)
+    suspend operator fun invoke(event: Event): Long = repository.insertEvent(event)
 }
 
 class GetEvent(private val repository: EventRepositoryInterface) {

@@ -90,11 +90,14 @@ object UseCaseModule {
 
     @Provides
     @Singleton
-    fun provideNoteUseCases(repository: NoteRepositoryInterface): NoteUseCases {
+    fun provideNoteUseCases(
+        repository: NoteRepositoryInterface,
+        itemRelationUseCases: com.sinxn.mytasks.domain.usecase.relation.ItemRelationUseCases
+    ): NoteUseCases {
         return NoteUseCases(
             getNotes = GetNotes(repository),
             getArchivedNotes = GetArchivedNotes(repository),
-            deleteNote = DeleteNote(repository),
+            deleteNote = DeleteNote(repository, itemRelationUseCases.removeRelationsForItem),
             addNote = AddNote(repository),
             getNote = GetNote(repository),
             toggleArchive = ToggleNoteArchive(repository),
@@ -106,11 +109,14 @@ object UseCaseModule {
 
     @Provides
     @Singleton
-    fun provideTaskUseCases(repository: TaskRepositoryInterface): TaskUseCases {
+    fun provideTaskUseCases(
+        repository: TaskRepositoryInterface,
+        itemRelationUseCases: com.sinxn.mytasks.domain.usecase.relation.ItemRelationUseCases
+    ): TaskUseCases {
         return TaskUseCases(
             getTasks = GetTasks(repository),
             getArchivedTasks = GetArchivedTasks(repository),
-            deleteTask = DeleteTask(repository),
+            deleteTask = DeleteTask(repository, itemRelationUseCases.removeRelationsForItem),
             addTask = AddTask(repository),
             getTask = GetTask(repository),
             toggleArchive = ToggleTaskArchive(repository),
@@ -123,11 +129,14 @@ object UseCaseModule {
 
     @Provides
     @Singleton
-    fun provideEventUseCases(repository: EventRepositoryInterface): EventUseCases {
+    fun provideEventUseCases(
+        repository: EventRepositoryInterface,
+        itemRelationUseCases: com.sinxn.mytasks.domain.usecase.relation.ItemRelationUseCases
+    ): EventUseCases {
         return EventUseCases(
             getEvents = GetEvents(repository),
             getArchivedEvents = GetArchivedEvents(repository),
-            deleteEvent = DeleteEvent(repository),
+            deleteEvent = DeleteEvent(repository, itemRelationUseCases.removeRelationsForItem),
             addEvent = AddEvent(repository),
             getEvent = GetEvent(repository),
             toggleArchive = ToggleEventArchive(repository),
@@ -242,6 +251,18 @@ object UseCaseModule {
                 noteRepository,
                 pinnedRepository
             )
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideItemRelationUseCases(repository: com.sinxn.mytasks.domain.repository.ItemRelationRepository): com.sinxn.mytasks.domain.usecase.relation.ItemRelationUseCases {
+        return com.sinxn.mytasks.domain.usecase.relation.ItemRelationUseCases(
+            addRelation = com.sinxn.mytasks.domain.usecase.relation.AddRelation(repository),
+            removeRelation = com.sinxn.mytasks.domain.usecase.relation.RemoveRelation(repository),
+            removeRelationsForItem = com.sinxn.mytasks.domain.usecase.relation.RemoveRelationsForItem(repository),
+            getParent = com.sinxn.mytasks.domain.usecase.relation.GetParent(repository),
+            getChildren = com.sinxn.mytasks.domain.usecase.relation.GetChildren(repository)
         )
     }
 }

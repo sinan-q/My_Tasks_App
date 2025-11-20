@@ -2,6 +2,9 @@ package com.sinxn.mytasks.domain.usecase.task
 
 import com.sinxn.mytasks.domain.models.Task
 import com.sinxn.mytasks.domain.repository.TaskRepositoryInterface
+import com.sinxn.mytasks.domain.usecase.relation.RemoveRelationsForItem
+import com.sinxn.mytasks.domain.models.ItemType
+import com.sinxn.mytasks.domain.models.RelationItemType
 
 data class TaskUseCases(
     val getTasks: GetTasks,
@@ -24,8 +27,14 @@ class GetArchivedTasks(private val repository: TaskRepositoryInterface) {
     operator fun invoke() = repository.getArchivedTasks()
 }
 
-class DeleteTask(private val repository: TaskRepositoryInterface) {
-    suspend operator fun invoke(task: Task) = repository.deleteTask(task)
+class DeleteTask(
+    private val repository: TaskRepositoryInterface,
+    private val removeRelationsForItem: RemoveRelationsForItem
+) {
+    suspend operator fun invoke(task: Task): Int {
+        task.id?.let { removeRelationsForItem(it, RelationItemType.TASK) }
+        return repository.deleteTask(task)
+    }
 }
 
 class AddTask(private val repository: TaskRepositoryInterface) {

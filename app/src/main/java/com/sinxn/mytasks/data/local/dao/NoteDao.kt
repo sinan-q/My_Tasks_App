@@ -19,7 +19,7 @@ interface NoteDao {
     fun getArchivedNotes(): Flow<List<Note>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertNote(note: Note)
+    suspend fun insertNote(note: Note): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNotes(notes: List<Note>)

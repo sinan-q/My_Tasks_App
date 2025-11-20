@@ -26,6 +26,8 @@ data class TaskScreenUiState(
     val reminders: List<ReminderModel> = emptyList(),
     val folder: Folder? = null, // Will be replaced with FolderUiState
     val folders: List<Folder> = emptyList(), // Will be replaced with FolderUiState
+    val parentItem: com.sinxn.mytasks.ui.components.ParentItemOption? = null,
+    val relatedItems: List<com.sinxn.mytasks.ui.components.ParentItemOption> = emptyList(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 )
