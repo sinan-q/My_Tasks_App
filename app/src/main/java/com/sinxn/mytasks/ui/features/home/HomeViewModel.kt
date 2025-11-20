@@ -13,13 +13,20 @@ import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
 import com.sinxn.mytasks.domain.usecase.home.HomeUseCases
 import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
 import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
+import com.sinxn.mytasks.ui.features.events.toListItemUiModel
+import com.sinxn.mytasks.ui.features.folders.toListItemUiModel
+import com.sinxn.mytasks.ui.features.notes.list.toListItemUiModel
+import com.sinxn.mytasks.ui.features.tasks.list.toListItemUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -49,10 +56,52 @@ class HomeViewModel @Inject constructor(
     val selectionCount = selectionStateHolder.selectionCount
     
     // Expose all items for search
-    val allTasks = taskUseCases.getTasks()
-    val allEvents = eventUseCases.getEvents()
-    val allNotes = noteUseCases.getNotes()
-    val allFolders = folderUseCases.getFolders()
+
+    // Search state
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    
+    // Computed search results based on query and all items
+    val searchResults: StateFlow<List<Any>> = combine(
+        _searchQuery,
+        taskUseCases.getTasks(),
+        eventUseCases.getEvents(),
+        noteUseCases.getNotes(),
+        folderUseCases.getFolders()
+    ) { query, tasks, events, notes, folders ->
+        if (query.isBlank()) {
+            emptyList()
+        } else {
+            buildList {
+                // Add matching tasks
+                addAll(tasks.map { it.toListItemUiModel() }.filter {
+                    it.title.contains(query, ignoreCase = true) ||
+                    it.description?.contains(query, ignoreCase = true) == true
+                })
+                
+                // Add matching events
+                addAll(events.map { it.toListItemUiModel() }.filter {
+                    it.title.contains(query, ignoreCase = true) ||
+                    it.description?.contains(query, ignoreCase = true) == true
+                })
+                
+                // Add matching notes
+                addAll(notes.map { it.toListItemUiModel() }.filter {
+                    it.title.contains(query, ignoreCase = true) ||
+                    it.content.contains(query, ignoreCase = true)
+                })
+                
+                // Add matching folders
+                addAll(folders.map { it.toListItemUiModel() }.filter {
+                    it.name.contains(query, ignoreCase = true)
+                })
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
 
     fun onSelectionTask(id: Long) = viewModelScope.launch {
         taskUseCases.getTask(id)?.let { selectionStateHolder.toggleTask(it) }
@@ -78,7 +127,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            kotlinx.coroutines.flow.combine(
+            combine(
                 homeUseCases.getDashboardData(),
                 selectionStateHolder.selectedState
             ) { dashboardData, selectedState ->
@@ -154,5 +203,4 @@ class HomeViewModel @Inject constructor(
         }
     }
 }
-
 

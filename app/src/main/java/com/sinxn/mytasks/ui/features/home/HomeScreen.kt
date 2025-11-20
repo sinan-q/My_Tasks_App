@@ -50,17 +50,13 @@ import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.features.events.EventListItemUiModel
 import com.sinxn.mytasks.ui.features.events.EventSmallItem
-import com.sinxn.mytasks.ui.features.events.toListItemUiModel
 import com.sinxn.mytasks.ui.features.folders.FolderItem
 import com.sinxn.mytasks.ui.features.folders.FolderItemEdit
 import com.sinxn.mytasks.ui.features.folders.FolderListItemUiModel
-import com.sinxn.mytasks.ui.features.folders.toListItemUiModel
 import com.sinxn.mytasks.ui.features.notes.list.NoteItem
 import com.sinxn.mytasks.ui.features.notes.list.NoteListItemUiModel
-import com.sinxn.mytasks.ui.features.notes.list.toListItemUiModel
 import com.sinxn.mytasks.ui.features.tasks.list.TaskItem
 import com.sinxn.mytasks.ui.features.tasks.list.TaskListItemUiModel
-import com.sinxn.mytasks.ui.features.tasks.list.toListItemUiModel
 import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import com.sinxn.mytasks.ui.navigation.Routes
 import com.sinxn.mytasks.ui.navigation.Routes.Backup
@@ -76,16 +72,13 @@ fun HomeScreen(
     ) {
     val context = LocalContext.current
     var folderEditToggle by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
 
     val selectionAction by viewModel.selectedAction.collectAsState()
     val selectionCount by viewModel.selectionCount.collectAsState()
 
-    // Collect all items for comprehensive search
-    val allTasks by viewModel.allTasks.collectAsState(initial = emptyList())
-    val allEvents by viewModel.allEvents.collectAsState(initial = emptyList())
-    val allNotes by viewModel.allNotes.collectAsState(initial = emptyList())
-    val allFolders by viewModel.allFolders.collectAsState(initial = emptyList())
+    // Observe search state from ViewModel (MVVM pattern)
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val searchResults by viewModel.searchResults.collectAsState()
 
     var expanded by remember { mutableStateOf(false) }
     fun showToast(message: String) {
@@ -129,7 +122,7 @@ fun HomeScreen(
             MyTasksTopAppBar(
                 showSearch = true,
                 searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it },
+                onSearchQueryChange = { viewModel.updateSearchQuery(it) },
                 actions = {
                     IconButton(
                         onClick = { expanded = true }
@@ -169,37 +162,8 @@ fun HomeScreen(
             }
 
             is HomeScreenUiState.Success -> {
-                // When searching, aggregate all matching items from ALL items (not just home screen subsets)
+                // Search logic is handled in ViewModel (MVVM pattern)
                 val isSearching = searchQuery.isNotBlank()
-                
-                val searchResults = if (isSearching) {
-                    buildList {
-                        // Add matching tasks from ALL tasks
-                        addAll(allTasks.map { it.toListItemUiModel() }.filter {
-                            it.title.contains(searchQuery, ignoreCase = true) ||
-                            it.description?.contains(searchQuery, ignoreCase = true) == true
-                        })
-                        
-                        // Add matching events from ALL events
-                        addAll(allEvents.map { it.toListItemUiModel() }.filter {
-                            it.title.contains(searchQuery, ignoreCase = true) ||
-                            it.description?.contains(searchQuery, ignoreCase = true) == true
-                        })
-                        
-                        // Add matching notes from ALL notes
-                        addAll(allNotes.map { it.toListItemUiModel() }.filter {
-                            it.title.contains(searchQuery, ignoreCase = true) ||
-                            it.content.contains(searchQuery, ignoreCase = true)
-                        })
-                        
-                        // Add matching folders from ALL folders
-                        addAll(allFolders.map { it.toListItemUiModel() }.filter {
-                            it.name.contains(searchQuery, ignoreCase = true)
-                        })
-                    }
-                } else {
-                    emptyList()
-                }
 
                 val folders = state.homeUiModel.folders
                 val upcomingEvents = state.homeUiModel.upcomingEvents
