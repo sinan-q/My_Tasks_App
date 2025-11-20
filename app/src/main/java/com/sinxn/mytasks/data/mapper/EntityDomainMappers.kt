@@ -1,13 +1,5 @@
 package com.sinxn.mytasks.data.mapper
 
-import com.sinxn.mytasks.data.local.entities.Alarm as AlarmEntity
-import com.sinxn.mytasks.data.local.entities.Event as EventEntity
-import com.sinxn.mytasks.data.local.entities.ExpiredTask as ExpiredTaskEntity
-import com.sinxn.mytasks.data.local.entities.Folder as FolderEntity
-import com.sinxn.mytasks.data.local.entities.Note as NoteEntity
-import com.sinxn.mytasks.data.local.entities.Pinned as PinnedEntity
-import com.sinxn.mytasks.data.local.entities.ItemType as ItemTypeEntity
-import com.sinxn.mytasks.data.local.entities.Task as TaskEntity
 import com.sinxn.mytasks.domain.models.Alarm
 import com.sinxn.mytasks.domain.models.Event
 import com.sinxn.mytasks.domain.models.ExpiredTask
@@ -16,6 +8,14 @@ import com.sinxn.mytasks.domain.models.ItemType
 import com.sinxn.mytasks.domain.models.Note
 import com.sinxn.mytasks.domain.models.Pinned
 import com.sinxn.mytasks.domain.models.Task
+import com.sinxn.mytasks.data.local.entities.Alarm as AlarmEntity
+import com.sinxn.mytasks.data.local.entities.Event as EventEntity
+import com.sinxn.mytasks.data.local.entities.ExpiredTask as ExpiredTaskEntity
+import com.sinxn.mytasks.data.local.entities.Folder as FolderEntity
+import com.sinxn.mytasks.data.local.entities.ItemType as ItemTypeEntity
+import com.sinxn.mytasks.data.local.entities.Note as NoteEntity
+import com.sinxn.mytasks.data.local.entities.Pinned as PinnedEntity
+import com.sinxn.mytasks.data.local.entities.Task as TaskEntity
 
 // Note
 fun NoteEntity.toDomain(): Note = Note(
@@ -102,11 +102,13 @@ fun Folder.toEntity(): FolderEntity = FolderEntity(
 )
 
 // Alarm
+// Alarm
 fun AlarmEntity.toDomain(): Alarm = Alarm(
     alarmId = alarmId,
     isTask = isTask,
     taskId = taskId,
     time = time,
+    trigger = trigger
 )
 
 fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
@@ -114,6 +116,7 @@ fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
     isTask = isTask,
     taskId = taskId,
     time = time,
+    trigger = trigger
 )
 
 // Pinned

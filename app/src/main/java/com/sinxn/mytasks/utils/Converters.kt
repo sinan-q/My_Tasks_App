@@ -21,6 +21,20 @@ class Converters {
     fun localDateToEpochMilli(date: LocalDateTime?): Long {
         return date?.toMillis()?:0L
     }
+
+    @TypeConverter
+    fun fromReminderTrigger(trigger: ReminderTrigger): String {
+        return trigger.name
+    }
+
+    @TypeConverter
+    fun toReminderTrigger(value: String): ReminderTrigger {
+        return try {
+            ReminderTrigger.valueOf(value)
+        } catch (e: IllegalArgumentException) {
+            ReminderTrigger.FROM_END // Default fallback
+        }
+    }
 }
 
 class LocalDateTimeAdapter : TypeAdapter<LocalDateTime>() {

@@ -31,7 +31,7 @@ fun LocalDateTime.differenceSeconds(localDateTime: LocalDateTime): Long {
 fun LocalDateTime.addTimerPickerState(timePickerState: TimePickerState): LocalDateTime {
     return this.withHour(timePickerState.hour).withMinute(timePickerState.minute)
 }
-enum class ReminderTypes(val label: String, val unit: ChronoUnit) {
+enum class DurationUnit(val label: String, val unit: ChronoUnit) {
     SECOND("Seconds", ChronoUnit.SECONDS),
     MINUTE("Minutes", ChronoUnit.MINUTES),
     HOUR("Hours", ChronoUnit.HOURS),

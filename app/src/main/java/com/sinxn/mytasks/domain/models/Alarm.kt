@@ -5,4 +5,5 @@ data class Alarm(
     val isTask: Boolean,
     val taskId: Long,
     val time: Long,
+    val trigger: com.sinxn.mytasks.utils.ReminderTrigger = com.sinxn.mytasks.utils.ReminderTrigger.FROM_END
 )

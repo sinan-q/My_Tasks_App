@@ -3,6 +3,8 @@ package com.sinxn.mytasks.data.local.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.sinxn.mytasks.data.local.dao.AlarmDao
 import com.sinxn.mytasks.data.local.dao.EventDao
 import com.sinxn.mytasks.data.local.dao.ExpiredTaskDao
@@ -19,7 +21,7 @@ import com.sinxn.mytasks.data.local.entities.Pinned
 import com.sinxn.mytasks.data.local.entities.Task
 import com.sinxn.mytasks.utils.Converters
 
-const val DB_VERSION = 8
+const val DB_VERSION = 9
 @Database(entities = [Note::class, Task::class, Folder::class, Event::class, Alarm::class, Pinned::class, ExpiredTask::class],
     version = DB_VERSION,
     exportSchema = true)
@@ -32,4 +34,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun alarmDao(): AlarmDao
     abstract fun pinnedDao(): PinnedDao
     abstract fun expiredTaskDao(): ExpiredTaskDao
+}
+
+val MIGRATION_8_9 = object : Migration(8, 9) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE alarm ADD COLUMN trigger TEXT NOT NULL DEFAULT 'FROM_END'")
+    }
 }

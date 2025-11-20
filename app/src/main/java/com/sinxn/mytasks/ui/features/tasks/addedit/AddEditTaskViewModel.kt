@@ -71,12 +71,46 @@ class AddEditTaskViewModel @Inject constructor(
                     return@launch
                 }
 
-                val alarms = mutableListOf<Pair<Int, ChronoUnit>>().apply {
+                val alarms = mutableListOf<ReminderModel>().apply {
                     alarmUseCases.getAlarmsByTaskId(taskId).forEach { alarm ->
-                        fetchedTask.due?.differenceSeconds(fromMillis(alarm.time))?.let { it2 ->
-                            val duration = Duration.ofSeconds(it2)
-                            val pair = if (duration.toDaysPart() > 0) Pair(duration.toDaysPart().toInt(), ChronoUnit.DAYS) else if(duration.toHours() > 0) Pair(duration.toHoursPart(), ChronoUnit.HOURS) else if(duration.toMinutesPart() > 0) Pair(duration.toMinutesPart(), ChronoUnit.MINUTES) else Pair(duration.toSecondsPart(), ChronoUnit.SECONDS)
-                            add(pair)
+                        val alarmTime = fromMillis(alarm.time)
+                        val due = fetchedTask.due
+
+                        when (alarm.trigger) {
+                            com.sinxn.mytasks.utils.ReminderTrigger.FROM_END -> {
+                                if (due != null) {
+                                    val diff = Duration.between(alarmTime, due)
+                                    val pair = if (diff.toDaysPart() > 0) Pair(diff.toDaysPart().toInt(), ChronoUnit.DAYS)
+                                    else if (diff.toHoursPart() > 0) Pair(diff.toHoursPart(), ChronoUnit.HOURS)
+                                    else if (diff.toMinutesPart() > 0) Pair(diff.toMinutesPart(), ChronoUnit.MINUTES)
+                                    else Pair(diff.toSecondsPart(), ChronoUnit.SECONDS)
+                                    add(ReminderModel(pair.first, pair.second, com.sinxn.mytasks.utils.ReminderTrigger.FROM_END))
+                                } else {
+                                    // Fallback if due date is missing but trigger is FROM_END
+                                    add(ReminderModel(0, ChronoUnit.MINUTES, com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM, alarmTime))
+                                }
+                            }
+                            com.sinxn.mytasks.utils.ReminderTrigger.FROM_START -> {
+                                // For FROM_START, we calculate the duration from now to the alarm time.
+                                // This effectively shows "Time remaining" or "Time passed".
+                                val now = LocalDateTime.now()
+                                val diff = Duration.between(now, alarmTime)
+                                val pair = if (diff.toDaysPart() > 0) Pair(diff.toDaysPart().toInt(), ChronoUnit.DAYS)
+                                else if (diff.toHoursPart() > 0) Pair(diff.toHoursPart(), ChronoUnit.HOURS)
+                                else if (diff.toMinutesPart() > 0) Pair(diff.toMinutesPart(), ChronoUnit.MINUTES)
+                                else Pair(diff.toSecondsPart(), ChronoUnit.SECONDS)
+                                
+                                // If the alarm is in the past, we might want to show it as CUSTOM or handle negative duration.
+                                // For simplicity, if it's in the past, we show it as CUSTOM.
+                                if (alarmTime.isBefore(now)) {
+                                     add(ReminderModel(0, ChronoUnit.MINUTES, com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM, alarmTime))
+                                } else {
+                                     add(ReminderModel(pair.first, pair.second, com.sinxn.mytasks.utils.ReminderTrigger.FROM_START))
+                                }
+                            }
+                            com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM -> {
+                                add(ReminderModel(0, ChronoUnit.MINUTES, com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM, alarmTime))
+                            }
                         }
                     }
                 }
@@ -99,19 +133,19 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 
-    private fun insertTask(task: TaskUiState, reminders: List<Pair<Int, ChronoUnit>> ) {
+    private fun insertTask(task: TaskUiState, reminders: List<ReminderModel> ) {
         if (task.title.isEmpty() && task.description.isEmpty()) {
             showToast(Constants.SAVE_FAILED_EMPTY)
             return
         }
-        task.due?.let { due ->
-            if (reminders.isNotEmpty() && reminders.map {
-                validateReminder(due, it)
-            }.contains(false) ) {
-                showToast(Constants.NOTE_SAVE_FAILED_REMINDER_IN_PAST)
-                return
-            }
+        
+        if (reminders.isNotEmpty() && reminders.map {
+            validateReminder(task.due, it)
+        }.contains(false) ) {
+            showToast(Constants.NOTE_SAVE_FAILED_REMINDER_IN_PAST)
+            return
         }
+        
         viewModelScope.launch {
             var taskId = task.id
             if (taskId != null) {
@@ -119,15 +153,16 @@ class AddEditTaskViewModel @Inject constructor(
                 alarmUseCases.cancelAlarmsByTaskId(taskId)
             } else taskId = taskUseCases.addTask(task.toDomain())
             
-            task.due?.let { due ->
-                reminders.forEach { pair ->
-                    val time = due.minus(pair.first.toLong(), pair.second).toMillis()
+            reminders.forEach { reminder ->
+                val time = calculateAlarmTime(task.due, reminder)?.toMillis()
+                if (time != null) {
                     alarmUseCases.insertAlarm(
                         Alarm(
                             alarmId = 0,
                             taskId = taskId,
                             isTask = true, //TODO Event
-                            time = time
+                            time = time,
+                            trigger = reminder.trigger
                         )
                     )
                 }
@@ -153,22 +188,39 @@ class AddEditTaskViewModel @Inject constructor(
 
     }
 
-    private fun addReminder(pair: Pair<Int, ChronoUnit>) {
-        if (_uiState.value.task.due == null || !validateReminder(_uiState.value.task.due!!, pair)) {
+    private fun addReminder(reminder: ReminderModel) {
+        if (!validateReminder(_uiState.value.task.due, reminder)) {
             showToast(Constants.NOTE_SAVE_FAILED_REMINDER_IN_PAST)
             return
         }
-        if (_uiState.value.reminders.contains(pair)) {
+        if (_uiState.value.reminders.contains(reminder)) {
             showToast(Constants.TASK_REMINDER_ALREADY_EXISTS)
             return
         }
-        _uiState.value = _uiState.value.copy(reminders = _uiState.value.reminders.plus(pair))
+        _uiState.value = _uiState.value.copy(reminders = _uiState.value.reminders.plus(reminder))
     }
 
-    private fun validateReminder(dueDae: LocalDateTime, pair: Pair<Int, ChronoUnit>): Boolean = dueDae.minus(pair.first.toLong(),pair.second).isAfter(LocalDateTime.now())
+    private fun validateReminder(due: LocalDateTime?, reminder: ReminderModel): Boolean {
+        val alarmTime = calculateAlarmTime(due, reminder) ?: return false
+        return alarmTime.isAfter(LocalDateTime.now())
+    }
 
-    private fun removeReminder(pair: Pair<Int, ChronoUnit>) {
-        _uiState.value = _uiState.value.copy(reminders = _uiState.value.reminders.minus(pair))
+    private fun calculateAlarmTime(due: LocalDateTime?, reminder: ReminderModel): LocalDateTime? {
+        return when (reminder.trigger) {
+            com.sinxn.mytasks.utils.ReminderTrigger.FROM_END -> {
+                due?.minus(reminder.duration.toLong(), reminder.unit)
+            }
+            com.sinxn.mytasks.utils.ReminderTrigger.FROM_START -> {
+                LocalDateTime.now().plus(reminder.duration.toLong(), reminder.unit)
+            }
+            com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM -> {
+                reminder.customDateTime
+            }
+        }
+    }
+
+    private fun removeReminder(reminder: ReminderModel) {
+        _uiState.value = _uiState.value.copy(reminders = _uiState.value.reminders.minus(reminder))
     }
 
     private fun fetchFolderById(folderId: Long) {

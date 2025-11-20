@@ -22,17 +22,75 @@ import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.components.ScrollablePicker
 import com.sinxn.mytasks.utils.ReminderTypes
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
+import com.sinxn.mytasks.ui.components.TimePickerDialog
 import java.time.temporal.ChronoUnit
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RemindersSection(
-    reminders: List<Pair<Int, ChronoUnit>>,
+    reminders: List<ReminderModel>,
     isEditing: Boolean,
-    onRemoveReminder: (Pair<Int, ChronoUnit>) -> Unit,
-    onAddReminder: (Pair<Int, ChronoUnit>) -> Unit
+    onRemoveReminder: (ReminderModel) -> Unit,
+    onAddReminder: (ReminderModel) -> Unit
 ) {
     var reminder by remember { mutableStateOf("0") }
     var reminderType by remember { mutableStateOf(ReminderTypes.MINUTE) }
+    var reminderTrigger by remember { mutableStateOf(com.sinxn.mytasks.utils.ReminderTrigger.FROM_END) }
+    var customDate by remember { mutableStateOf(java.time.LocalDate.now()) }
+    var customTime by remember { mutableStateOf(java.time.LocalTime.now()) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+
+    if (showDatePicker) {
+        val datePickerState = androidx.compose.material3.rememberDatePickerState()
+        androidx.compose.material3.DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        customDate = java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                    }
+                    showDatePicker = false
+                    showTimePicker = true
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            androidx.compose.material3.DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        val timePickerState = androidx.compose.material3.rememberTimePickerState()
+        TimePickerDialog(
+            onDismiss = { showTimePicker = false },
+            onConfirm = {
+                customTime = java.time.LocalTime.of(timePickerState.hour, timePickerState.minute)
+                showTimePicker = false
+                onAddReminder(
+                    ReminderModel(
+                        0,
+                        java.time.temporal.ChronoUnit.MINUTES,
+                        com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM,
+                        java.time.LocalDateTime.of(customDate, customTime)
+                    )
+                )
+            },
+            content = {
+                androidx.compose.material3.TimePicker(state = timePickerState)
+            }
+        )
+    }
 
     Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
         Text(text = "Reminders on " )
@@ -46,7 +104,12 @@ fun RemindersSection(
                         Icon(Icons.Default.Close, contentDescription = "Delete Reminder")
                     }
                 }
-                Text(text = "${option.first} ${option.second.name}")
+                val text = when(option.trigger) {
+                    com.sinxn.mytasks.utils.ReminderTrigger.FROM_END -> "${option.duration} ${option.unit.name} before due"
+                    com.sinxn.mytasks.utils.ReminderTrigger.FROM_START -> "${option.duration} ${option.unit.name} after now"
+                    com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM -> "At ${option.customDateTime?.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, HH:mm"))}"
+                }
+                Text(text = text)
             }
         }
         if (isEditing) {
@@ -55,30 +118,54 @@ fun RemindersSection(
                 RectangleButton(
                     modifier = Modifier.height(itemHeight),
                     onClick = {
-                        onAddReminder(Pair(reminder.toInt(), reminderType.unit))
+                        if (reminderTrigger == com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM) {
+                            showDatePicker = true
+                        } else {
+                            onAddReminder(
+                                ReminderModel(
+                                    reminder.toInt(),
+                                    reminderType.unit,
+                                    reminderTrigger
+                                )
+                            )
+                        }
                     }
                 ) {
                     Icon(Icons.Default.Add, "Add Reminder")
                 }
-                ScrollablePicker(
-                    values = (0..60).toList(),
-                    defaultValue = 0,
-                    height = itemHeight,
-                    modifier = Modifier
-                        .width(70.dp)
-                        .height(itemHeight)
-                ) {
-                    reminder = it.toString()
+                
+                if (reminderTrigger != com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM) {
+                    ScrollablePicker(
+                        values = (0..60).toList(),
+                        defaultValue = 0,
+                        height = itemHeight,
+                        modifier = Modifier
+                            .width(70.dp)
+                            .height(itemHeight)
+                    ) {
+                        reminder = it.toString()
+                    }
+                    ScrollablePicker(
+                        values = ReminderTypes.entries.toList(),
+                        defaultValue = ReminderTypes.MINUTE,
+                        height = itemHeight,
+                        modifier = Modifier
+                            .width(100.dp)
+                            .height(itemHeight)
+                    ) {
+                        reminderType = it
+                    }
                 }
+                
                 ScrollablePicker(
-                    values = ReminderTypes.entries.toList(),
-                    defaultValue = ReminderTypes.MINUTE,
+                    values = com.sinxn.mytasks.utils.ReminderTrigger.entries.toList(),
+                    defaultValue = com.sinxn.mytasks.utils.ReminderTrigger.FROM_END,
                     height = itemHeight,
                     modifier = Modifier
-                        .width(100.dp)
+                        .width(120.dp)
                         .height(itemHeight)
                 ) {
-                    reminderType = it
+                    reminderTrigger = it
                 }
             }
         }
