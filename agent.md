@@ -169,3 +169,6 @@
 *   **Build Command**: `./gradlew assembleRelease`
 *   **Output**: `app/build/outputs/apk/release/app-release.apk`
 *   **Signing**: Requires `keystore.properties` in root.
+
+## Changelog
+*   **[Date: 2025-11-20] Feature**: Added `USE_FULL_SCREEN_INTENT` permission check in `MainActivity` for Android 14+ compatibility. Added `WindowManager` flags to `AlarmScreen` to ensure it wakes the device.
