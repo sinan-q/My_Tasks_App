@@ -14,6 +14,7 @@ import java.util.Locale
 data class EventListItemUiModel(
     val id: Long,
     val title: String,
+    val description: String? = null,
     val startDay: String,
     val day: LocalDate,
     val month: YearMonth,
@@ -31,6 +32,7 @@ fun Event.toListItemUiModel(): EventListItemUiModel {
     return EventListItemUiModel(
         id = this.id ?: 0, // Assuming id is never null for an event in a list
         title = this.title,
+        description = this.description,
         startDay = this.start?.dayOfMonth?.toString()?:"Error",
         startMonth = this.start?.month?.getDisplayName(TextStyle.SHORT, Locale.getDefault())?:"Error",
         month = this.start?.let { YearMonth.from(it) } ?: YearMonth.now(),

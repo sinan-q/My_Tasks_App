@@ -1,5 +1,6 @@
 package com.sinxn.mytasks.ui.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -15,19 +16,31 @@ fun MyTasksTopAppBar(
     title: @Composable () -> Unit = {},
     onNavigateUp: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
+    showSearch: Boolean = false,
+    searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {},
 ) {
-    TopAppBar(
-        title = title ,
-        navigationIcon = {
-            if (onNavigateUp != null) {
-                IconButton(onClick = onNavigateUp) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
+    Column {
+        TopAppBar(
+            title = title,
+            navigationIcon = {
+                if (onNavigateUp != null) {
+                    IconButton(onClick = onNavigateUp) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
                 }
-            }
-        },
-        actions = actions
-    )
+            },
+            actions = actions
+        )
+        
+        if (showSearch) {
+            SearchBar(
+                query = searchQuery,
+                onQueryChange = onSearchQueryChange,
+            )
+        }
+    }
 }

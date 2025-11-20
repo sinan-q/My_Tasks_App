@@ -50,13 +50,17 @@ import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.features.events.EventListItemUiModel
 import com.sinxn.mytasks.ui.features.events.EventSmallItem
+import com.sinxn.mytasks.ui.features.events.toListItemUiModel
 import com.sinxn.mytasks.ui.features.folders.FolderItem
 import com.sinxn.mytasks.ui.features.folders.FolderItemEdit
 import com.sinxn.mytasks.ui.features.folders.FolderListItemUiModel
+import com.sinxn.mytasks.ui.features.folders.toListItemUiModel
 import com.sinxn.mytasks.ui.features.notes.list.NoteItem
 import com.sinxn.mytasks.ui.features.notes.list.NoteListItemUiModel
+import com.sinxn.mytasks.ui.features.notes.list.toListItemUiModel
 import com.sinxn.mytasks.ui.features.tasks.list.TaskItem
 import com.sinxn.mytasks.ui.features.tasks.list.TaskListItemUiModel
+import com.sinxn.mytasks.ui.features.tasks.list.toListItemUiModel
 import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import com.sinxn.mytasks.ui.navigation.Routes
 import com.sinxn.mytasks.ui.navigation.Routes.Backup
@@ -72,9 +76,16 @@ fun HomeScreen(
     ) {
     val context = LocalContext.current
     var folderEditToggle by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
 
     val selectionAction by viewModel.selectedAction.collectAsState()
     val selectionCount by viewModel.selectionCount.collectAsState()
+
+    // Collect all items for comprehensive search
+    val allTasks by viewModel.allTasks.collectAsState(initial = emptyList())
+    val allEvents by viewModel.allEvents.collectAsState(initial = emptyList())
+    val allNotes by viewModel.allNotes.collectAsState(initial = emptyList())
+    val allFolders by viewModel.allFolders.collectAsState(initial = emptyList())
 
     var expanded by remember { mutableStateOf(false) }
     fun showToast(message: String) {
@@ -116,6 +127,9 @@ fun HomeScreen(
 
         topBar = {
             MyTasksTopAppBar(
+                showSearch = true,
+                searchQuery = searchQuery,
+                onSearchQueryChange = { searchQuery = it },
                 actions = {
                     IconButton(
                         onClick = { expanded = true }
@@ -155,6 +169,38 @@ fun HomeScreen(
             }
 
             is HomeScreenUiState.Success -> {
+                // When searching, aggregate all matching items from ALL items (not just home screen subsets)
+                val isSearching = searchQuery.isNotBlank()
+                
+                val searchResults = if (isSearching) {
+                    buildList {
+                        // Add matching tasks from ALL tasks
+                        addAll(allTasks.map { it.toListItemUiModel() }.filter {
+                            it.title.contains(searchQuery, ignoreCase = true) ||
+                            it.description?.contains(searchQuery, ignoreCase = true) == true
+                        })
+                        
+                        // Add matching events from ALL events
+                        addAll(allEvents.map { it.toListItemUiModel() }.filter {
+                            it.title.contains(searchQuery, ignoreCase = true) ||
+                            it.description?.contains(searchQuery, ignoreCase = true) == true
+                        })
+                        
+                        // Add matching notes from ALL notes
+                        addAll(allNotes.map { it.toListItemUiModel() }.filter {
+                            it.title.contains(searchQuery, ignoreCase = true) ||
+                            it.content.contains(searchQuery, ignoreCase = true)
+                        })
+                        
+                        // Add matching folders from ALL folders
+                        addAll(allFolders.map { it.toListItemUiModel() }.filter {
+                            it.name.contains(searchQuery, ignoreCase = true)
+                        })
+                    }
+                } else {
+                    emptyList()
+                }
+
                 val folders = state.homeUiModel.folders
                 val upcomingEvents = state.homeUiModel.upcomingEvents
                 val pendingTasks = state.homeUiModel.pendingTasks
@@ -169,6 +215,88 @@ fun HomeScreen(
                     columns = StaggeredGridCells.Fixed(2), //TODO Adaptive
                     modifier = Modifier.padding(horizontal = 16.dp),
                 ) {
+                    // Search Results Section
+                    if (isSearching) {
+                        item(span = StaggeredGridItemSpan.FullLine) {
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                MyTitle(onClick = {}, text = "Search Results (${searchResults.size})")
+                                HorizontalDivider()
+                                if (searchResults.isEmpty()) {
+                                    Text(
+                                        text = "No results found for \"$searchQuery\"",
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.Center,
+                                        color = LocalContentColor.current.copy(alpha =0.4f),
+                                        fontStyle = FontStyle.Italic
+                                    )
+                                }
+                            }
+                        }
+                        
+                        items(searchResults) { item ->
+                            when (item) {
+                                is NoteListItemUiModel -> NoteItem(
+                                    note = item,
+                                    onClick = {
+                                        navController.navigate(
+                                            NavRouteHelpers.routeFor(
+                                                NavRouteHelpers.NoteArgs(noteId = item.id, folderId = 0L)
+                                            )
+                                        )
+                                    },
+                                    onHold = { viewModel.onSelectionNote(item.id) },
+                                    selected = item.isSelected,
+                                    modifier = Modifier.animateItem()
+                                )
+
+                                is TaskListItemUiModel -> TaskItem(
+                                    task = item,
+                                    onClick = {
+                                        navController.navigate(
+                                            NavRouteHelpers.routeFor(
+                                                NavRouteHelpers.TaskArgs(taskId = item.id, folderId = 0L)
+                                            )
+                                        )
+                                    },
+                                    onUpdate = { status -> viewModel.updateStatusTask(item.id, status) },
+                                    onHold = { viewModel.onSelectionTask(item.id) },
+                                    path = null,
+                                    selected = item.isSelected,
+                                    modifier = Modifier.animateItem()
+                                )
+
+                                is EventListItemUiModel -> EventSmallItem(
+                                    item,
+                                    modifier = Modifier.animateItem()
+                                ) {
+                                    navController.navigate(
+                                        NavRouteHelpers.routeFor(
+                                            NavRouteHelpers.EventArgs(eventId = item.id, folderId = 0L, date = -1L)
+                                        )
+                                    )
+                                }
+
+                                is FolderListItemUiModel -> FolderItem(
+                                    folder = item,
+                                    onClick = {
+                                        navController.navigate(
+                                            NavRouteHelpers.routeFor(
+                                                NavRouteHelpers.FolderArgs(folderId = item.id)
+                                            )
+                                        )
+                                    },
+                                    onDelete = { viewModel.deleteFolder(Folder(folderId = item.id, name = item.name, isLocked = item.isLocked)) },
+                                    onLock = { viewModel.lockFolder(Folder(folderId = item.id, name = item.name, isLocked = item.isLocked)) },
+                                    onHold = { viewModel.onSelectionFolder(item.id) },
+                                    selected = item.isSelected,
+                                    modifier = Modifier.animateItem()
+                                )
+                            }
+                        }
+                    }
+                    
+                    // Regular sections - only show when NOT searching
+                    if (!isSearching) {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             MyTitle(onClick = { navController.navigate(Routes.Event.route) }, text = "Upcoming Events")
@@ -382,6 +510,7 @@ fun HomeScreen(
                         )
 
                     }
+                    } // End of if (!isSearching)
                 }
                 ConfirmationDialog(
                     showDialog = selectionAction == SelectionAction.Delete,

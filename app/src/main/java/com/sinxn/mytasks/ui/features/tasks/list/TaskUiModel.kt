@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter
 data class TaskListItemUiModel(
     val id: Long,
     val title: String,
+    val description: String? = null,
     val isCompleted: Boolean,
     val formattedDueDate: String?,
     val month: YearMonth,
@@ -28,6 +29,7 @@ fun Task.toListItemUiModel(): TaskListItemUiModel {
     return TaskListItemUiModel(
         id = this.id?: 0L,
         title = this.title,
+        description = this.description,
         isCompleted = this.isCompleted,
         formattedDueDate = this.due?.format(formatter),
         month = this.due?.let { YearMonth.from(it) } ?: YearMonth.now(),

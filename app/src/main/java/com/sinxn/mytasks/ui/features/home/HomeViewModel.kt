@@ -6,6 +6,7 @@ import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.core.SelectionActionHandler
 import com.sinxn.mytasks.core.SelectionStateHolder
 import com.sinxn.mytasks.domain.models.Folder
+import com.sinxn.mytasks.domain.usecase.event.EventUseCases
 import com.sinxn.mytasks.domain.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.domain.usecase.folder.FolderUseCases
 import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
@@ -37,6 +38,7 @@ class HomeViewModel @Inject constructor(
     private val taskUseCases: TaskUseCases,
     private val noteUseCases: NoteUseCases,
     private val folderUseCases: FolderUseCases,
+    private val eventUseCases: EventUseCases,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
     private val selectionActionHandler: SelectionActionHandler,
@@ -45,6 +47,12 @@ class HomeViewModel @Inject constructor(
 
     val selectedAction = selectionStateHolder.action
     val selectionCount = selectionStateHolder.selectionCount
+    
+    // Expose all items for search
+    val allTasks = taskUseCases.getTasks()
+    val allEvents = eventUseCases.getEvents()
+    val allNotes = noteUseCases.getNotes()
+    val allFolders = folderUseCases.getFolders()
 
     fun onSelectionTask(id: Long) = viewModelScope.launch {
         taskUseCases.getTask(id)?.let { selectionStateHolder.toggleTask(it) }
@@ -55,7 +63,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onSelectionFolder(id: Long) = viewModelScope.launch {
-        folderUseCases.getFolder(id).let { it?.let{ folder->  selectionStateHolder.toggleFolder(folder)} }
+        folderUseCases.getFolder(id).let { it?.let{ folder-> selectionStateHolder.toggleFolder(folder)} }
     }
 
     fun onAction(action: SelectionAction) = viewModelScope.launch {
