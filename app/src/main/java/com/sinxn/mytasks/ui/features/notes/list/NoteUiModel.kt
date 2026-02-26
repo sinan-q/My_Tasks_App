@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter
  */
 data class NoteListItemUiModel(
     val id: Long,
+    val folderId: Long,
     val title: String,
     val content: String,
     val lastModified: String,
@@ -23,6 +24,7 @@ fun Note.toListItemUiModel(): NoteListItemUiModel {
     val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
     return NoteListItemUiModel(
         id = this.id!!, // Assuming id is never null for a note in a list
+        folderId = this.folderId,
         title = this.title.ifEmpty { "Untitled Note" },
         content = this.content,
         lastModified = this.timestamp.format(formatter)

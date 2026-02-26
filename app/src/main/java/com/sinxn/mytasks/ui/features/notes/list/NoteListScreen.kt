@@ -150,7 +150,7 @@ fun NoteListScreen(
                         // Launch a coroutine for each item to get its path
                         LaunchedEffect(key1 = note.id, key2 = hideLocked) {
                             isLoadingPath = true
-                            path = viewModel.getPath(note.id, hideLocked)
+                            path = viewModel.getPath(note.folderId, hideLocked)
                             isLoadingPath = false
                         }
 
