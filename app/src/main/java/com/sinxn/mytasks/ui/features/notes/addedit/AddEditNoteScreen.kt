@@ -5,7 +5,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -170,7 +169,6 @@ fun AddEditNoteScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
-                        .verticalScroll(rememberScrollState())
                 ) {
                     MyTextField(
                         value = noteInputState.title,
@@ -280,7 +278,7 @@ fun AddEditNoteScreen(
                         MyTextField(
                             value = noteInputState.content,
                             onValueChange = { noteViewModel.onAction(AddEditNoteAction.UpdateNote(noteInputState.copy(content = it))) },
-                            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 300.dp),
+                            modifier = Modifier.fillMaxWidth().weight(1f),
                             placeholder = "Content",
                             textStyle = TextStyle.Default.copy(
                                 fontSize = 16.sp
@@ -289,7 +287,11 @@ fun AddEditNoteScreen(
                     } else {
                         MarkdownText(
                             markdown = noteInputState.content,
-                            modifier = Modifier.fillMaxWidth().padding(20.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
+                                .padding(20.dp),
                             isTextSelectable = true,
                             style = TextStyle.Default.copy(
                                 fontSize = 16.sp

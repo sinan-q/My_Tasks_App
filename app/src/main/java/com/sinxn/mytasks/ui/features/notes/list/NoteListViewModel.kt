@@ -34,6 +34,13 @@ class NoteListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<NoteScreenUiState>(NoteScreenUiState.Loading)
     val uiState: StateFlow<NoteScreenUiState> = _uiState.asStateFlow()
 
+    // Pre-computed paths map: noteId -> path string
+    private val _paths = MutableStateFlow<Map<Long, String?>>(emptyMap())
+    val paths: StateFlow<Map<Long, String?>> = _paths.asStateFlow()
+
+    private val _hideLocked = MutableStateFlow(true)
+    val hideLocked: StateFlow<Boolean> = _hideLocked.asStateFlow()
+
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
 
@@ -46,6 +53,26 @@ class NoteListViewModel @Inject constructor(
                 } else {
                     _uiState.value = NoteScreenUiState.Success(Note(), notes, null, emptyList())
                 }
+                // Pre-compute paths for all notes
+                computePaths(notes, _hideLocked.value)
+            }
+        }
+    }
+
+    private suspend fun computePaths(notes: List<NoteListItemUiModel>, hideLocked: Boolean) {
+        val pathsMap = mutableMapOf<Long, String?>()
+        for (note in notes) {
+            pathsMap[note.id] = getPathUseCase(note.folderId, hideLocked)
+        }
+        _paths.value = pathsMap
+    }
+
+    fun setHideLocked(hide: Boolean) {
+        _hideLocked.value = hide
+        val state = _uiState.value
+        if (state is NoteScreenUiState.Success) {
+            viewModelScope.launch {
+                computePaths(state.notes, hide)
             }
         }
     }
@@ -54,10 +81,6 @@ class NoteListViewModel @Inject constructor(
         when (action) {
             is NoteListAction.OnSelectionAction -> onSelectionAction(action.action)
         }
-    }
-
-    suspend fun getPath(folderId: Long, hideLocked: Boolean): String? {
-        return getPathUseCase(folderId, hideLocked)
     }
 
     fun onSelectionNote(id: Long) = viewModelScope.launch {

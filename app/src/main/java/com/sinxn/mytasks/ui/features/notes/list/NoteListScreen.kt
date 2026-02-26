@@ -69,7 +69,8 @@ fun NoteListScreen(
             }
         )
     }
-    var hideLocked by remember { mutableStateOf(true) }
+    val hideLocked by viewModel.hideLocked.collectAsState()
+    val paths by viewModel.paths.collectAsState()
     var expanded by remember { mutableStateOf(false) }
     Scaffold(
         bottomBar = { BottomBar(navController = navController) },
@@ -115,9 +116,9 @@ fun NoteListScreen(
                             .clickable {
                                 expanded = false
                                 if (hideLocked) {
-                                    authenticate { hideLocked = false }
+                                    authenticate { viewModel.setHideLocked(false) }
                                 } else {
-                                    hideLocked = true
+                                    viewModel.setHideLocked(true)
                                 }
                             },
                         text = (if (hideLocked) "Show" else "Hide") + " Locked Notes"
@@ -144,37 +145,26 @@ fun NoteListScreen(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
                     items(notes, key = { it.id }) { note ->
-                        var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state
-                        var isLoadingPath by remember { mutableStateOf(true) }
-
-                        // Launch a coroutine for each item to get its path
-                        LaunchedEffect(key1 = note.id, key2 = hideLocked) {
-                            isLoadingPath = true
-                            path = viewModel.getPath(note.folderId, hideLocked)
-                            isLoadingPath = false
-                        }
-
-                        if (!isLoadingPath)  // Only compose TaskItem if path is loaded
-
-                            if (path != null) {
-                                NoteItem(
-                                    note = note,
-                                    path = path,
-                                    onClick = {
-                                        navController.navigate(
-                                            NavRouteHelpers.routeFor(
-                                                NavRouteHelpers.NoteArgs(
-                                                    noteId = note.id,
-                                                    folderId = 0L
-                                                )
+                        val path = paths[note.id]
+                        if (path != null) {
+                            NoteItem(
+                                note = note,
+                                path = path,
+                                onClick = {
+                                    navController.navigate(
+                                        NavRouteHelpers.routeFor(
+                                            NavRouteHelpers.NoteArgs(
+                                                noteId = note.id,
+                                                folderId = 0L
                                             )
                                         )
-                                    },
-                                    onHold = { viewModel.onSelectionNote(note.id) },
-                                    selected = selectedNotes.notes.any { it.id == note.id },
-                                    modifier = Modifier.animateItem()
-                                )
-                            }
+                                    )
+                                },
+                                onHold = { viewModel.onSelectionNote(note.id) },
+                                selected = selectedNotes.notes.any { it.id == note.id },
+                                modifier = Modifier.animateItem()
+                            )
+                        }
                     }
                 }
                 ConfirmationDialog(
