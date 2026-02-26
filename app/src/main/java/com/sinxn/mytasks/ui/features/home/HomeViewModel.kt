@@ -132,15 +132,19 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val pinnedItems = pinnedUseCases.getPinnedItems()
+            // Combine pinned + selection into a Pair first (since combine supports max 5 flows)
+            val pinnedAndSelection = combine(
+                pinnedUseCases.getPinnedItems(),
+                selectionStateHolder.selectedState
+            ) { pinned, selected -> Pair(pinned, selected) }
 
             combine(
                 taskUseCases.getTasks(),
                 eventUseCases.getEvents(),
                 noteUseCases.getNotes(),
                 folderUseCases.getFolders(),
-                selectionStateHolder.selectedState
-            ) { allTasks, allEvents, allNotes, allFolders, selectedState ->
+                pinnedAndSelection
+            ) { allTasks, allEvents, allNotes, allFolders, (pinnedItems, selectedState) ->
 
                 // Get parent folder (root folder for home screen)
                 val parentFolder = folderRepository.getFolderById(0L)

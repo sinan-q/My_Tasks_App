@@ -3,9 +3,13 @@ package com.sinxn.mytasks.ui.features.home
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,6 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,6 +52,7 @@ import com.sinxn.mytasks.ui.components.BottomBar
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTitle
+import com.sinxn.mytasks.ui.components.RectangleCard
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.features.events.EventListItemUiModel
@@ -72,6 +79,7 @@ fun HomeScreen(
     ) {
     val context = LocalContext.current
     var folderEditToggle by remember { mutableStateOf(false) }
+    var showAllPendingTasks by remember { mutableStateOf(false) }
 
     val selectionAction by viewModel.selectedAction.collectAsState()
     val selectionCount by viewModel.selectionCount.collectAsState()
@@ -290,7 +298,6 @@ fun HomeScreen(
                             MyTitle(onClick = { //TODO
                             }, text = "Pending Tasks")
                             HorizontalDivider()
-                            // TODO: Animated items if possible
                             if (pendingTasks.isEmpty()) Text(
                                 text = "Nothing to show here",
                                 modifier = Modifier.fillMaxWidth(),
@@ -301,8 +308,9 @@ fun HomeScreen(
                         }
                     }
 
+                    // Show first 4 pending tasks always
                     items(
-                        items = pendingTasks,
+                        items = pendingTasks.take(4),
                         key = { task -> "pendingTask_${task.id}" },
                         span = { StaggeredGridItemSpan.FullLine },
                         contentType = { "pendingTask" }
@@ -322,6 +330,55 @@ fun HomeScreen(
                             selected = task.isSelected,
                             modifier = Modifier.animateItem()
                         )
+                    }
+
+                    // Remaining pending tasks shown with animation
+                    if (pendingTasks.size > 4) {
+                        item(span = StaggeredGridItemSpan.FullLine) {
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                AnimatedVisibility(
+                                    visible = showAllPendingTasks,
+                                    enter = expandVertically(),
+                                    exit = shrinkVertically()
+                                ) {
+                                    Column {
+                                        pendingTasks.drop(4).forEach { task ->
+                                            TaskItem(
+                                                task = task,
+                                                onClick = {
+                                                    navController.navigate(
+                                                        NavRouteHelpers.routeFor(
+                                                            NavRouteHelpers.TaskArgs(taskId = task.id, folderId = 0L)
+                                                        )
+                                                    )
+                                                },
+                                                onUpdate = { status -> viewModel.updateStatusTask(task.id, status) },
+                                                onHold = { viewModel.onSelectionTask(task.id) },
+                                                path = null,
+                                                selected = task.isSelected,
+                                                modifier = Modifier
+                                            )
+                                        }
+                                    }
+                                }
+                                RectangleCard(
+                                    onClick = { showAllPendingTasks = !showAllPendingTasks },
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(
+                                            text = if (showAllPendingTasks) "Show Less" else "Show All (${pendingTasks.size})",
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.Medium,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     item(span = StaggeredGridItemSpan.FullLine) {

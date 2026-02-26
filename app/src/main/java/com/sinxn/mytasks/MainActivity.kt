@@ -40,9 +40,11 @@ class MainActivity : AppCompatActivity() {
                     var showPermissionDialog by remember { mutableStateOf(false) }
 
                     LaunchedEffect(Unit) {
-                        val notificationManager = context.getSystemService(NotificationManager::class.java)
-                        if (!notificationManager.canUseFullScreenIntent()) {
-                            showPermissionDialog = true
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            val notificationManager = context.getSystemService(NotificationManager::class.java)
+                            if (!notificationManager.canUseFullScreenIntent()) {
+                                showPermissionDialog = true
+                            }
                         }
                     }
 
