@@ -32,6 +32,13 @@ class TaskListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TasksListUiState())
     val uiState = _uiState.asStateFlow()
 
+    // Pre-computed paths map: taskId -> path string
+    private val _paths = MutableStateFlow<Map<Long, String?>>(emptyMap())
+    val paths = _paths.asStateFlow()
+
+    private val _hideLocked = MutableStateFlow(true)
+    val hideLocked = _hideLocked.asStateFlow()
+
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage = _toastMessage.asSharedFlow()
 
@@ -39,7 +46,24 @@ class TaskListViewModel @Inject constructor(
         viewModelScope.launch {
             taskUseCases.getTasks().map { tasks -> tasks.map { it.toListItemUiModel() } }.collectLatest { tasks ->
                 _uiState.value = TasksListUiState(tasks = tasks)
+                // Pre-compute paths for all tasks
+                computePaths(tasks, _hideLocked.value)
             }
+        }
+    }
+
+    private suspend fun computePaths(tasks: List<TaskListItemUiModel>, hideLocked: Boolean) {
+        val pathsMap = mutableMapOf<Long, String?>()
+        for (task in tasks) {
+            pathsMap[task.id] = getPathUseCase(task.folderId, hideLocked)
+        }
+        _paths.value = pathsMap
+    }
+
+    fun setHideLocked(hide: Boolean) {
+        _hideLocked.value = hide
+        viewModelScope.launch {
+            computePaths(_uiState.value.tasks, hide)
         }
     }
 
@@ -48,10 +72,6 @@ class TaskListViewModel @Inject constructor(
             is TaskListAction.UpdateStatusTask -> updateStatusTask(action.taskId, action.status)
             is TaskListAction.OnSelectionAction -> onSelectionAction(action.action)
         }
-    }
-
-    suspend fun getPath(folderId: Long, hideLocked: Boolean): String? {
-        return getPathUseCase(folderId, hideLocked)
     }
 
     fun onSelectionTask(id: Long) = viewModelScope.launch {

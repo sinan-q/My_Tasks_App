@@ -52,7 +52,8 @@ fun TaskListScreen(
     val selectionCount = viewModel.selectionCount.collectAsState()
     val context = LocalContext.current
 
-    var hideLocked by remember { mutableStateOf(true) }
+    val hideLocked by viewModel.hideLocked.collectAsState()
+    val paths by viewModel.paths.collectAsState()
     var expanded by remember { mutableStateOf(false) }
 
     fun authenticate(function: () -> Unit) {
@@ -116,12 +117,12 @@ fun TaskListScreen(
                             .clickable {
                                 expanded = false
                                 if (hideLocked) {
-                                    authenticate { hideLocked = false }
+                                    authenticate { viewModel.setHideLocked(false) }
                                 } else {
-                                    hideLocked = true
+                                    viewModel.setHideLocked(true)
                                 }
                             },
-                        text = (if (hideLocked) "Show" else "Hide") + " Locked Notes"
+                        text = (if (hideLocked) "Show" else "Hide") + " Locked Tasks"
                     )
                 }
             }
@@ -139,43 +140,32 @@ fun TaskListScreen(
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
                 items(uiState.tasks, key = { it.id }) { task ->
-                    var path by remember { mutableStateOf<String?>(null) } // Start with null or a loading state
-                    var isLoadingPath by remember { mutableStateOf(true) }
-
-                    // Launch a coroutine for each item to get its path
-                    LaunchedEffect(key1 = task.id, key2 = hideLocked) {
-                        isLoadingPath = true
-                        path = viewModel.getPath(task.id, hideLocked)
-                        isLoadingPath = false
-                    }
-
-                    if (!isLoadingPath) {
-                        if (path != null)
-                            TaskItem(
-                                task = task,
-                                path = path,
-                                onClick = {
-                                    navController.navigate(
-                                        NavRouteHelpers.routeFor(
-                                            NavRouteHelpers.TaskArgs(
-                                                taskId = task.id,
-                                                folderId = 0L
-                                            )
+                    val path = paths[task.id]
+                    if (path != null)
+                        TaskItem(
+                            task = task,
+                            path = path,
+                            onClick = {
+                                navController.navigate(
+                                    NavRouteHelpers.routeFor(
+                                        NavRouteHelpers.TaskArgs(
+                                            taskId = task.id,
+                                            folderId = 0L
                                         )
                                     )
-                                },
-                                onUpdate = {
-                                    task.id.let { it1 ->
-                                        viewModel.onAction(
-                                            TaskListAction.UpdateStatusTask(it1, it)
-                                        )
-                                    }
-                                },
-                                onHold = { viewModel.onSelectionTask(task.id) },
-                                selected = selectedTasks.tasks.any { it.id == task.id },
-                                modifier = Modifier.animateItem()
-                            )
-                    }
+                                )
+                            },
+                            onUpdate = {
+                                task.id.let { it1 ->
+                                    viewModel.onAction(
+                                        TaskListAction.UpdateStatusTask(it1, it)
+                                    )
+                                }
+                            },
+                            onHold = { viewModel.onSelectionTask(task.id) },
+                            selected = selectedTasks.tasks.any { it.id == task.id },
+                            modifier = Modifier.animateItem()
+                        )
                 }
             }
             ConfirmationDialog(

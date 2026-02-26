@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter
  */
 data class TaskListItemUiModel(
     val id: Long,
+    val folderId: Long,
     val title: String,
     val description: String? = null,
     val isCompleted: Boolean,
@@ -28,6 +29,7 @@ fun Task.toListItemUiModel(): TaskListItemUiModel {
     val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
     return TaskListItemUiModel(
         id = this.id?: 0L,
+        folderId = this.folderId,
         title = this.title,
         description = this.description,
         isCompleted = this.isCompleted,
