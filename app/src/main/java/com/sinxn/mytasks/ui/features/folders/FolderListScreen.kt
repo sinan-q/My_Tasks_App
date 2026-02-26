@@ -164,6 +164,7 @@ fun FolderListScreen(
                             },
                             onNavigateUp = { if (folder.parentFolderId == 0L) navController.popBackStack() else folderViewModel.onAction(FolderListAction.GetSubFolders(folder.parentFolderId ?: 0L)) },
                             actions = {
+                                if (selectionCount == 0) {
                                 if (isFolderNameEdit) {
                                     IconButton(onClick = {
                                         isFolderNameEdit = false
@@ -202,7 +203,7 @@ fun FolderListScreen(
                                         )
                                     }
                                 }
-
+                                }
 
 
                             }
