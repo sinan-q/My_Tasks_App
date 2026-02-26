@@ -200,14 +200,16 @@ fun AddEditNoteScreen(
                         )
                     }
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    // Parent Item Section - only show when there's a parent or in edit mode
+                    if (state.parentItem != null || isEditing) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     
-                    // Parent Item Section
-                    Text(
-                        text = "Parent Item",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                    )
+                        Text(
+                            text = "Parent Item",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                        )
+                    }
                     
                     if (state.parentItem != null) {
                         Row(
@@ -288,6 +290,7 @@ fun AddEditNoteScreen(
                         MarkdownText(
                             markdown = noteInputState.content,
                             modifier = Modifier.fillMaxWidth().padding(20.dp),
+                            isTextSelectable = true,
                             style = TextStyle.Default.copy(
                                 fontSize = 16.sp
                             )

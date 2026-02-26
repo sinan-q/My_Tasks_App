@@ -242,14 +242,16 @@ fun AddEditTaskScreen(
                     )
                 }
 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                // Parent Item Section - only show when there's a parent or in edit mode
+                if (uiState.parentItem != null || isEditing) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 
-                // Parent Item Section
-                Text(
-                    text = "Parent Item",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                )
+                    Text(
+                        text = "Parent Item",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                    )
+                }
                 
                 if (uiState.parentItem != null) {
                     androidx.compose.foundation.layout.Row(
