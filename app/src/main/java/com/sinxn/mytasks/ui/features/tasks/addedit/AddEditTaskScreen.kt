@@ -386,7 +386,6 @@ fun AddEditTaskScreen(
             onConfirm = {
                 viewModel.onAction(AddEditTaskAction.DeleteTask(taskInputState))
                 showDeleteConfirmationDialog = false
-                onFinish()
             },
             title = stringResource(R.string.delete_confirmation_title),
             message = stringResource(R.string.delete_item_message)
