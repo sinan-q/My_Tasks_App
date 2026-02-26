@@ -5,9 +5,12 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -167,6 +170,7 @@ fun AddEditNoteScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
+                        .verticalScroll(rememberScrollState())
                 ) {
                     MyTextField(
                         value = noteInputState.title,
@@ -274,7 +278,7 @@ fun AddEditNoteScreen(
                         MyTextField(
                             value = noteInputState.content,
                             onValueChange = { noteViewModel.onAction(AddEditNoteAction.UpdateNote(noteInputState.copy(content = it))) },
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 300.dp),
                             placeholder = "Content",
                             textStyle = TextStyle.Default.copy(
                                 fontSize = 16.sp
@@ -283,7 +287,7 @@ fun AddEditNoteScreen(
                     } else {
                         MarkdownText(
                             markdown = noteInputState.content,
-                            modifier = Modifier.fillMaxSize().padding(20.dp),
+                            modifier = Modifier.fillMaxWidth().padding(20.dp),
                             style = TextStyle.Default.copy(
                                 fontSize = 16.sp
                             )
