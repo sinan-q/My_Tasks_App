@@ -55,7 +55,6 @@ import com.sinxn.mytasks.domain.models.RelationItemType
 import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTextField
-import com.sinxn.mytasks.ui.components.ParentItemOption
 import com.sinxn.mytasks.ui.components.ParentSelectionDialog
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.RecurrenceComponent

@@ -8,9 +8,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,11 +25,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sinxn.mytasks.ui.components.RectangleButton
 import com.sinxn.mytasks.ui.components.ScrollablePicker
-import com.sinxn.mytasks.utils.ReminderTypes
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
 import com.sinxn.mytasks.ui.components.TimePickerDialog
+import com.sinxn.mytasks.utils.ReminderTrigger
+import com.sinxn.mytasks.utils.ReminderTypes
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,7 +50,7 @@ fun RemindersSection(
 
 
     if (showDatePicker) {
-        val datePickerState = androidx.compose.material3.rememberDatePickerState()
+        val datePickerState = rememberDatePickerState()
         androidx.compose.material3.DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
@@ -66,23 +70,23 @@ fun RemindersSection(
                 }
             }
         ) {
-            androidx.compose.material3.DatePicker(state = datePickerState)
+            DatePicker(state = datePickerState)
         }
     }
 
     if (showTimePicker) {
-        val timePickerState = androidx.compose.material3.rememberTimePickerState()
+        val timePickerState = rememberTimePickerState()
         TimePickerDialog(
             onDismiss = { showTimePicker = false },
             onConfirm = {
-                customTime = java.time.LocalTime.of(timePickerState.hour, timePickerState.minute)
+                customTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
                 showTimePicker = false
                 onAddReminder(
                     ReminderModel(
                         0,
-                        java.time.temporal.ChronoUnit.MINUTES,
-                        com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM,
-                        java.time.LocalDateTime.of(customDate, customTime)
+                        ChronoUnit.MINUTES,
+                        ReminderTrigger.CUSTOM,
+                        LocalDateTime.of(customDate, customTime)
                     )
                 )
             },
@@ -105,9 +109,9 @@ fun RemindersSection(
                     }
                 }
                 val text = when(option.trigger) {
-                    com.sinxn.mytasks.utils.ReminderTrigger.FROM_END -> "${option.duration} ${option.unit.name} before due"
-                    com.sinxn.mytasks.utils.ReminderTrigger.FROM_START -> "${option.duration} ${option.unit.name} after now"
-                    com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM -> "At ${option.customDateTime?.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, HH:mm"))}"
+                    ReminderTrigger.FROM_END -> "${option.duration} ${option.unit.name} before due"
+                    ReminderTrigger.FROM_START -> "${option.duration} ${option.unit.name} after now"
+                    ReminderTrigger.CUSTOM -> "At ${option.customDateTime?.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, HH:mm"))}"
                 }
                 Text(text = text)
             }
@@ -118,7 +122,7 @@ fun RemindersSection(
                 RectangleButton(
                     modifier = Modifier.height(itemHeight),
                     onClick = {
-                        if (reminderTrigger == com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM) {
+                        if (reminderTrigger == ReminderTrigger.CUSTOM) {
                             showDatePicker = true
                         } else {
                             onAddReminder(
@@ -134,7 +138,7 @@ fun RemindersSection(
                     Icon(Icons.Default.Add, "Add Reminder")
                 }
                 
-                if (reminderTrigger != com.sinxn.mytasks.utils.ReminderTrigger.CUSTOM) {
+                if (reminderTrigger != ReminderTrigger.CUSTOM) {
                     ScrollablePicker(
                         values = (0..60).toList(),
                         defaultValue = 0,
@@ -158,8 +162,8 @@ fun RemindersSection(
                 }
                 
                 ScrollablePicker(
-                    values = com.sinxn.mytasks.utils.ReminderTrigger.entries.toList(),
-                    defaultValue = com.sinxn.mytasks.utils.ReminderTrigger.FROM_END,
+                    values = ReminderTrigger.entries.toList(),
+                    defaultValue = ReminderTrigger.FROM_END,
                     height = itemHeight,
                     modifier = Modifier
                         .width(120.dp)

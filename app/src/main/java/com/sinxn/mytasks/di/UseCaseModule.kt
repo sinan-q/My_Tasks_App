@@ -236,21 +236,9 @@ object UseCaseModule {
 
     @Provides
     @Singleton
-    fun provideHomeUseCases(
-        folderRepository: FolderRepositoryInterface,
-        eventRepository: EventRepositoryInterface,
-        taskRepository: TaskRepositoryInterface,
-        noteRepository: NoteRepositoryInterface,
-        pinnedRepository: PinnedRepositoryInterface
-    ): HomeUseCases {
+    fun provideHomeUseCases(): HomeUseCases {
         return HomeUseCases(
-            getDashboardData = GetDashboardDataUseCase(
-                folderRepository,
-                eventRepository,
-                taskRepository,
-                noteRepository,
-                pinnedRepository
-            )
+            getDashboardData = GetDashboardDataUseCase()
         )
     }
 

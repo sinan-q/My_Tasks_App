@@ -6,18 +6,21 @@ import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.core.SelectionActionHandler
 import com.sinxn.mytasks.core.SelectionStateHolder
 import com.sinxn.mytasks.domain.models.Folder
+import com.sinxn.mytasks.domain.repository.FolderRepositoryInterface
 import com.sinxn.mytasks.domain.usecase.event.EventUseCases
 import com.sinxn.mytasks.domain.usecase.folder.DeleteFolderAndItsContentsUseCase
 import com.sinxn.mytasks.domain.usecase.folder.FolderUseCases
 import com.sinxn.mytasks.domain.usecase.folder.LockFolderUseCase
 import com.sinxn.mytasks.domain.usecase.home.HomeUseCases
 import com.sinxn.mytasks.domain.usecase.note.NoteUseCases
+import com.sinxn.mytasks.domain.usecase.pinned.PinnedUseCases
 import com.sinxn.mytasks.domain.usecase.task.TaskUseCases
 import com.sinxn.mytasks.ui.features.events.toListItemUiModel
 import com.sinxn.mytasks.ui.features.folders.toListItemUiModel
 import com.sinxn.mytasks.ui.features.notes.list.toListItemUiModel
 import com.sinxn.mytasks.ui.features.tasks.list.toListItemUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -46,6 +49,8 @@ class HomeViewModel @Inject constructor(
     private val noteUseCases: NoteUseCases,
     private val folderUseCases: FolderUseCases,
     private val eventUseCases: EventUseCases,
+    private val pinnedUseCases: PinnedUseCases,
+    private val folderRepository: FolderRepositoryInterface,
     private val deleteFolderAndItsContentsUseCase: DeleteFolderAndItsContentsUseCase,
     private val lockFolderUseCase: LockFolderUseCase,
     private val selectionActionHandler: SelectionActionHandler,
@@ -127,10 +132,31 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            val pinnedItems = pinnedUseCases.getPinnedItems()
+
             combine(
-                homeUseCases.getDashboardData(),
+                taskUseCases.getTasks(),
+                eventUseCases.getEvents(),
+                noteUseCases.getNotes(),
+                folderUseCases.getFolders(),
                 selectionStateHolder.selectedState
-            ) { dashboardData, selectedState ->
+            ) { allTasks, allEvents, allNotes, allFolders, selectedState ->
+
+                // Get parent folder (root folder for home screen)
+                val parentFolder = folderRepository.getFolderById(0L)
+                
+                // Call refactored use case with all items - performs in-memory filtering
+                val dashboardData = homeUseCases.getDashboardData(
+                    allFolders = allFolders,
+                    allEvents = allEvents,
+                    allTasks = allTasks,
+                    allNotes = allNotes,
+                    pinnedItems = pinnedItems,
+                    parentFolder = parentFolder,
+                    parentFolderId = 0L
+                )
+                
+                // Apply selection state to UI models
                 HomeScreenUiState.Success(dashboardData.copy(
                     folders = dashboardData.folders.map { folderItem ->
                         folderItem.copy(
@@ -203,4 +229,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 }
+
+
 
