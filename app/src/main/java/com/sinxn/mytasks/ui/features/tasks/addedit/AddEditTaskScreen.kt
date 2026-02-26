@@ -98,7 +98,7 @@ fun AddEditTaskScreen(
 
     fun showToast(message : String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-        if (message in listOf(Constants.SAVE_SUCCESS, Constants.DELETE_SUCCESS, Constants.NOT_FOUND)) onFinish()
+        if (message in listOf(Constants.DELETE_SUCCESS, Constants.NOT_FOUND)) onFinish()
     }
     LaunchedEffect(key1 = Unit) {
         viewModel.toastMessage.collectLatest { message ->
