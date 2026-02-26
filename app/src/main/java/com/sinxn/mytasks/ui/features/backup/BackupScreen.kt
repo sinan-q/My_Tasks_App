@@ -16,6 +16,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sinxn.mytasks.ui.components.RectangleButton
 import kotlinx.coroutines.flow.collectLatest
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun BackupScreen(
@@ -46,7 +48,8 @@ fun BackupScreen(
     }
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         RectangleButton(onClick = {
-            directoryPickerLauncher.launch("backup.db")
+            val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"))
+            directoryPickerLauncher.launch("mytasks_${timestamp}.json")
             Toast.makeText(context, "Exported!" , Toast.LENGTH_SHORT).show()
         }) {
             Text("Export Database")
