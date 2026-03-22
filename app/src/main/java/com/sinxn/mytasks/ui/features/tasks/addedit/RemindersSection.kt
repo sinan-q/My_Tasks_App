@@ -36,6 +36,7 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun RemindersSection(
     reminders: List<ReminderModel>,
+    isRecurring: Boolean = false,
     isEditing: Boolean,
     onRemoveReminder: (ReminderModel) -> Unit,
     onAddReminder: (ReminderModel) -> Unit
@@ -161,8 +162,14 @@ fun RemindersSection(
                     }
                 }
                 
+                val triggerOptions = if (isRecurring) {
+                    listOf(ReminderTrigger.FROM_END)
+                } else {
+                    ReminderTrigger.entries.toList()
+                }
+
                 ScrollablePicker(
-                    values = ReminderTrigger.entries.toList(),
+                    values = triggerOptions,
                     defaultValue = ReminderTrigger.FROM_END,
                     height = itemHeight,
                     modifier = Modifier

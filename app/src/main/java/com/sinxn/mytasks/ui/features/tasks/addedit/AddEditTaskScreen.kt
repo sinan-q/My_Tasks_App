@@ -236,6 +236,7 @@ fun AddEditTaskScreen(
                 taskInputState.due?.let { _ ->
                     RemindersSection(
                         reminders = reminders,
+                        isRecurring = taskInputState.recurrenceRule != null,
                         isEditing = isEditing,
                         onRemoveReminder = { viewModel.onAction(AddEditTaskAction.RemoveReminder(it)) },
                         onAddReminder = { viewModel.onAction(AddEditTaskAction.AddReminder(it)) }
