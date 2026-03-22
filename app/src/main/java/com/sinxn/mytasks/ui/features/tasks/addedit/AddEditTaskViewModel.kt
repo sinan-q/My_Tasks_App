@@ -176,7 +176,12 @@ class AddEditTaskViewModel @Inject constructor(
             if (taskId != null) {
                 taskUseCases.updateTask(task.toDomain())
                 alarmUseCases.cancelAlarmsByTaskId(taskId)
-            } else taskId = taskUseCases.addTask(task.toDomain())
+            } else {
+                taskId = taskUseCases.addTask(task.toDomain())
+                _uiState.value = _uiState.value.copy(
+                    task = _uiState.value.task.copy(id = taskId)
+                )
+            }
             
             reminders.forEach { reminder ->
                 val time = calculateAlarmTime(task.due, reminder)?.toMillis()

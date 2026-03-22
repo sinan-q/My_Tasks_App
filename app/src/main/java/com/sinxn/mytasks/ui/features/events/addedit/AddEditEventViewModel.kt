@@ -128,6 +128,9 @@ class AddEditEventViewModel @Inject constructor(
             eventUseCases.updateEvent(event)
         } else {
             eventId = eventUseCases.addEvent(event)
+            _uiState.value = _uiState.value.copy(
+                event = _uiState.value.event.copy(id = eventId)
+            )
         }
 
         // Handle Parent Relation

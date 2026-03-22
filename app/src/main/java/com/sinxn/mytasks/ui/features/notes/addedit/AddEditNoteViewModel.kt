@@ -82,6 +82,10 @@ class AddEditNoteViewModel @Inject constructor(
                 noteUseCases.updateNote(note)
             } else {
                 noteId = noteUseCases.addNote(note)
+                val currentState = _uiState.value
+                if (currentState is NoteScreenUiState.Success) {
+                    _uiState.value = currentState.copy(note = currentState.note.copy(id = noteId))
+                }
             }
 
             // Handle Parent Relation
