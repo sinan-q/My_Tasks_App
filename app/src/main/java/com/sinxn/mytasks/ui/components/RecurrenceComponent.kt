@@ -3,10 +3,12 @@ package com.sinxn.mytasks.ui.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,25 +27,42 @@ fun RecurrenceComponent(
     val frequencies = listOf("None", "Daily", "Weekly", "Monthly", "Yearly")
     var selectedFrequency by remember { mutableStateOf(recurrenceRule?.let { parseFrequency(it) } ?: "None") }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            readOnly = true,
-            value = selectedFrequency,
-            onValueChange = { },
-            label = { Text("Repeats") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-        )
-        ScrollablePicker(
-            height = 30.dp,
-            values = frequencies,
-            defaultValue = "None",
-
-        ){
-            selectedFrequency = it
-            onRecurrenceRuleChange(if (it == "None") null else "FREQ=${it.uppercase()}")
+    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
+                readOnly = true,
+                value = selectedFrequency,
+                onValueChange = { },
+                label = { Text("Repeats") },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = expanded
+                    )
+                },
+                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                frequencies.forEach { selectionOption ->
+                    DropdownMenuItem(
+                        text = { Text(selectionOption) },
+                        onClick = {
+                            selectedFrequency = selectionOption
+                            expanded = false
+                            onRecurrenceRuleChange(if (selectionOption == "None") null else "FREQ=${selectionOption.uppercase()}")
+                        }
+                    )
+                }
+            }
         }
-
     }
 }
 
