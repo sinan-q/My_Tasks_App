@@ -121,7 +121,7 @@ fun AddEditEventScreen(
         if (eventId != -1L) {
             eventViewModel.onAction(AddEditEventAction.FetchEventById(eventId))
         } else {
-            eventViewModel.onAction(AddEditEventAction.FetchFolderById(folderId))
+            eventViewModel.onAction(AddEditEventAction.FetchFolderById(folderId, date))
         }
     }
 

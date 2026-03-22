@@ -8,7 +8,7 @@ sealed class AddEditEventAction {
     data class InsertEvent(val event: Event) : AddEditEventAction()
     data class DeleteEvent(val event: Event) : AddEditEventAction()
     data class FetchEventById(val eventId: Long) : AddEditEventAction()
-    data class FetchFolderById(val folderId: Long) : AddEditEventAction()
+    data class FetchFolderById(val folderId: Long, val date: Long = -1L) : AddEditEventAction()
     data class SetParent(val parent: com.sinxn.mytasks.ui.components.ParentItemOption) : AddEditEventAction()
     object RemoveParent : AddEditEventAction()
 

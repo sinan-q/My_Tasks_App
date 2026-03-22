@@ -48,7 +48,7 @@ class AddEditEventViewModel @Inject constructor(
             is AddEditEventAction.InsertEvent -> insertEvent(action.event)
             is AddEditEventAction.DeleteEvent -> deleteEvent(action.event)
             is AddEditEventAction.FetchEventById -> fetchEventById(action.eventId)
-            is AddEditEventAction.FetchFolderById -> fetchFolderById(action.folderId)
+            is AddEditEventAction.FetchFolderById -> fetchFolderById(action.folderId, action.date)
             is AddEditEventAction.SetParent -> setParent(action.parent)
             is AddEditEventAction.RemoveParent -> removeParent()
         }
@@ -67,15 +67,23 @@ class AddEditEventViewModel @Inject constructor(
         )
     }
 
-    private fun fetchFolderById(folderId: Long) {
+    private fun fetchFolderById(folderId: Long, date: Long = -1L) {
         viewModelScope.launch {
             val fetchedFolder = folderUseCases.getFolder(folderId)
             val subFolders = folderUseCases.getSubFolders(folderId).first()
             val currentState = _uiState.value
+            
+            val initialStart = if (date != -1L) com.sinxn.mytasks.utils.fromMillis(date) else currentState.event.start
+            val initialEnd = if (date != -1L) com.sinxn.mytasks.utils.fromMillis(date).plusHours(1) else currentState.event.end
+            
             _uiState.value = currentState.copy(
                 folder = fetchedFolder,
                 folders = subFolders,
-                event = currentState.event.copy(folderId = folderId)
+                event = currentState.event.copy(
+                    folderId = folderId,
+                    start = initialStart,
+                    end = initialEnd
+                )
             )
         }
     }
@@ -103,7 +111,7 @@ class AddEditEventViewModel @Inject constructor(
                 relatedItems = childrenOptions
             )
 
-            fetchFolderById(fetchedEvent.folderId)
+            fetchFolderById(fetchedEvent.folderId, -1L)
         }
     }
 
