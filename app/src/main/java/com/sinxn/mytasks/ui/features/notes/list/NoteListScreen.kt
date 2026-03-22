@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
@@ -27,20 +26,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.ui.components.BottomBar
-import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.collectLatest
 import showBiometricsAuthentication
+import com.sinxn.mytasks.ui.components.noteGridItems
+import com.sinxn.mytasks.ui.components.SelectionDeleteDialog
 
 @Composable
 fun NoteListScreen(
@@ -144,39 +142,24 @@ fun NoteListScreen(
                     contentPadding = paddingValues,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
-                    items(notes, key = { it.id }) { note ->
-                        val path = paths[note.id]
-                        if (path != null) {
-                            NoteItem(
-                                note = note,
-                                path = path,
-                                onClick = {
-                                    navController.navigate(
-                                        NavRouteHelpers.routeFor(
-                                            NavRouteHelpers.NoteArgs(
-                                                noteId = note.id,
-                                                folderId = 0L
-                                            )
-                                        )
-                                    )
-                                },
-                                onHold = { viewModel.onSelectionNote(note.id) },
-                                selected = selectedNotes.notes.any { it.id == note.id },
-                                modifier = Modifier.animateItem()
+                    noteGridItems(
+                        notes = notes,
+                        onNoteClick = {
+                            navController.navigate(
+                                NavRouteHelpers.routeFor(
+                                    NavRouteHelpers.NoteArgs(noteId = it, folderId = 0L)
+                                )
                             )
-                        }
-                    }
+                        },
+                        onNoteHold = { viewModel.onSelectionNote(it) },
+                        pathProvider = { paths[it] }
+                    )
                 }
-                ConfirmationDialog(
-                    showDialog = selectionAction == SelectionAction.Delete,
-                    onDismiss = {
-                        viewModel.onAction(NoteListAction.OnSelectionAction(SelectionAction.None))
-                    },
-                    onConfirm = {
-                        viewModel.onAction(NoteListAction.OnSelectionAction(SelectionAction.DeleteConfirm(true)))
-                    },
-                    title = stringResource(R.string.delete_confirmation_title),
-                    message = "Sure want to delete ${selectionCount.value} items?"
+                SelectionDeleteDialog(
+                    selectionAction = selectionAction,
+                    selectionCount = selectionCount.value,
+                    onDismiss = { viewModel.onAction(NoteListAction.OnSelectionAction(SelectionAction.None)) },
+                    onConfirm = { viewModel.onAction(NoteListAction.OnSelectionAction(SelectionAction.DeleteConfirm(true))) }
                 )
             }
         }

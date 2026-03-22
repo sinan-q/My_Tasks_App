@@ -45,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -53,14 +52,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.domain.models.Folder
 import com.sinxn.mytasks.ui.components.BottomBar
-import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.MyTitle
-import com.sinxn.mytasks.ui.components.RectangleCard
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.components.ShowOptionsFAB
 import com.sinxn.mytasks.ui.features.events.EventListItemUiModel
@@ -76,6 +72,7 @@ import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import com.sinxn.mytasks.ui.navigation.Routes
 import com.sinxn.mytasks.ui.navigation.Routes.Backup
 import kotlinx.coroutines.flow.collectLatest
+import com.sinxn.mytasks.ui.components.*
 
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -228,16 +225,11 @@ fun HomeScreen(
                     }
                 }
 
-                ConfirmationDialog(
-                    showDialog = selectionAction == SelectionAction.Delete,
-                    onDismiss = {
-                        viewModel.onAction(SelectionAction.None)
-                    },
-                    onConfirm = {
-                        viewModel.onAction(SelectionAction.DeleteConfirm(true))
-                    },
-                    title = stringResource(R.string.delete_confirmation_title),
-                    message = "Sure want to delete $selectionCount items?"
+                SelectionDeleteDialog(
+                    selectionAction = selectionAction,
+                    selectionCount = selectionCount,
+                    onDismiss = { viewModel.onAction(SelectionAction.None) },
+                    onConfirm = { viewModel.onAction(SelectionAction.DeleteConfirm(true)) }
                 )
             }
         }
@@ -355,15 +347,16 @@ private fun LazyStaggeredGridScope.upcomingEventsSection(
         }
     }
 
-    items(upcomingEvents, key = { "event_${it.id}" }) { event ->
-        EventSmallItem(event, modifier = Modifier.animateItem()) {
+    eventGridItems(
+        events = upcomingEvents,
+        onEventClick = {
             navController.navigate(
                 NavRouteHelpers.routeFor(
-                    NavRouteHelpers.EventArgs(eventId = event.id, folderId = 0L, date = -1L)
+                    NavRouteHelpers.EventArgs(eventId = it, folderId = 0L, date = -1L)
                 )
             )
         }
-    }
+    )
 }
 
 private fun LazyStaggeredGridScope.pendingTasksSection(
@@ -384,26 +377,17 @@ private fun LazyStaggeredGridScope.pendingTasksSection(
         }
     }
 
-    items(
-        items = pendingTasks.take(4),
-        key = { task -> "pendingTask_${task.id}" },
-        span = { StaggeredGridItemSpan.FullLine },
-        contentType = { "pendingTask" }
-    ) { task ->
-        TaskItem(
-            task = task,
-            onClick = {
-                navController.navigate(
-                    NavRouteHelpers.routeFor(NavRouteHelpers.TaskArgs(taskId = task.id, folderId = 0L))
-                )
-            },
-            onUpdate = { status -> viewModel.updateStatusTask(task.id, status) },
-            onHold = { viewModel.onSelectionTask(task.id) },
-            path = null,
-            selected = task.isSelected,
-            modifier = Modifier.animateItem()
-        )
-    }
+    taskGridItems(
+        tasks = pendingTasks.take(4),
+        onTaskClick = {
+            navController.navigate(
+                NavRouteHelpers.routeFor(NavRouteHelpers.TaskArgs(taskId = it, folderId = 0L))
+            )
+        },
+        onTaskUpdate = { id, status -> viewModel.updateStatusTask(id, status) },
+        onTaskHold = { viewModel.onSelectionTask(it) },
+        keyPrefix = "pendingTask"
+    )
 
     if (pendingTasks.size > 4) {
         item(span = StaggeredGridItemSpan.FullLine) {
@@ -576,53 +560,36 @@ private fun LazyStaggeredGridScope.defaultHomeItemsSection(
         }
     }
 
-    items(folders, key = { "folder_${it.id}" }) { folder ->
-        FolderItem(
-            folder = folder,
-            onClick = {
-                navController.navigate(
-                    NavRouteHelpers.routeFor(NavRouteHelpers.FolderArgs(folderId = folder.id))
-                )
-            },
-            onDelete = { viewModel.deleteFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked)) },
-            onLock = { viewModel.lockFolder(Folder(folderId = folder.id, name = folder.name, isLocked = folder.isLocked)) },
-            onHold = { viewModel.onSelectionFolder(folder.id) },
-            selected = folder.isSelected,
-            modifier = Modifier.animateItem()
-        )
-    }
+    folderGridItems(
+        folders = folders,
+        onFolderClick = {
+            navController.navigate(
+                NavRouteHelpers.routeFor(NavRouteHelpers.FolderArgs(folderId = it))
+            )
+        },
+        onFolderDelete = { viewModel.deleteFolder(it) },
+        onFolderLock = { viewModel.lockFolder(it) },
+        onFolderHold = { viewModel.onSelectionFolder(it) }
+    )
 
-    items(
-        key = { "task_${it.id}" },
-        span = { StaggeredGridItemSpan.FullLine },
-        items = tasks,
-    ) { task ->
-        TaskItem(
-            task = task,
-            onClick = {
-                navController.navigate(
-                    NavRouteHelpers.routeFor(NavRouteHelpers.TaskArgs(taskId = task.id, folderId = 0L))
-                )
-            },
-            onUpdate = { status -> viewModel.updateStatusTask(task.id, status) },
-            onHold = { viewModel.onSelectionTask(task.id) },
-            path = null,
-            selected = task.isSelected,
-            modifier = Modifier.animateItem()
-        )
-    }
+    taskGridItems(
+        tasks = tasks,
+        onTaskClick = {
+            navController.navigate(
+                NavRouteHelpers.routeFor(NavRouteHelpers.TaskArgs(taskId = it, folderId = 0L))
+            )
+        },
+        onTaskUpdate = { id, status -> viewModel.updateStatusTask(id, status) },
+        onTaskHold = { viewModel.onSelectionTask(it) }
+    )
 
-    items(notes, key = { "note_${it.id}" }) { note ->
-        NoteItem(
-            note = note,
-            onClick = {
-                navController.navigate(
-                    NavRouteHelpers.routeFor(NavRouteHelpers.NoteArgs(noteId = note.id, folderId = 0L))
-                )
-            },
-            onHold = { viewModel.onSelectionNote(note.id) },
-            selected = note.isSelected,
-            modifier = Modifier.animateItem()
-        )
-    }
+    noteGridItems(
+        notes = notes,
+        onNoteClick = {
+            navController.navigate(
+                NavRouteHelpers.routeFor(NavRouteHelpers.NoteArgs(noteId = it, folderId = 0L))
+            )
+        },
+        onNoteHold = { viewModel.onSelectionNote(it) }
+    )
 }

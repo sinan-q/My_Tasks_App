@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
@@ -26,20 +25,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.sinxn.mytasks.R
 import com.sinxn.mytasks.core.SelectionAction
 import com.sinxn.mytasks.ui.components.BottomBar
-import com.sinxn.mytasks.ui.components.ConfirmationDialog
 import com.sinxn.mytasks.ui.components.MyTasksTopAppBar
 import com.sinxn.mytasks.ui.components.RectangleFAB
 import com.sinxn.mytasks.ui.components.ShowActionsFAB
 import com.sinxn.mytasks.ui.navigation.NavRouteHelpers
 import kotlinx.coroutines.flow.collectLatest
 import showBiometricsAuthentication
+import com.sinxn.mytasks.ui.components.taskListItems
+import com.sinxn.mytasks.ui.components.SelectionDeleteDialog
 
 @Composable
 fun TaskListScreen(
@@ -139,45 +137,25 @@ fun TaskListScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                items(uiState.tasks, key = { it.id }) { task ->
-                    val path = paths[task.id]
-                    if (path != null)
-                        TaskItem(
-                            task = task,
-                            path = path,
-                            onClick = {
-                                navController.navigate(
-                                    NavRouteHelpers.routeFor(
-                                        NavRouteHelpers.TaskArgs(
-                                            taskId = task.id,
-                                            folderId = 0L
-                                        )
-                                    )
-                                )
-                            },
-                            onUpdate = {
-                                task.id.let { it1 ->
-                                    viewModel.onAction(
-                                        TaskListAction.UpdateStatusTask(it1, it)
-                                    )
-                                }
-                            },
-                            onHold = { viewModel.onSelectionTask(task.id) },
-                            selected = selectedTasks.tasks.any { it.id == task.id },
-                            modifier = Modifier.animateItem()
+                taskListItems(
+                    tasks = uiState.tasks,
+                    onTaskClick = {
+                        navController.navigate(
+                            NavRouteHelpers.routeFor(
+                                NavRouteHelpers.TaskArgs(taskId = it, folderId = 0L)
+                            )
                         )
-                }
+                    },
+                    onTaskUpdate = { id, status -> viewModel.onAction(TaskListAction.UpdateStatusTask(id, status)) },
+                    onTaskHold = { viewModel.onSelectionTask(it) },
+                    pathProvider = { paths[it] }
+                )
             }
-            ConfirmationDialog(
-                showDialog = selectionAction == SelectionAction.Delete,
-                onDismiss = {
-                    viewModel.onAction(TaskListAction.OnSelectionAction(SelectionAction.None))
-                },
-                onConfirm = {
-                    viewModel.onAction(TaskListAction.OnSelectionAction(SelectionAction.DeleteConfirm(true)))
-                },
-                title = stringResource(R.string.delete_confirmation_title),
-                message = "Sure want to delete ${selectionCount.value} items?"
+            SelectionDeleteDialog(
+                selectionAction = selectionAction,
+                selectionCount = selectionCount.value,
+                onDismiss = { viewModel.onAction(TaskListAction.OnSelectionAction(SelectionAction.None)) },
+                onConfirm = { viewModel.onAction(TaskListAction.OnSelectionAction(SelectionAction.DeleteConfirm(true))) }
             )
         }
     }
