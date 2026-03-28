@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
@@ -213,44 +214,80 @@ fun AddEditEventScreen(
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
             )
-            
+
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider()
             // Start Date
-            OutlinedTextField(
-                value = eventInputState.start?.formatDate() ?: "Select Start Date",
-                onValueChange = {},
-                label = { Text("Start Date") },
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(onClick = { showStartDatePicker = isEditing }) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = "Select Start Date"
-                        )
-                    }
-                },
+            androidx.compose.foundation.layout.Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp, horizontal = 20.dp)
-            )
+                    .padding(horizontal = 20.dp, vertical = 2.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(enabled = isEditing) { showStartDatePicker = true }
+                        .padding(vertical = 12.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = "Start Date",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Start: " + (eventInputState.start?.formatDate() ?: "Add Date"),
+                        color = if (eventInputState.start != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                if (eventInputState.start != null && isEditing) {
+                    IconButton(onClick = { showStartTimePicker = true }) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Edit,
+                            contentDescription = "Edit Start Time",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
 
             // End Date
-            OutlinedTextField(
-                value = eventInputState.end?.formatDate() ?: "Select End Date",
-                onValueChange = {},
-                label = { Text("End Date") },
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(onClick = { showEndDatePicker = isEditing }) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = "Select End Date"
-                        )
-                    }
-                },
+            androidx.compose.foundation.layout.Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp, horizontal = 20.dp)
-            )
+                .padding(horizontal = 20.dp, vertical = 2.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(enabled = isEditing) { showEndDatePicker = true }
+                        .padding(vertical = 12.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = "End Date",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "End: " + (eventInputState.end?.formatDate() ?: "Add Date"),
+                        color = if (eventInputState.end != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                if (eventInputState.end != null && isEditing) {
+                    IconButton(onClick = { showEndTimePicker = true }) {
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Edit,
+                            contentDescription = "Edit End Time",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
 
             RecurrenceComponent(
                 recurrenceRule = eventInputState.recurrenceRule,
@@ -258,27 +295,28 @@ fun AddEditEventScreen(
                     eventViewModel.onAction(AddEditEventAction.UpdateEvent(eventInputState.copy(recurrenceRule = it)))
                 }
             )
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-            // Parent Item Section
-            Text(
-                text = "Parent Item",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-            )
-
+            HorizontalDivider()
+            // Linked Items Section
+            if (uiState.parentItem != null || uiState.relatedItems.isNotEmpty() || isEditing) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Linked Items",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                )
+            }
+            
             if (uiState.parentItem != null) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onNavigateToItem(uiState.parentItem!!.id, uiState.parentItem!!.type) }
-                        .padding(horizontal = 20.dp, vertical = 4.dp),
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "[${uiState.parentItem!!.type.name}]",
+                            text = "Belongs to ${uiState.parentItem!!.type.name.lowercase().replaceFirstChar { it.uppercase() }}",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -289,46 +327,49 @@ fun AddEditEventScreen(
                     }
                     if (isEditing) {
                         IconButton(onClick = { eventViewModel.onAction(AddEditEventAction.RemoveParent) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Remove Parent")
+                            Icon(Icons.Default.Delete, contentDescription = "Remove Link")
                         }
                     }
                 }
-            } else if (isEditing) {
-                TextButton(
-                    onClick = { showParentSelectionDialog = true },
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                ) {
-                    Text("Add Parent Item")
-                }
             }
-
-            // Related Items Section
-            if (uiState.relatedItems.isNotEmpty()) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                Text(
-                    text = "Related Items",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                )
-                uiState.relatedItems.forEach { item ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onNavigateToItem(item.id, item.type) }
-                            .padding(horizontal = 20.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+            
+            uiState.relatedItems.forEach { item ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onNavigateToItem(item.id, item.type) }
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "[${item.type.name}]",
+                            text = "Related ${item.type.name.lowercase().replaceFirstChar { it.uppercase() }}",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = item.title,
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
+                }
+            }
+
+            if (isEditing) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showParentSelectionDialog = true }
+                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Link Item",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text("Link an item...", color = MaterialTheme.colorScheme.primary)
                 }
             }
 
@@ -349,7 +390,6 @@ fun AddEditEventScreen(
                                 )
                             )
                             showStartDatePicker = false
-                            showStartTimePicker = true
                         }) { Text("OK") }
                     },
                     dismissButton = {
@@ -391,7 +431,6 @@ fun AddEditEventScreen(
                                 )
                             )
                             showEndDatePicker = false
-                            showEndTimePicker = true
                         }) { Text("OK") }
                     },
                     dismissButton = {

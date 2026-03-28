@@ -50,6 +50,9 @@ import com.sinxn.mytasks.ui.features.folders.FolderDropDown
 import com.sinxn.mytasks.ui.components.ParentSelectionDialog
 import com.sinxn.mytasks.ui.components.ParentItemOption
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.Add
 import com.sinxn.mytasks.domain.models.RelationItemType
 import com.sinxn.mytasks.ui.features.notes.list.NoteScreenUiState
 import com.sinxn.mytasks.utils.Constants
@@ -182,13 +185,16 @@ fun AddEditNoteScreen(
                         )
                     )
                     HorizontalDivider()
-                    Row(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
                         Icon(painterResource(R.drawable.clock_ic), contentDescription = "Clock Icon", tint = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-                        Text(noteInputState.timestamp.formatDate(), fontSize = 12.sp)
-                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(noteInputState.timestamp.formatDate(), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(modifier = Modifier.width(16.dp))
                         FolderDropDown(
-                            modifier = Modifier.padding(horizontal = 20.dp),
+                            modifier = Modifier.weight(1f),
                             onClick = { folderId ->
                                 noteViewModel.onAction(AddEditNoteAction.FetchFolderById(folderId))
                             },
@@ -197,13 +203,13 @@ fun AddEditNoteScreen(
                             folders = subFolders
                         )
                     }
+                    HorizontalDivider()
 
-                    // Parent Item Section - only show when there's a parent or in edit mode
-                    if (state.parentItem != null || isEditing) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                    
+                    // Linked Items Section
+                    if (state.parentItem != null || state.relatedItems.isNotEmpty() || isEditing) {
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Parent Item",
+                            text = "Linked Items",
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                         )
@@ -214,14 +220,14 @@ fun AddEditNoteScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { onNavigateToItem(state.parentItem!!.id, state.parentItem!!.type) }
-                                .padding(horizontal = 20.dp, vertical = 4.dp),
+                                .padding(horizontal = 20.dp, vertical = 8.dp),
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "[${state.parentItem!!.type.name}]",
+                                    text = "Belongs to ${state.parentItem!!.type.name.lowercase().replaceFirstChar { it.uppercase() }}",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
                                     text = state.parentItem!!.title,
@@ -230,46 +236,50 @@ fun AddEditNoteScreen(
                             }
                             if (isEditing) {
                                 IconButton(onClick = { noteViewModel.onAction(AddEditNoteAction.RemoveParent) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Remove Parent")
+                                    Icon(Icons.Default.Delete, contentDescription = "Remove Link")
                                 }
                             }
                         }
-                    } else if (isEditing) {
-                        androidx.compose.material3.TextButton(
-                            onClick = { showParentSelectionDialog = true },
-                            modifier = Modifier.padding(horizontal = 20.dp)
-                        ) {
-                            Text("Add Parent Item")
-                        }
                     }
 
-                    // Related Items Section
-                    if (state.relatedItems.isNotEmpty()) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                        Text(
-                            text = "Related Items",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                        )
-                        state.relatedItems.forEach { item ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onNavigateToItem(item.id, item.type) }
-                                    .padding(horizontal = 20.dp, vertical = 4.dp),
-                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                            ) {
+
+                    state.relatedItems.forEach { item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onNavigateToItem(item.id, item.type) }
+                                .padding(horizontal = 20.dp, vertical = 8.dp),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "[${item.type.name}]",
+                                    text = "Related ${item.type.name.lowercase().replaceFirstChar { it.uppercase() }}",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary
                                 )
-                                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                                 Text(
                                     text = item.title,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
+                        }
+                    }
+
+                    if (isEditing) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { showParentSelectionDialog = true }
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Link Item",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text("Link an item...", color = MaterialTheme.colorScheme.primary)
                         }
                     }
 

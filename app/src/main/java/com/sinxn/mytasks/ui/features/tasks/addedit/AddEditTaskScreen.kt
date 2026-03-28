@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
@@ -212,21 +213,41 @@ fun AddEditTaskScreen(
                     readOnly = !isEditing,
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                 )
-                OutlinedTextField(
-                    value = taskInputState.due?.formatDate() ?: "No Due",
-                    onValueChange = {},
-                    label = { Text("Due Date") },
-                    readOnly = true,
-                    trailingIcon = {
-                        IconButton(onClick = { showDatePicker = isEditing }) {
+                HorizontalDivider()
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 4.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable(enabled = isEditing) { showDatePicker = true }
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Due Date",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = taskInputState.due?.formatDate() ?: "Add Due Date",
+                            color = if (taskInputState.due != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (taskInputState.due != null && isEditing) {
+                        IconButton(onClick = { showTimePicker = true }) {
                             Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = "Select Due Date"
+                                imageVector = androidx.compose.material.icons.Icons.Default.Edit,
+                                contentDescription = "Edit Time",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 20.dp)
-                )
+                    }
+                }
                 RecurrenceComponent(
                     recurrenceRule = taskInputState.recurrenceRule,
                     onRecurrenceRuleChange = {
@@ -242,13 +263,12 @@ fun AddEditTaskScreen(
                         onAddReminder = { viewModel.onAction(AddEditTaskAction.AddReminder(it)) }
                     )
                 }
-
-                // Parent Item Section - only show when there's a parent or in edit mode
-                if (uiState.parentItem != null || isEditing) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                
+                HorizontalDivider()
+                // Linked Items Section
+                if (uiState.parentItem != null || uiState.relatedItems.isNotEmpty() || isEditing) {
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Parent Item",
+                        text = "Linked Items",
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                     )
@@ -259,12 +279,12 @@ fun AddEditTaskScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onNavigateToItem(uiState.parentItem!!.id, uiState.parentItem!!.type) }
-                            .padding(horizontal = 20.dp, vertical = 4.dp),
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "[${uiState.parentItem!!.type.name}]",
+                                text = "Belongs to ${uiState.parentItem!!.type.name.lowercase().replaceFirstChar { it.uppercase() }}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = androidx.compose.material3.MaterialTheme.colorScheme.primary
                             )
@@ -275,46 +295,49 @@ fun AddEditTaskScreen(
                         }
                         if (isEditing) {
                             IconButton(onClick = { viewModel.onAction(AddEditTaskAction.RemoveParent) }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Remove Parent")
+                                Icon(Icons.Default.Delete, contentDescription = "Remove Link")
                             }
                         }
                     }
-                } else if (isEditing) {
-                    TextButton(
-                        onClick = { showParentSelectionDialog = true },
-                        modifier = Modifier.padding(horizontal = 20.dp)
-                    ) {
-                        Text("Add Parent Item")
-                    }
                 }
-
-                // Related Items Section
-                if (uiState.relatedItems.isNotEmpty()) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                    Text(
-                        text = "Related Items",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                    )
-                    uiState.relatedItems.forEach { item ->
-                        androidx.compose.foundation.layout.Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onNavigateToItem(item.id, item.type) }
-                                .padding(horizontal = 20.dp, vertical = 4.dp),
-                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                        ) {
+                
+                uiState.relatedItems.forEach { item ->
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onNavigateToItem(item.id, item.type) }
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "[${item.type.name}]",
+                                text = "Related ${item.type.name.lowercase().replaceFirstChar { it.uppercase() }}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = androidx.compose.material3.MaterialTheme.colorScheme.primary
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = item.title,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
+                    }
+                }
+
+                if (isEditing) {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showParentSelectionDialog = true }
+                            .padding(horizontal = 20.dp, vertical = 12.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Link Item",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("Link an item...", color = MaterialTheme.colorScheme.primary)
                     }
                 }
 
@@ -333,7 +356,6 @@ fun AddEditTaskScreen(
                                         due = datePickerState.selectedDateMillis?.let { fromMillis(it) }
                                     )))
                                     showDatePicker = false
-                                    showTimePicker = true
                                 }
                             ) {
                                 Text("OK")
